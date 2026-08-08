@@ -138,6 +138,40 @@ Same architecture as v2 (7 members, per-class `W`), but **5-fold cross-fitted ov
 - Cost: ~16 min training (746s cross-fit + 180s refit) vs v2's ~1 min. Inference cost identical.
 - **Improvement has plateaued:** 0.6157 → 0.6302 → 0.6339. Four levers (focal, DES, thresholds, wider α) returned ~nothing; every gain came from better weighting or more data. See the ambiguity analysis below for why. **SHAP** still outstanding.
 
+### Dynamic Stage-B ensemble v4 (`two_stage_stageB_dynamic_v4.ipynb`) — the dynamic-ensemble contribution
+
+Per-instance competence weighting over the **α-diverse** pool with **cross-fitted** competence — i.e.
+DES v1 re-run after v2/v3 showed both of v1's premises were wrong. Same prune/splits/seeds/pool as v3;
+combiner is the only moving part. **Two models are reported**, each selected on SELV within its own
+combiner family:
+
+| Model | Weights vary by | Test macro-F1 | Test acc | vs v3 |
+|---|---|---|---|---|
+| **v4-hybrid** `HYBRID W × LCA k=30 p=1` | class **and** instance | **0.6295** | 0.9082 | −0.0039 |
+| **v4-dynamic** `DYN LCA k=30` | instance only | **0.6262** | 0.9085 | −0.0072 |
+| v3 static (baseline, refit here) | class only | 0.6334 | 0.9086 | — |
+
+Quote as `0.630 [0.612, 0.647]` and `0.626 [0.608, 0.644]`. **Both gaps are inside the ±0.012 paired
+band — report as "no measurable difference", never as a loss.**
+
+- **Competence still cannot be estimated, and the setup is no longer to blame.** v4 gave the estimator
+  the α-diverse pool *and* 32,468 reference rows (5× v1's 6,494); weights still sit within **4.5% of
+  uniform** (mean |dev| 0.0064 vs uniform 0.1429) — v1 was 5.1%. Only XGB α=1.0 disperses at all
+  (std 0.0147). **The binding constraint is the representation**, matching the Cover–Hart bracket.
+- **The per-class prior is load-bearing; the per-instance term is not.** Hybrids land within 0.004 of
+  v3; pure-dynamic loses 0.007–0.014. The hybrid was built so `p=0` recovers v3 exactly (verified on
+  100.0000% of rows), so the null cannot be blamed on combiner form. The dynamic component is **inert
+  but harmless** — state this before an examiner asks.
+- **Third failure of oracle headroom to predict gain**: v1 0.0804→0, v3 0.2250→+0.0037, v4 0.1579→0.
+- **Scope correction confirmed:** v1's "ensemble direction is closed" was about *pool construction* —
+  v4 recovers **+0.0144 to +0.0177** over v1.
+- **SELV/test rank changes inside the noise band are resolution failure, not selection error.** Within
+  the pure-dynamic family SELV transferred perfectly; across families it did not (1st → 6th of 23), but
+  all six leaders are within noise.
+- Deployment: v4 needs a kNN query per flow + 32,468-row reference set in memory; v3 needs one 7×9
+  matmul. **v3 remains the recommended deployed combiner.**
+- OOF cached to `cache_oof_v4.npz` (cross-fit 308 s); combiner iteration ~2 min.
+
 ### Label-ambiguity ceiling — hypothesis REFUTED (`label_ambiguity_ceiling.ipynb`)
 
 Tested whether the plateau is irreducible label noise. **It is not.** Only **497 ambiguous groups / 1,068 rows (0.35%)**; Bayes-optimal accuracy 0.9981, ceiling macro-F1 0.9881 → v3 attains **64.1% of ceiling**.

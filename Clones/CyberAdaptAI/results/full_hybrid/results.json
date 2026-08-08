@@ -1,0 +1,464 @@
+{
+  "config": {
+    "batch_size": 2000,
+    "weight_rule": "hybrid",
+    "diversity_measure": "disagreement",
+    "alpha": 0.6,
+    "gamma": 0.8,
+    "adwin_delta": 0.002,
+    "scaler_fit": "first_batch",
+    "seed": 42
+  },
+  "notes": [
+    "duplicates_removed=141742",
+    "scaler=first_batch (leakage-safe)",
+    "hoeffding_tree=SGD-fallback (river not installed)"
+  ],
+  "members": [
+    "random_forest",
+    "xgboost",
+    "extra_trees",
+    "hoeffding_tree[SGD-fallback]"
+  ],
+  "overall": {
+    "accuracy": 0.8639422997025243,
+    "precision_macro": 0.7356267561619266,
+    "recall_macro": 0.4976775020978962,
+    "f1_macro": 0.5509253088957886,
+    "precision_weighted": 0.8848204351508508,
+    "recall_weighted": 0.8639422997025243,
+    "f1_weighted": 0.8609662216459188,
+    "n": 60173,
+    "auc_ovr_macro": null
+  },
+  "streaming_aggregate": {
+    "accuracy": 0.8639422997025243,
+    "precision_macro": 0.6953087804550958,
+    "recall_macro": 0.5221750807973157,
+    "f1_macro": 0.5497534818276106,
+    "precision_weighted": 0.8842059618150768,
+    "recall_weighted": 0.8639422997025243,
+    "f1_weighted": 0.8571400839229742,
+    "auc_ovr_macro": 0.8036373241296836,
+    "auc_batches_defined": 31,
+    "latency_per_instance_ms": 0.05117480105352427,
+    "n_batches": 31,
+    "n_instances": 60173
+  },
+  "per_class": {
+    "0": {
+      "precision": 0.986692229615428,
+      "recall": 0.9537254046983158,
+      "f1": 0.9699287713755163,
+      "support": 36694
+    },
+    "1": {
+      "precision": 0.3442622950819672,
+      "recall": 0.1875,
+      "f1": 0.24277456647398843,
+      "support": 112
+    },
+    "2": {
+      "precision": 0.9571428571428572,
+      "recall": 0.47183098591549294,
+      "f1": 0.6320754716981132,
+      "support": 142
+    },
+    "3": {
+      "precision": 0.8250825082508251,
+      "recall": 0.1939487975174554,
+      "f1": 0.314070351758794,
+      "support": 1289
+    },
+    "4": {
+      "precision": 0.7823794353509832,
+      "recall": 0.777426045191573,
+      "f1": 0.7798948751642576,
+      "support": 9161
+    },
+    "5": {
+      "precision": 0.569272282654524,
+      "recall": 0.9198800926556752,
+      "f1": 0.7033024273361809,
+      "support": 7339
+    },
+    "6": {
+      "precision": 0.8786359077231695,
+      "recall": 0.6596385542168675,
+      "f1": 0.7535483870967742,
+      "support": 1328
+    },
+    "7": {
+      "precision": 0.8415476738830032,
+      "recall": 0.5153737658674189,
+      "f1": 0.63925822253324,
+      "support": 3545
+    },
+    "8": {
+      "precision": 0.5241935483870968,
+      "recall": 0.13078470824949698,
+      "f1": 0.20933977455716588,
+      "support": 497
+    },
+    "9": {
+      "precision": 0.6470588235294118,
+      "recall": 0.16666666666666666,
+      "f1": 0.26506024096385544,
+      "support": 66
+    }
+  },
+  "confusion_matrix": [
+    [
+      34996,
+      22,
+      0,
+      2,
+      210,
+      1395,
+      12,
+      49,
+      7,
+      1
+    ],
+    [
+      6,
+      21,
+      0,
+      2,
+      83,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      2,
+      0,
+      67,
+      0,
+      29,
+      38,
+      0,
+      4,
+      2,
+      0
+    ],
+    [
+      15,
+      3,
+      0,
+      250,
+      647,
+      334,
+      8,
+      25,
+      5,
+      2
+    ],
+    [
+      102,
+      12,
+      2,
+      27,
+      7122,
+      1633,
+      51,
+      201,
+      8,
+      3
+    ],
+    [
+      217,
+      1,
+      0,
+      3,
+      246,
+      6751,
+      48,
+      38,
+      35,
+      0
+    ],
+    [
+      17,
+      1,
+      1,
+      10,
+      222,
+      190,
+      876,
+      10,
+      1,
+      0
+    ],
+    [
+      94,
+      1,
+      0,
+      4,
+      442,
+      1176,
+      0,
+      1827,
+      1,
+      0
+    ],
+    [
+      16,
+      0,
+      0,
+      5,
+      75,
+      318,
+      1,
+      17,
+      65,
+      0
+    ],
+    [
+      3,
+      0,
+      0,
+      0,
+      27,
+      24,
+      1,
+      0,
+      0,
+      11
+    ]
+  ],
+  "classes": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "final_weights": {
+    "random_forest": 0.25615853899242563,
+    "xgboost": 0.2562100684454142,
+    "extra_trees": 0.2485182155044359,
+    "hoeffding_tree[SGD-fallback]": 0.23911317705772434
+  },
+  "weight_movement": {
+    "per_member_mean": {
+      "random_forest": 0.2614,
+      "xgboost": 0.26,
+      "extra_trees": 0.2453,
+      "hoeffding_tree[SGD-fallback]": 0.2334
+    },
+    "per_member_std": {
+      "random_forest": 0.0038,
+      "xgboost": 0.0033,
+      "extra_trees": 0.0031,
+      "hoeffding_tree[SGD-fallback]": 0.005
+    },
+    "max_abs_deviation_from_uniform": 0.02724393530910399,
+    "mean_abs_deviation_from_uniform": 0.010819154259386362,
+    "uniform_weight": 0.25
+  },
+  "n_drift_events": 22,
+  "drift_events": [
+    {
+      "batch": 0,
+      "reason": "adwin",
+      "accuracy": 0.923,
+      "retrained": [
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 2,
+      "reason": "adwin",
+      "accuracy": 0.78,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 3,
+      "reason": "adwin",
+      "accuracy": 0.8845,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 4,
+      "reason": "adwin",
+      "accuracy": 0.9125,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 5,
+      "reason": "adwin",
+      "accuracy": 0.749,
+      "retrained": [
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 6,
+      "reason": "adwin",
+      "accuracy": 0.923,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 8,
+      "reason": "adwin",
+      "accuracy": 0.757,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 9,
+      "reason": "adwin",
+      "accuracy": 0.877,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 11,
+      "reason": "adwin",
+      "accuracy": 0.828,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 12,
+      "reason": "adwin",
+      "accuracy": 0.781,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 13,
+      "reason": "adwin",
+      "accuracy": 0.923,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 15,
+      "reason": "adwin",
+      "accuracy": 0.779,
+      "retrained": [
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 16,
+      "reason": "adwin",
+      "accuracy": 0.867,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 18,
+      "reason": "adwin",
+      "accuracy": 0.8055,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 19,
+      "reason": "adwin",
+      "accuracy": 0.8275,
+      "retrained": [
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 20,
+      "reason": "adwin",
+      "accuracy": 0.9455,
+      "retrained": [
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 21,
+      "reason": "adwin",
+      "accuracy": 0.889,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 22,
+      "reason": "adwin",
+      "accuracy": 0.7865,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 25,
+      "reason": "adwin",
+      "accuracy": 0.727,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 26,
+      "reason": "adwin",
+      "accuracy": 0.888,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 28,
+      "reason": "adwin",
+      "accuracy": 0.839,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    },
+    {
+      "batch": 29,
+      "reason": "adwin",
+      "accuracy": 0.823,
+      "retrained": [
+        "extra_trees",
+        "hoeffding_tree[SGD-fallback]"
+      ]
+    }
+  ],
+  "shap": null
+}

@@ -2,6 +2,14 @@
 # See README.md for how to obtain it and where to place it.
 Resource/CIC-UNSW-Data.csv
 
+# Original UNSW-NB15 (47 MB) — downloadable, not ours to redistribute.
+# See Resource/UNSW-NB15/PUT_DATASET_HERE.md for the source and expected filenames.
+Resource/UNSW-NB15/*.csv
+
+# Derived cache: cross-fitted OOF probabilities for two_stage_stageB_dynamic_v4.ipynb.
+# 42 MB, regenerated in ~308 s by deleting it and re-running the notebook.
+cache_oof_v4.npz
+
 # Python
 __pycache__/
 *.py[cod]

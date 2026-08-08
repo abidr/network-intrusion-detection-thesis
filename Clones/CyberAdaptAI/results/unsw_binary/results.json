@@ -1,0 +1,369 @@
+{
+  "config": {
+    "batch_size": 2000,
+    "weight_rule": "hybrid",
+    "diversity_measure": "disagreement",
+    "alpha": 0.6,
+    "gamma": 0.8,
+    "adwin_delta": 0.002,
+    "scaler_fit": "first_batch",
+    "seed": 42
+  },
+  "notes": [
+    "duplicates_removed=103575",
+    "scaler=first_batch (leakage-safe)",
+    "shap_backend=xgboost_native (exact TreeSHAP)"
+  ],
+  "members": [
+    "random_forest",
+    "xgboost",
+    "extra_trees",
+    "hoeffding_tree"
+  ],
+  "overall": {
+    "accuracy": 0.8064655458834474,
+    "precision_macro": 0.8027996682269712,
+    "recall_macro": 0.7836467274413967,
+    "f1_macro": 0.7903823570711748,
+    "precision_weighted": 0.80526466760601,
+    "recall_weighted": 0.8064655458834474,
+    "f1_weighted": 0.8033152703250402,
+    "n": 30098,
+    "precision_binary": 0.7917329093799682,
+    "recall_binary": 0.6812003077712234,
+    "f1_binary": 0.7323192867974817,
+    "auc_ovr_macro": null
+  },
+  "streaming_aggregate": {
+    "accuracy": 0.8064655458834474,
+    "precision_macro": 0.43982591793765863,
+    "recall_macro": 0.4643384925783164,
+    "f1_macro": 0.4236165699426902,
+    "precision_weighted": 0.8682972359349895,
+    "recall_weighted": 0.8064655458834474,
+    "f1_weighted": 0.8276443211765677,
+    "precision_binary": 0.26778393767610137,
+    "recall_binary": 0.3306864243471327,
+    "f1_binary": 0.26887077147466976,
+    "auc_ovr_macro": 0.7132073887489505,
+    "auc_batches_defined": 2,
+    "latency_per_instance_ms": 0.07897913673483294,
+    "n_batches": 16,
+    "n_instances": 30098
+  },
+  "per_class": {
+    "0": {
+      "precision": 0.8138664270739743,
+      "recall": 0.8860931471115701,
+      "f1": 0.8484454273448679,
+      "support": 18401
+    },
+    "1": {
+      "precision": 0.7917329093799682,
+      "recall": 0.6812003077712234,
+      "f1": 0.7323192867974817,
+      "support": 11697
+    }
+  },
+  "confusion_matrix": [
+    [
+      16305,
+      2096
+    ],
+    [
+      3729,
+      7968
+    ]
+  ],
+  "classes": [
+    0,
+    1
+  ],
+  "final_weights": {
+    "random_forest": 0.24656586580047893,
+    "xgboost": 0.25176036586698036,
+    "extra_trees": 0.2448104840488568,
+    "hoeffding_tree": 0.25686328428368393
+  },
+  "weight_movement": {
+    "per_member_mean": {
+      "random_forest": 0.2399,
+      "xgboost": 0.2418,
+      "extra_trees": 0.2396,
+      "hoeffding_tree": 0.2788
+    },
+    "per_member_std": {
+      "random_forest": 0.0136,
+      "xgboost": 0.0144,
+      "extra_trees": 0.0135,
+      "hoeffding_tree": 0.0413
+    },
+    "max_abs_deviation_from_uniform": 0.14815686400166528,
+    "mean_abs_deviation_from_uniform": 0.01649318638246041,
+    "uniform_weight": 0.25
+  },
+  "n_drift_events": 8,
+  "drift_events": [
+    {
+      "batch": 0,
+      "reason": "adwin",
+      "accuracy": 0.852,
+      "retrained": [
+        "hoeffding_tree"
+      ]
+    },
+    {
+      "batch": 1,
+      "reason": "adwin",
+      "accuracy": 0.5405,
+      "retrained": [
+        "random_forest",
+        "xgboost",
+        "extra_trees"
+      ]
+    },
+    {
+      "batch": 2,
+      "reason": "adwin",
+      "accuracy": 0.159,
+      "retrained": []
+    },
+    {
+      "batch": 3,
+      "reason": "accuracy_drop",
+      "accuracy": 0.0,
+      "retrained": [
+        "random_forest",
+        "xgboost",
+        "extra_trees"
+      ]
+    },
+    {
+      "batch": 4,
+      "reason": "adwin",
+      "accuracy": 0.9915,
+      "retrained": [
+        "random_forest",
+        "extra_trees"
+      ]
+    },
+    {
+      "batch": 8,
+      "reason": "adwin",
+      "accuracy": 0.7565,
+      "retrained": [
+        "hoeffding_tree"
+      ]
+    },
+    {
+      "batch": 10,
+      "reason": "adwin",
+      "accuracy": 0.918,
+      "retrained": [
+        "random_forest",
+        "extra_trees"
+      ]
+    },
+    {
+      "batch": 11,
+      "reason": "adwin",
+      "accuracy": 0.9735,
+      "retrained": [
+        "xgboost"
+      ]
+    }
+  ],
+  "shap": {
+    "backend": "xgboost_native (exact TreeSHAP)",
+    "expected_value": -1.463968276977539,
+    "additivity_residual": 3.814697265625e-06,
+    "global_importance": [
+      {
+        "feature": "ct_dst_src_ltm",
+        "mean_abs_shap": 1.938579797744751
+      },
+      {
+        "feature": "smean",
+        "mean_abs_shap": 0.9812453985214233
+      },
+      {
+        "feature": "ct_dst_ltm",
+        "mean_abs_shap": 0.7794144153594971
+      },
+      {
+        "feature": "ct_srv_src",
+        "mean_abs_shap": 0.43161988258361816
+      },
+      {
+        "feature": "ct_srv_dst",
+        "mean_abs_shap": 0.308210164308548
+      },
+      {
+        "feature": "dload",
+        "mean_abs_shap": 0.25689443945884705
+      },
+      {
+        "feature": "dur",
+        "mean_abs_shap": 0.18721283972263336
+      },
+      {
+        "feature": "ct_src_ltm",
+        "mean_abs_shap": 0.18121860921382904
+      },
+      {
+        "feature": "sbytes",
+        "mean_abs_shap": 0.1762620359659195
+      },
+      {
+        "feature": "tcprtt",
+        "mean_abs_shap": 0.16256409883499146
+      },
+      {
+        "feature": "rate",
+        "mean_abs_shap": 0.15944059193134308
+      },
+      {
+        "feature": "dmean",
+        "mean_abs_shap": 0.13670726120471954
+      },
+      {
+        "feature": "synack",
+        "mean_abs_shap": 0.12697376310825348
+      },
+      {
+        "feature": "ct_dst_sport_ltm",
+        "mean_abs_shap": 0.09332069009542465
+      },
+      {
+        "feature": "sjit",
+        "mean_abs_shap": 0.07853952795267105
+      },
+      {
+        "feature": "service",
+        "mean_abs_shap": 0.07814569771289825
+      },
+      {
+        "feature": "dinpkt",
+        "mean_abs_shap": 0.051183752715587616
+      },
+      {
+        "feature": "ct_src_dport_ltm",
+        "mean_abs_shap": 0.050172023475170135
+      },
+      {
+        "feature": "trans_depth",
+        "mean_abs_shap": 0.05003834888339043
+      },
+      {
+        "feature": "sttl",
+        "mean_abs_shap": 0.04392879828810692
+      },
+      {
+        "feature": "dtcpb",
+        "mean_abs_shap": 0.043379947543144226
+      },
+      {
+        "feature": "ackdat",
+        "mean_abs_shap": 0.043055009096860886
+      },
+      {
+        "feature": "djit",
+        "mean_abs_shap": 0.042078081518411636
+      },
+      {
+        "feature": "dbytes",
+        "mean_abs_shap": 0.03773671016097069
+      },
+      {
+        "feature": "stcpb",
+        "mean_abs_shap": 0.03752546012401581
+      },
+      {
+        "feature": "response_body_len",
+        "mean_abs_shap": 0.0357317179441452
+      },
+      {
+        "feature": "sload",
+        "mean_abs_shap": 0.030088093131780624
+      },
+      {
+        "feature": "dloss",
+        "mean_abs_shap": 0.023882826790213585
+      },
+      {
+        "feature": "sloss",
+        "mean_abs_shap": 0.02271275781095028
+      },
+      {
+        "feature": "sinpkt",
+        "mean_abs_shap": 0.02139763906598091
+      },
+      {
+        "feature": "state",
+        "mean_abs_shap": 0.016540803015232086
+      },
+      {
+        "feature": "dpkts",
+        "mean_abs_shap": 0.014370311051607132
+      },
+      {
+        "feature": "proto",
+        "mean_abs_shap": 0.007055181544274092
+      },
+      {
+        "feature": "spkts",
+        "mean_abs_shap": 0.006474953610450029
+      },
+      {
+        "feature": "is_sm_ips_ports",
+        "mean_abs_shap": 0.0022899764589965343
+      },
+      {
+        "feature": "ct_flw_http_mthd",
+        "mean_abs_shap": 0.0
+      },
+      {
+        "feature": "swin",
+        "mean_abs_shap": 0.0
+      },
+      {
+        "feature": "ct_ftp_cmd",
+        "mean_abs_shap": 0.0
+      },
+      {
+        "feature": "is_ftp_login",
+        "mean_abs_shap": 0.0
+      },
+      {
+        "feature": "dttl",
+        "mean_abs_shap": 0.0
+      },
+      {
+        "feature": "dwin",
+        "mean_abs_shap": 0.0
+      },
+      {
+        "feature": "ct_state_ttl",
+        "mean_abs_shap": 0.0
+      }
+    ],
+    "top_features": [
+      "ct_dst_src_ltm",
+      "smean",
+      "ct_dst_ltm",
+      "ct_srv_src",
+      "ct_srv_dst",
+      "dload",
+      "dur",
+      "ct_src_ltm",
+      "sbytes",
+      "tcprtt",
+      "rate",
+      "dmean",
+      "synack",
+      "ct_dst_sport_ltm",
+      "sjit"
+    ],
+    "n_explained": 98
+  }
+}

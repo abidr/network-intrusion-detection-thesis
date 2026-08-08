@@ -550,3 +550,64 @@ Worms spans ±0.13 — one significant figure. **Past per-class claims on Worms 
 from the v2 ensemble") are not established.**
 
 Intervals capture test-set sampling only; split and seed variance are excluded, so they are optimistic.
+
+---
+
+## Dynamic Stage-B ensemble v4 (`two_stage_stageB_dynamic_v4.ipynb`) — two dynamic models, both within noise of v3
+
+Per-instance competence weighting over the **α-diverse** pool, with competence estimated from
+**cross-fitted OOF** predictions. Re-opens the question DES v1 closed, after v2/v3 showed v1's two
+premises were wrong. Same prune, splits, seeds and 7-member pool as v3 — the combiner is the only
+moving part.
+
+| Model | Weights vary by | SELV | **Test macro-F1** | **Test acc** | vs v3 |
+|---|---|---|---|---|---|
+| **v4-hybrid** `HYBRID W × LCA k=30 p=1` | class **and** instance | 0.6299 | **0.6295** | 0.9082 | −0.0039 |
+| **v4-dynamic** `DYN LCA k=30` | instance only | 0.6279 | **0.6262** | 0.9085 | −0.0072 |
+| v3 static per-class `W` (baseline, refit here) | class only | 0.6269 | 0.6334 | 0.9086 | — |
+| DES v1 (algorithm-diverse pool) | instance only | — | 0.6118 | 0.9049 | −0.0216 |
+
+Report as `0.630 [0.612, 0.647]` and `0.626 [0.608, 0.644]`. **Both gaps to v3 are inside the ±0.012
+paired band — state as "no measurable difference", not as a loss.** Both models were selected on SELV
+*within their own combiner family*, so neither involves reading the test table.
+
+### Key findings
+
+- **Competence still cannot be estimated — and it is no longer attributable to the setup.** DES v1 had
+  two excuses: a non-complementary pool and only 6,494 reference rows. v4 removes both (α-diverse pool,
+  disagreement 0.137, oracle headroom 0.1579; **32,468** reference rows, 5×) and the failure is
+  unchanged. Mean |deviation from uniform| = **0.0064** against a uniform of 0.1429 — **4.5% relative**,
+  versus v1's 5.1%. Only XGB α=1.0, the one genuinely divergent member, shows elevated dispersion
+  (std 0.0147 vs 0.0066–0.0101), which is the signal a working estimator should give — far too weak to
+  change an argmax. **The binding constraint is the representation**, consistent with the Cover–Hart
+  bracket: neighbourhoods in this space are too impure to say which model to trust locally.
+- **The per-class prior is load-bearing; the per-instance term is not.** Every hybrid variant lands
+  within 0.004 of v3; every pure-dynamic variant loses 0.007–0.014. v4-hybrid beats v4-dynamic by
+  +0.0033 **because of `W`, not the competence estimator**. The hybrid was constructed so `p=0`
+  recovers v3 exactly (verified: identical predictions on 100.0000% of rows), so its null result cannot
+  be blamed on combiner form. Honest summary: the dynamic component is **inert but harmless**.
+- **Oracle headroom fails to predict realisable gain for the third time**: v1 0.0804→0, v3 0.2250→
+  +0.0037, **v4 0.1579→0**. At least one member is correct on 83.25% of SELV attack rows while the best
+  single reaches 0.6012. **Do not justify an ensemble by its oracle bound.**
+- **Scope correction confirmed.** DES v1's "the ensemble direction is closed for Stage B" was about
+  *pool construction*, not ensembling — fixing the diversity axis and data volume recovers **+0.0144 to
+  +0.0177** over v1. It converges to what the static combiner already achieved rather than exceeding it.
+- **Selection resolution, not selection error.** Within the pure-dynamic family SELV transferred
+  perfectly (`LCA k=30` best on both). Across families it did not — v4-hybrid was 1st on SELV, 6th of 23
+  on test — but all six leaders sit inside the noise band. SELV cannot separate configurations 0.004
+  apart. **Report intervals, not ranks.**
+- **Deployment cost is the real differentiator:** both v4 models need a kNN query per flow plus a
+  32,468-row reference set resident in memory; v3 needs one 7×9 matrix multiply. Meaningful operational
+  cost for no measured gain.
+- Per-class vs v3 (v4-hybrid): Backdoor +0.028, Exploits +0.011, Generic +0.009; Worms −0.048 (48 rows,
+  ±0.13 — not established), Recon −0.014, DoS −0.013. Analysis again high-recall/low-precision
+  (0.870/0.306).
+- Cross-fitting took 308 s (7 members vs v3's 10); OOF cached to `cache_oof_v4.npz`, so combiner
+  iteration is ~2 min.
+
+---
+
+## What is left to try
+
+See **`NEXT_STEPS.md`** — the forward-looking counterpart to this file. Ranked roadmap, the evidence
+behind the ranking, and the list of levers already closed so they are not re-opened.

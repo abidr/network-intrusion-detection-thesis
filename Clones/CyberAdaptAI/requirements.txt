@@ -1,0 +1,21 @@
+# Section 4.1: "Python 3.9 using libraries like scikit-learn, XGBoost, LightGBM, and River"
+# LightGBM is named in the setup but never used by any component the paper describes
+# (the pool in 4.1 is RF / XGBoost / ExtraTrees / Hoeffding Tree), so it is not required here.
+
+numpy>=1.24
+pandas>=2.0
+scikit-learn>=1.3
+xgboost>=2.0
+
+# Optional. Absent -> the code runs and reports the substitution:
+#   river : Hoeffding Tree; without it, an SGD online learner is used instead
+#   shap  : only needed for the shap.TreeExplainer backend. TreeSHAP values come from
+#           XGBoost natively (pred_contribs=True), so section 3.5 works without this package.
+#
+# VERSION PIN, do not relax casually. In the ai4beg env (numpy 1.26.4, scipy 1.13.1):
+#   river 0.25 / shap 0.52 pull numpy>=2.4 and scipy>=1.18, which would upgrade the numeric
+#   stack the thesis notebooks run on. These pins install with zero other changes.
+#   Separately, shap<=0.46 cannot load XGBoost>=3.x multiclass models (base_score became a
+#   per-class vector) -- another reason the native TreeSHAP backend is preferred.
+river==0.21.0
+shap==0.46.0
