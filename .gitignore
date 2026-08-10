@@ -1,6 +1,11 @@
-# Dataset — too large for GitHub (187 MB, limit is 100 MB).
-# See README.md for how to obtain it and where to place it.
-Resource/CIC-UNSW-Data.csv
+# Datasets in Resource/ — too large for GitHub (limit is 100 MB).
+# See README.md for how to obtain them and where to place them.
+#   CIC-UNSW-Data.csv      188 MB — the curated feature file
+#   CICFlowMeter_out.csv   1.8 GB — the full release, used by v7.x
+Resource/*.csv
+# Exception: the label file is 1.3 MB and is the repo's only copy of the
+# ground truth, so it ships with the code.
+!Resource/CIC-UNSW-Label.csv
 
 # Original UNSW-NB15 (47 MB) — downloadable, not ours to redistribute.
 # See Resource/UNSW-NB15/PUT_DATASET_HERE.md for the source and expected filenames.
@@ -10,6 +15,7 @@ Resource/UNSW-NB15/*.csv
 # to redistribute. See Resource/CIC-IDS2017/PUT_DATASET_HERE.md.
 Resource/CIC-IDS2017/*.csv
 
+# Cross-fit / OOF caches — large, and regenerable by the notebook that owns each one.
 *.npz
 
 # Python
