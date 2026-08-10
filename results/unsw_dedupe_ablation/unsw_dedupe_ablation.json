@@ -1,0 +1,369 @@
+{
+  "dedup": {
+    "arm": "DEDUPE",
+    "dedupe": true,
+    "n_rows": 162745,
+    "n_pooled": 257673,
+    "n_features": 83,
+    "n_base": 57,
+    "zero_var": [],
+    "corr_dropped": [
+      "sbytes",
+      "dbytes",
+      "sloss",
+      "dloss",
+      "dwin",
+      "ct_ftp_cmd",
+      "st_FIN"
+    ],
+    "n_train": 130196,
+    "n_test": 32549,
+    "leak_rate": 0.0,
+    "n_leaked": 0,
+    "per_class_leak": {
+      "Benign": 0.0,
+      "Analysis": 0.0,
+      "Backdoor": 0.0,
+      "DoS": 0.0,
+      "Exploits": 0.0,
+      "Fuzzers": 0.0,
+      "Generic": 0.0,
+      "Reconnaissance": 0.0,
+      "Shellcode": 0.0,
+      "Worms": 0.0
+    },
+    "e_1nn": 0.3044,
+    "e_star_lo": 0.1681,
+    "selv_winner": "HYBRID W x OLA-cw k=30 p=8",
+    "test_rank": 2,
+    "mF1": 0.6378,
+    "acc": 0.8299,
+    "mP": 0.7203,
+    "mR": 0.6718,
+    "per_class_f1": {
+      "Benign": 0.9297,
+      "Analysis": 0.2694,
+      "Backdoor": 0.1918,
+      "DoS": 0.3886,
+      "Exploits": 0.8492,
+      "Fuzzers": 0.6756,
+      "Generic": 0.9135,
+      "Reconnaissance": 0.7973,
+      "Shellcode": 0.6486,
+      "Worms": 0.7143
+    },
+    "gate_oof_recall": 0.9176,
+    "gate_oof_precision": 0.9209,
+    "gate_test_recall": 0.9184,
+    "gate_test_precision": 0.9242,
+    "acc_leaked_rows": NaN,
+    "acc_clean_rows": 0.8299,
+    "ctx_importance_share": 0.0684,
+    "test_table": [
+      {
+        "variant": "STATIC: per-class W",
+        "mF1": 0.6404,
+        "mP": 0.7262,
+        "mR": 0.6718,
+        "acc": 0.8301
+      },
+      {
+        "variant": "HYBRID W x OLA-cw k=30 p=8",
+        "mF1": 0.6378,
+        "mP": 0.7203,
+        "mR": 0.6718,
+        "acc": 0.8299
+      },
+      {
+        "variant": "HYBRID W x OLA-cw k=100 p=8",
+        "mF1": 0.6365,
+        "mP": 0.7081,
+        "mR": 0.6695,
+        "acc": 0.8303
+      },
+      {
+        "variant": "single: XGB a=1.0",
+        "mF1": 0.6079,
+        "mP": 0.6111,
+        "mR": 0.6209,
+        "acc": 0.821
+      },
+      {
+        "variant": "DYN OLA-cw k=100 p=3",
+        "mF1": 0.6074,
+        "mP": 0.6234,
+        "mR": 0.6075,
+        "acc": 0.8256
+      },
+      {
+        "variant": "DYN OLA-cw k=30 p=1",
+        "mF1": 0.6071,
+        "mP": 0.6301,
+        "mR": 0.6014,
+        "acc": 0.8253
+      },
+      {
+        "variant": "DYN OLA-cw k=30 p=3",
+        "mF1": 0.607,
+        "mP": 0.6246,
+        "mR": 0.6063,
+        "acc": 0.8252
+      },
+      {
+        "variant": "DYN OLA-cw k=100 p=8",
+        "mF1": 0.6068,
+        "mP": 0.6198,
+        "mR": 0.6093,
+        "acc": 0.8254
+      },
+      {
+        "variant": "DYN OLA-cw k=100 p=1",
+        "mF1": 0.6065,
+        "mP": 0.6319,
+        "mR": 0.5982,
+        "acc": 0.8253
+      },
+      {
+        "variant": "DYN OLA-cw k=30 p=8",
+        "mF1": 0.6062,
+        "mP": 0.6199,
+        "mR": 0.6089,
+        "acc": 0.825
+      },
+      {
+        "variant": "STATIC: equal average",
+        "mF1": 0.5959,
+        "mP": 0.6232,
+        "mR": 0.5828,
+        "acc": 0.8236
+      },
+      {
+        "variant": "single: XGB a=0.5",
+        "mF1": 0.5948,
+        "mP": 0.6092,
+        "mR": 0.5941,
+        "acc": 0.8226
+      },
+      {
+        "variant": "single: XGB a=0.25",
+        "mF1": 0.5936,
+        "mP": 0.6205,
+        "mR": 0.5811,
+        "acc": 0.8235
+      },
+      {
+        "variant": "single: XGB smote2000",
+        "mF1": 0.585,
+        "mP": 0.6149,
+        "mR": 0.5705,
+        "acc": 0.8235
+      },
+      {
+        "variant": "single: RF a=0.25",
+        "mF1": 0.5813,
+        "mP": 0.6192,
+        "mR": 0.5595,
+        "acc": 0.8216
+      },
+      {
+        "variant": "single: XGB a=0.0",
+        "mF1": 0.567,
+        "mP": 0.6029,
+        "mR": 0.5482,
+        "acc": 0.8228
+      },
+      {
+        "variant": "single: ET a=0.25",
+        "mF1": 0.5616,
+        "mP": 0.6082,
+        "mR": 0.5377,
+        "acc": 0.8213
+      }
+    ]
+  },
+  "nodedup": {
+    "arm": "NO-DEDUPE",
+    "dedupe": false,
+    "n_rows": 257673,
+    "n_pooled": 257673,
+    "n_features": 80,
+    "n_base": 54,
+    "zero_var": [],
+    "corr_dropped": [
+      "sbytes",
+      "dbytes",
+      "sloss",
+      "dloss",
+      "dwin",
+      "ct_src_dport_ltm",
+      "ct_dst_src_ltm",
+      "ct_ftp_cmd",
+      "ct_srv_dst",
+      "st_FIN"
+    ],
+    "n_train": 206138,
+    "n_test": 51535,
+    "leak_rate": 0.4270301736683807,
+    "n_leaked": 22007,
+    "per_class_leak": {
+      "Benign": 0.104,
+      "Analysis": 0.3551,
+      "Backdoor": 0.2725,
+      "DoS": 0.7603,
+      "Exploits": 0.4605,
+      "Fuzzers": 0.1959,
+      "Generic": 0.9583,
+      "Reconnaissance": 0.3288,
+      "Shellcode": 0.0464,
+      "Worms": 0.0286
+    },
+    "e_1nn": 0.2435,
+    "e_star_lo": 0.1315,
+    "selv_winner": "HYBRID W x OLA-cw k=100 p=8",
+    "test_rank": 1,
+    "mF1": 0.6403,
+    "acc": 0.8228,
+    "mP": 0.686,
+    "mR": 0.6573,
+    "per_class_f1": {
+      "Benign": 0.9329,
+      "Analysis": 0.1656,
+      "Backdoor": 0.2019,
+      "DoS": 0.5112,
+      "Exploits": 0.682,
+      "Fuzzers": 0.6274,
+      "Generic": 0.9895,
+      "Reconnaissance": 0.8403,
+      "Shellcode": 0.6889,
+      "Worms": 0.7632
+    },
+    "gate_oof_recall": 0.9426,
+    "gate_oof_precision": 0.9774,
+    "gate_test_recall": 0.9415,
+    "gate_test_precision": 0.9794,
+    "acc_leaked_rows": 0.8064,
+    "acc_clean_rows": 0.835,
+    "ctx_importance_share": 0.0317,
+    "test_table": [
+      {
+        "variant": "HYBRID W x OLA-cw k=100 p=8",
+        "mF1": 0.6403,
+        "mP": 0.686,
+        "mR": 0.6573,
+        "acc": 0.8228
+      },
+      {
+        "variant": "HYBRID W x OLA-cw k=30 p=8",
+        "mF1": 0.6391,
+        "mP": 0.6747,
+        "mR": 0.6549,
+        "acc": 0.8224
+      },
+      {
+        "variant": "DYN OLA-cw k=30 p=8",
+        "mF1": 0.6369,
+        "mP": 0.6979,
+        "mR": 0.6303,
+        "acc": 0.8323
+      },
+      {
+        "variant": "STATIC: per-class W",
+        "mF1": 0.6361,
+        "mP": 0.7212,
+        "mR": 0.6465,
+        "acc": 0.8225
+      },
+      {
+        "variant": "DYN OLA-cw k=100 p=8",
+        "mF1": 0.6357,
+        "mP": 0.7061,
+        "mR": 0.6282,
+        "acc": 0.832
+      },
+      {
+        "variant": "DYN OLA-cw k=30 p=3",
+        "mF1": 0.6325,
+        "mP": 0.6923,
+        "mR": 0.6221,
+        "acc": 0.831
+      },
+      {
+        "variant": "DYN OLA-cw k=100 p=3",
+        "mF1": 0.6304,
+        "mP": 0.698,
+        "mR": 0.6191,
+        "acc": 0.8307
+      },
+      {
+        "variant": "DYN OLA-cw k=30 p=1",
+        "mF1": 0.6251,
+        "mP": 0.6891,
+        "mR": 0.6108,
+        "acc": 0.8291
+      },
+      {
+        "variant": "single: XGB a=0.5",
+        "mF1": 0.6246,
+        "mP": 0.6377,
+        "mR": 0.6308,
+        "acc": 0.8226
+      },
+      {
+        "variant": "DYN OLA-cw k=100 p=1",
+        "mF1": 0.6236,
+        "mP": 0.6807,
+        "mR": 0.6087,
+        "acc": 0.8286
+      },
+      {
+        "variant": "STATIC: equal average",
+        "mF1": 0.6166,
+        "mP": 0.6395,
+        "mR": 0.6052,
+        "acc": 0.8257
+      },
+      {
+        "variant": "single: XGB a=0.25",
+        "mF1": 0.6151,
+        "mP": 0.6372,
+        "mR": 0.6048,
+        "acc": 0.8267
+      },
+      {
+        "variant": "single: XGB a=0.0",
+        "mF1": 0.6064,
+        "mP": 0.7564,
+        "mR": 0.5769,
+        "acc": 0.8309
+      },
+      {
+        "variant": "single: XGB smote2000",
+        "mF1": 0.601,
+        "mP": 0.751,
+        "mR": 0.5735,
+        "acc": 0.8308
+      },
+      {
+        "variant": "single: XGB a=1.0",
+        "mF1": 0.5937,
+        "mP": 0.6136,
+        "mR": 0.6055,
+        "acc": 0.7896
+      },
+      {
+        "variant": "single: RF a=0.25",
+        "mF1": 0.587,
+        "mP": 0.6369,
+        "mR": 0.5606,
+        "acc": 0.8235
+      },
+      {
+        "variant": "single: ET a=0.25",
+        "mF1": 0.5797,
+        "mP": 0.6312,
+        "mR": 0.551,
+        "acc": 0.823
+      }
+    ]
+  }
+}

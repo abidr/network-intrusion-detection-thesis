@@ -1,0 +1,299 @@
+{
+  "dataset": "CIC-IDS2017",
+  "deviations": [
+    "D1 web-attack collapse",
+    "D2 ref cap 40000",
+    "D3 drop inf/NaN rows",
+    "D4 SMOTE k clamp",
+    "D5 float32"
+  ],
+  "n_classes": 13,
+  "names": [
+    "BENIGN",
+    "Bot",
+    "DDoS",
+    "DoS GoldenEye",
+    "DoS Hulk",
+    "DoS Slowhttptest",
+    "DoS slowloris",
+    "FTP-Patator",
+    "Heartbleed",
+    "Infiltration",
+    "PortScan",
+    "SSH-Patator",
+    "Web Attack"
+  ],
+  "n_features": 78,
+  "rows_after_clean_dedupe": 2520798,
+  "n_train": 2016638,
+  "n_test": 504160,
+  "e_1nn": 0.0026,
+  "selv_winner": "single: XGB a=0.5",
+  "test_rank": 3,
+  "mF1": 0.9835,
+  "acc": 0.9991,
+  "mP": 0.9766,
+  "mR": 0.9917,
+  "macroF1_excl_tiny": 0.9805,
+  "per_class_f1": {
+    "BENIGN": 0.9995,
+    "Bot": 0.8199,
+    "DDoS": 0.9999,
+    "DoS GoldenEye": 0.9973,
+    "DoS Hulk": 0.999,
+    "DoS Slowhttptest": 0.9919,
+    "DoS slowloris": 0.9926,
+    "FTP-Patator": 0.9996,
+    "Heartbleed": 1.0,
+    "Infiltration": 1.0,
+    "PortScan": 0.9941,
+    "SSH-Patator": 1.0,
+    "Web Attack": 0.9919
+  },
+  "gate_recall": 0.9996,
+  "gate_precision": 0.9955,
+  "derived_importance_share": 0.5902,
+  "selv_table": [
+    {
+      "variant": "single: XGB a=0.5",
+      "mF1": 0.9677,
+      "mP": 0.977,
+      "mR": 0.9647,
+      "acc": 0.9991
+    },
+    {
+      "variant": "single: XGB a=1.0",
+      "mF1": 0.9676,
+      "mP": 0.9767,
+      "mR": 0.9648,
+      "acc": 0.999
+    },
+    {
+      "variant": "STATIC: per-class W",
+      "mF1": 0.9657,
+      "mP": 0.9707,
+      "mR": 0.9647,
+      "acc": 0.9991
+    },
+    {
+      "variant": "HYBRID W x OLA-cw k=30 p=8",
+      "mF1": 0.9657,
+      "mP": 0.9707,
+      "mR": 0.9647,
+      "acc": 0.9991
+    },
+    {
+      "variant": "HYBRID W x OLA-cw k=100 p=8",
+      "mF1": 0.9657,
+      "mP": 0.9707,
+      "mR": 0.9647,
+      "acc": 0.9991
+    },
+    {
+      "variant": "single: XGB smote2000",
+      "mF1": 0.9655,
+      "mP": 0.9703,
+      "mR": 0.9648,
+      "acc": 0.9991
+    },
+    {
+      "variant": "single: RF a=0.25",
+      "mF1": 0.9655,
+      "mP": 0.9704,
+      "mR": 0.9647,
+      "acc": 0.9991
+    },
+    {
+      "variant": "STATIC: equal average",
+      "mF1": 0.9655,
+      "mP": 0.9702,
+      "mR": 0.9648,
+      "acc": 0.9991
+    },
+    {
+      "variant": "DYN OLA-cw k=30 p=1",
+      "mF1": 0.9655,
+      "mP": 0.9702,
+      "mR": 0.9648,
+      "acc": 0.9991
+    },
+    {
+      "variant": "DYN OLA-cw k=30 p=3",
+      "mF1": 0.9655,
+      "mP": 0.9702,
+      "mR": 0.9648,
+      "acc": 0.9991
+    },
+    {
+      "variant": "DYN OLA-cw k=30 p=8",
+      "mF1": 0.9655,
+      "mP": 0.9702,
+      "mR": 0.9648,
+      "acc": 0.9991
+    },
+    {
+      "variant": "DYN OLA-cw k=100 p=1",
+      "mF1": 0.9655,
+      "mP": 0.9702,
+      "mR": 0.9648,
+      "acc": 0.9991
+    },
+    {
+      "variant": "DYN OLA-cw k=100 p=3",
+      "mF1": 0.9655,
+      "mP": 0.9702,
+      "mR": 0.9648,
+      "acc": 0.9991
+    },
+    {
+      "variant": "DYN OLA-cw k=100 p=8",
+      "mF1": 0.9655,
+      "mP": 0.9702,
+      "mR": 0.9648,
+      "acc": 0.9991
+    },
+    {
+      "variant": "single: XGB a=0.0",
+      "mF1": 0.9655,
+      "mP": 0.9703,
+      "mR": 0.9648,
+      "acc": 0.9991
+    },
+    {
+      "variant": "single: XGB a=0.25",
+      "mF1": 0.9654,
+      "mP": 0.9701,
+      "mR": 0.9647,
+      "acc": 0.9991
+    },
+    {
+      "variant": "single: ET a=0.25",
+      "mF1": 0.9653,
+      "mP": 0.9701,
+      "mR": 0.9644,
+      "acc": 0.9991
+    }
+  ],
+  "test_table": [
+    {
+      "variant": "DYN OLA-cw k=30 p=3",
+      "mF1": 0.9835,
+      "mP": 0.9766,
+      "mR": 0.9917,
+      "acc": 0.9991
+    },
+    {
+      "variant": "single: XGB a=0.25",
+      "mF1": 0.9835,
+      "mP": 0.9767,
+      "mR": 0.9916,
+      "acc": 0.9991
+    },
+    {
+      "variant": "single: XGB a=0.5",
+      "mF1": 0.9835,
+      "mP": 0.9766,
+      "mR": 0.9917,
+      "acc": 0.9991
+    },
+    {
+      "variant": "DYN OLA-cw k=100 p=8",
+      "mF1": 0.9835,
+      "mP": 0.9766,
+      "mR": 0.9917,
+      "acc": 0.9991
+    },
+    {
+      "variant": "DYN OLA-cw k=30 p=8",
+      "mF1": 0.9835,
+      "mP": 0.9767,
+      "mR": 0.9916,
+      "acc": 0.9991
+    },
+    {
+      "variant": "STATIC: per-class W",
+      "mF1": 0.9834,
+      "mP": 0.9768,
+      "mR": 0.9912,
+      "acc": 0.9991
+    },
+    {
+      "variant": "HYBRID W x OLA-cw k=30 p=8",
+      "mF1": 0.9834,
+      "mP": 0.9768,
+      "mR": 0.9912,
+      "acc": 0.9991
+    },
+    {
+      "variant": "DYN OLA-cw k=100 p=3",
+      "mF1": 0.9834,
+      "mP": 0.9766,
+      "mR": 0.9915,
+      "acc": 0.9991
+    },
+    {
+      "variant": "DYN OLA-cw k=100 p=1",
+      "mF1": 0.9834,
+      "mP": 0.9766,
+      "mR": 0.9915,
+      "acc": 0.9991
+    },
+    {
+      "variant": "HYBRID W x OLA-cw k=100 p=8",
+      "mF1": 0.9834,
+      "mP": 0.9768,
+      "mR": 0.9912,
+      "acc": 0.9991
+    },
+    {
+      "variant": "DYN OLA-cw k=30 p=1",
+      "mF1": 0.9834,
+      "mP": 0.9766,
+      "mR": 0.9915,
+      "acc": 0.9991
+    },
+    {
+      "variant": "STATIC: equal average",
+      "mF1": 0.9834,
+      "mP": 0.9766,
+      "mR": 0.9915,
+      "acc": 0.9991
+    },
+    {
+      "variant": "single: XGB smote2000",
+      "mF1": 0.9834,
+      "mP": 0.9768,
+      "mR": 0.9914,
+      "acc": 0.9991
+    },
+    {
+      "variant": "single: XGB a=0.0",
+      "mF1": 0.9833,
+      "mP": 0.9764,
+      "mR": 0.9916,
+      "acc": 0.9991
+    },
+    {
+      "variant": "single: RF a=0.25",
+      "mF1": 0.9832,
+      "mP": 0.9767,
+      "mR": 0.9911,
+      "acc": 0.9991
+    },
+    {
+      "variant": "single: ET a=0.25",
+      "mF1": 0.9831,
+      "mP": 0.9766,
+      "mR": 0.9909,
+      "acc": 0.9991
+    },
+    {
+      "variant": "single: XGB a=1.0",
+      "mF1": 0.9828,
+      "mP": 0.9754,
+      "mR": 0.9915,
+      "acc": 0.9991
+    }
+  ],
+  "minutes": 30.4
+}

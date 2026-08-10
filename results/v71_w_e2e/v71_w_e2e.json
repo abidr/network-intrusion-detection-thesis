@@ -1,0 +1,63 @@
+{
+  "experiment": "reject-arm W refit under end-to-end objective",
+  "comb_e2e": {
+    "W_stageB": 0.6875,
+    "uniform": 0.6657,
+    "W_e2e": 0.6906,
+    "init": "warm(W_sb)"
+  },
+  "selv_winner": "HYBRID W_e2e x OLA-cw k=30 p=3",
+  "test": {
+    "W_e2e": 0.6874,
+    "W_sb_ref": 0.6843
+  },
+  "paired_delta": 0.0032,
+  "paired_ci": [
+    0.0019,
+    0.0047
+  ],
+  "paired_p": 0.0,
+  "marginal_ci": [
+    0.6706,
+    0.7035
+  ],
+  "per_class_f1": {
+    "Benign": 0.9949,
+    "Analysis": 0.1395,
+    "Backdoor": 0.6667,
+    "DoS": 0.6025,
+    "Exploits": 0.8247,
+    "Fuzzers": 0.6413,
+    "Generic": 0.878,
+    "Reconnaissance": 0.8262,
+    "Shellcode": 0.7205,
+    "Worms": 0.58
+  },
+  "benign_as_attack": [
+    2140,
+    3302
+  ],
+  "attacks_swallowed": [
+    2457,
+    1712
+  ],
+  "reject_col_W_sb": [
+    0.14,
+    0.25,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14
+  ],
+  "reject_col_W_e2e": [
+    0.14,
+    0.25,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14
+  ],
+  "minutes": 5.7
+}

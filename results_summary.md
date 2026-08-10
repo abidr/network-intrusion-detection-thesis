@@ -499,6 +499,13 @@ Four modelling levers failed because they operate downstream of a constraint tha
 these 44 columns; and **SHAP should target the overlap pairs** (Exploits↔Recon, DoS↔Exploits,
 Fuzzers↔Shellcode) rather than rare classes generically.
 
+> ⚠️ **The "host/temporal context" recommendation is SUPERSEDED** by `final_model_v6_unsw.ipynb`.
+> Given exactly those features (UNSW-NB15's 14 `ct_*` connection-history counters), the model assigns
+> them **6.8% of importance**. The fields that actually matter on the same traffic are **service
+> identity and TTL** — `svc_dns` (0.295), `ttl_diff` (0.226), `sttl`, `r_ttl` — neither of which
+> CICFlowMeter emits. The representation claim in this section is **confirmed and strengthened**; only
+> the prescription for *which* richer features changes.
+
 ## Ablation + bootstrap significance (`ablation_significance.ipynb`) — read before quoting any number
 
 2,000 stratified bootstrap resamples of the test set. All five ladder configurations train on the same
@@ -606,6 +613,389 @@ paired band — state as "no measurable difference", not as a loss.** Both model
   iteration is ~2 min.
 
 ---
+
+## Decision-space dynamic ensemble v5 (`two_stage_stageB_dynamic_v5.ipynb`) — CORRECTS v4
+
+Same pool, splits and protocol as v4; the **only** change is that competence is estimated by kNN in
+**decision space** (the pool's 7x9=63 output profiles) rather than in RobustScaler feature space.
+That is the standard DES formulation (KNORA, META-DES); v4 used the non-standard one.
+
+| | FEAT (v4's space) | DEC (v5) |
+|---|---|---|
+| Neighbourhood purity k=10 | 0.5721 | **0.6698** |
+| k=100 | 0.5147 | **0.6666** |
+| Mean per-member competence AUC | 0.8193 | **0.8539** |
+| Best variant (test) | 0.6334 | **0.6363** |
+
+**v5 = `DYN OLA-cw k=100 p=8`, test macro-F1 0.6363 / accuracy 0.9089**, SELV-selected and ranked
+**1st of 20 on test**. +0.0029 over v3 — inside the ±0.012 band, so not an established win, but the
+first time a *purely dynamic* combiner topped the table.
+
+### ⚠️ RETRACTION of a v4 claim
+
+v4 concluded *"local-accuracy competence cannot be estimated finely enough"*. **That is wrong.**
+Per-member AUC for predicting actual correctness is **0.82–0.85**, nowhere near the 0.50 that would
+mean noise. The estimator works. Decomposing `w_m(x)` over 35,153 rows:
+
+| Quantity | Value |
+|---|---|
+| Shared variance (row difficulty) | **98.1%** |
+| Member-specific variance | **1.9%** |
+| Mean pairwise correlation of `w_m` across members | **0.9818** |
+| Median within-row spread (max−min) | **0.0000** |
+| Competence-argmax picks a correct member | 0.7411 |
+| Always using the single best member | 0.7417 |
+
+**Competence is estimable, but what is estimable is how hard the row is, not who should handle it.**
+All seven members' competences move together (r=0.98); on the median row they are identical. Each
+`w_m` predicts its own member well (high AUC) while the *relative ordering* carries almost nothing —
+which is why weights sit at uniform and why competence-based selection (0.7411) cannot beat always
+using the strongest member (0.7417).
+
+This explains DES v1, v4 and v5 with one measurement, and **predicts the failure of any scheme whose
+weights derive from local accuracy — including META-DES-style learned competence — without running
+them.** It also explains why the winner uses `p=8`: heavy sharpening is needed to amplify a residual
+that is 1.9% of the variance.
+
+---
+
+## Stage-A gate weighting (`two_stage_gate_weighting.ipynb`) — NULL RESULT
+
+The gate used `compute_sample_weight("balanced")` — exactly **α=1.0** — since the first two-stage
+notebook. The Stage-B weighting study ranked α=1.0 **12th of 14, below no weighting at all**, and that
+lesson was never carried across to Stage A. Swept α ∈ {0, 0.1, 0.25, 0.5, 0.75, 1.0} × threshold
+∈ {0.3 … 0.8}, Stage B frozen to the v5 winner.
+
+| Config | macro-F1 | accuracy |
+|---|---|---|
+| SELV-selected α=0.00, t=0.40 | 0.6369 | 0.9100 |
+| default `balanced`, t=0.50 | 0.6363 | 0.9089 |
+| **difference** | **+0.0006** | **+0.0011** |
+
+- **Weighting and thresholding are one degree of freedom.** Every α's best cell is within **0.0010** of
+  every other, with the optimal threshold shifting monotonically to compensate (α=0→t=0.4,
+  α=1.0→t=0.7). Gate F1 is flat across α (0.9562–0.9566): re-weighting slides the operating point
+  along a fixed ROC curve, it does not reshape it.
+- **This completes the earlier threshold finding.** `two_stage_thresholds.ipynb` had only tested
+  thresholds *under* `balanced`; the conclusion now holds for the whole weighting family.
+- **The oversight was real and cost nothing.** α=1.0 is the worst row in the grid, but the grid spans
+  0.0010.
+- **Why precision cannot be bought here:** dropping α to 0 removed 101 of 1,455 leaking Benign flows
+  and cost 744 missed attacks. **The flows that leak are ones the gate is confident about.** 1,051 of
+  the remaining leaks still go to Fuzzers — a representation problem, not an operating-point one.
+
+---
+
+## Feature engineering (`feature_engineering.ipynb`) — first positive result, with a metric caveat
+
+> ⚠️ **Correction from `feature_engineering_v2.ipynb`.** This section's headline — *"the Cover–Hart
+> ceiling MOVED"* — **must be restated as metric-relative.** A signed-log transform of the *same*
+> columns adds **zero** information and leaves the deployed model unchanged (98.99% identical
+> predictions), yet moves $e_{1NN}$ by **+0.0296** — **2.3× the size of the −0.0128 headline below.**
+> $e_{1NN}$ is a property of *(features, metric)* jointly and does not bound a tree ensemble, which is
+> invariant to the transform that moved it. It remains the right measurement for the *distance-based*
+> parts of the project (k-NN overlap, purity, the v5/v6 DEC-space combiner). **The adoption decision
+> below still stands** — it rested on the score (+0.0101) and purity, both metric-free. What does not
+> stand is the round-1 argument that *"two independent instruments agreeing"* is strong evidence: in
+> round 2 the same two instruments **disagree**, so they were never independent.
+
+Answers Tier 1.1 (un-prune) and Tier 1.2 (derived features). Three label-free spaces, identical splits.
+
+| Space | features | e_1NN | e* bracket | accuracy ceiling |
+|---|---|---|---|---|
+| BASE | 44 | 0.3757 | [0.2135, 0.3757] | [0.6243, 0.7865] |
+| FULL | 67 | 0.3697 | [0.2094, 0.3694] | [0.6306, 0.7906] |
+| **DERIVED** | **75** | **0.3629** | **[0.2053, 0.3632]** | **[0.6368, 0.7947]** |
+
+BASE reproduces the published 0.3755 (got 0.3757), validating the replication before any claim.
+**McNemar exact test on paired 1-NN errors: BASE vs DERIVED p = 9.3e-06** (net +207 rows corrected);
+BASE vs FULL p = 0.039; FULL vs DERIVED p = 0.038. **All significant.**
+
+31 engineered columns, all scale-free or per-unit: directional asymmetry, bytes-per-packet,
+IAT coefficients of variation, packet-length dispersion, **flags as fractions of packets**, header
+overhead, duration-normalised active/idle shares, TCP init-window ratio.
+
+- **Purity rose for every family, most for the attractor victims**: Worms +0.058, Backdoor +0.024,
+  Analysis +0.022, Recon +0.020, Fuzzers +0.019, Shellcode +0.015; overall 0.357→0.376. Exactly the
+  families the k-NN overlap analysis found swallowed by Exploits/Fuzzers.
+- **Score (single α=0.25, matched):** BASE 0.6157/0.9081 → DERIVED **0.6258/0.9117** (+0.0101 macro-F1,
+  +0.0036 accuracy). BASE reproduces the published single-model figure exactly.
+- **Gate precision 0.9175 → 0.9267 from features alone** — what gate re-weighting could not buy at any
+  operating point. **The gate was never the problem; the representation was.**
+- **Tier 1.1 answered:** FULL beats BASE (p=0.039), so "correlated is not redundant for trees" is
+  correct and the prune does discard usable information. But DERIVED still beats FULL (p=0.038) while
+  starting from the pruned set. **Keep the prune; spend the budget on derived features.**
+- Engineered columns are 41.3% of features and carry **46.7% of importance**. `PSH Flag Count` is #1
+  and `frac_PSH` is **#2** — the fraction carries information beyond the count.
+
+---
+
+## Final model v6 (`final_model_v6.ipynb`) — **BEST: macro-F1 0.6485 / accuracy 0.9123**
+
+DERIVED features + decision-space dynamic combiner (`DYN OLA-cw k=30 p=8`). SELV-selected, ranked
+**1st of 21 on test**.
+
+| Model | Features | Combiner | macro-F1 | accuracy |
+|---|---|---|---|---|
+| **v6** | **DERIVED 75** | **DEC dynamic k=30 p=8** | **0.6485** | **0.9123** |
+| v5 | BASE 44 | DEC dynamic k=100 p=8 | 0.6363 | 0.9089 |
+| v3 | BASE 44 | static per-class W | 0.6334 | 0.9086 |
+| single α=0.25 | DERIVED 75 | none | 0.6258 | 0.9117 |
+
+- **The gains compounded, slightly super-additively.** Feature effect +0.0101, combiner effect +0.0029;
+  additive predicts ~0.6464, observed **0.6485**. The expected overlap did not materialise — better
+  features also improve the competence estimate.
+- **The optimal neighbourhood shrank** k=100 → **k=30** (p unchanged at 8), consistent with purer
+  neighbourhoods. The pre-registered guess that *p* would fall was wrong.
+- **INTERACTION, not a feature effect** (`v6_significance.ipynb`): neither ingredient is established
+  alone — features without ensembling +0.0100 (p=0.071), dynamic-vs-static on BASE +0.0029 (p=0.555)
+  — but together +0.0152 (p=0.012). **Ensembling on DERIVED is strongly established** (+0.0231,
+  p<0.001) while on BASE it was not: the combiner only pays once the features are pure enough.
+  Dynamic-over-static remains unestablished (+0.0026, inside noise) — the effect is *ensembling*,
+  not *dynamism*.
+- **8 of 10 families improved**, and unlike earlier version bumps the large-support families all moved
+  the right way: Exploits +0.005, Fuzzers +0.009, Generic +0.011, DoS +0.028.
+- **⚠️ Worms accounts for 57% of the headline gain** (0.070 of the 0.122 summed delta) on **48 test
+  rows** (±0.13). **Excluding Worms the gain is +0.0052 — inside the noise band.** See
+  `v6_significance.ipynb` for the paired bootstrap.
+- Gate precision 0.9195 → 0.9280 at unchanged recall, purely from features.
+
+---
+
+## Feature engineering round 2 (`feature_engineering_v2.ipynb`) — NULL on score, and it corrects round 1's instrument
+
+38 further columns on top of `DERIVED` (`D2`, 113 features), targeted at the named confusion pairs,
+plus **signed-log control arms** that add zero information so the metric effect can be separated from
+the information effect. Same splits, same protocol.
+
+| Space | features | $e_{1NN}$ | purity k=10 | single α=0.25 | at the fixed v6 combiner |
+|---|---|---|---|---|---|
+| `DERIVED` | 75 | 0.3632 | 0.3761 | **0.6258** | **0.6485 / 0.9123** |
+| `D2` | 113 | **0.3517** | **0.3880** | 0.6185 | 0.6464 / **0.9135** |
+| `DERIVED_log` | 75 | 0.3928 | 0.3421 | 0.6202 | — |
+| `D2_log` | 113 | 0.3878 | 0.3457 | 0.6227 | — |
+
+**`D2` is rejected.** −0.0073 single-model, −0.0021 at the v6 configuration — both inside ±0.012, so
+*no measurable difference*, and it costs 38 columns. `DERIVED` reproduced v6 to four decimals
+(0.6485 / 0.9123), so the comparison is sound. `D2` is very slightly better on **accuracy** at every
+combiner setting and worse on macro-F1 (Worms 0.582 → 0.568) — the familiar large-vs-rare trade.
+
+### Key findings
+
+- **THE MAIN RESULT: the Cover–Hart bracket is metric-dependent, and the metric effect is larger than
+  any information effect in the project.**
+
+  | Change | Δ$e_{1NN}$ | information? | p |
+  |---|---|---|---|
+  | round 1 `BASE`→`DERIVED` (+31 cols) | −0.0128 | yes | 9.3e-06 |
+  | round 2 `DERIVED`→`D2` (+38 cols) | −0.0115 | yes | 4.7e-07 |
+  | **control `DERIVED`→`DERIVED_log`** | **+0.0296** | **no** | **4.8e-22** |
+
+  Tree invariance verified, not assumed: 98.99% / 98.79% identical predictions vs the logged twins.
+  **Quote the bracket as metric-relative.** It still correctly describes the geometry that k-NN
+  overlap, purity and the DEC-space competence estimator operate in — but it does not bound a tree
+  ensemble. See the correction banner on the round-1 section above.
+- **Log-compression made the k-NN geometry *worse*** (purity 0.3761 → 0.3421, every family down). The
+  heavy-tailed raw scale is more discriminative under RobustScaler than a compressed one — the
+  opposite of the usual intuition.
+- **Round-2 columns are heavily used yet add nothing: 43.9% of importance on 33.6% of columns**, with
+  `handshake_bal` the single most important feature (0.1452). The reason is visible in the algebra:
+  `handshake_bal` $=(S-F)/(S+F)=(r-1)/(r+1)$ is **strictly monotone in round 1's `r_syn_fin` $=S/F$**
+  — an equivalent feature that is merely bounded. Same for `fwd_len_range_norm` / `bwd_len_range_norm`
+  (#3, #5) vs round 1's span ratios. **Three of the top five features are bounded monotone rewrites of
+  columns already present**, which is exactly why the bracket moved and the score did not. Independent
+  arrival at the same mechanism as the log control.
+- **The targeted pairs mostly did not move.** Recon→Exploits 0.1754→0.1731, DoS→Exploits 0.4071→0.4145
+  (*worse*), Shellcode→Fuzzers 0.4619→0.4670 (*worse*); only Worms→Exploits 0.3896→**0.3438**. The
+  design hypothesis — that a scan's lack of response separates Reconnaissance from Exploits — **failed
+  on its own terms**. The overall purity gain came from the large families improving their own
+  neighbourhoods, not from the intended targets.
+- **Pre-registered mechanism test SUPPORTED.** v6 was explained as an interaction (the combiner pays
+  only once neighbourhoods are pure). `D2` is purer, so it should gain *more* from ensembling despite
+  a lower single-model score: observed **+0.0279 vs +0.0227**. Corroborates the mechanism in a second
+  feature space — but the difference of differences is +0.005, inside noise, so it is corroboration,
+  not an established effect.
+- **Algebra on these 76 columns is exhausted.** Round 1 marginal (p=0.071), round 2 null. The other
+  feature directions are **impossible on this file, not merely expensive**: `CIC-UNSW-Data.csv` has no
+  IP, port or timestamp column (verified), so per-host/per-window aggregates cannot be built, and
+  percentile flow statistics need PCAPs the project does not have. **Restate the plateau as a limit of
+  what CICFlowMeter records** — a stronger claim than a limit of the 44-column pruned subset.
+
+## v6 architecture on the original UNSW-NB15 (`final_model_v6_unsw.ipynb`) — the representation claim, tested from outside
+
+The v6 pipeline re-run end-to-end on `Resource/UNSW-NB15/` (Moustafa & Slay 2015; 257,673 pooled rows
+→ **162,745 after dedupe**, 36.8% duplicates). Same ten families, same names, **zero shared columns**.
+
+**This is not a transfer test** (no shared feature space) and **not a fresh-traffic generalisation
+test** (CIC-UNSW-NB15-2024 is a re-extraction of this same traffic). It is a controlled test of the
+project's central claim: hold traffic and taxonomy fixed, swap the extractor.
+
+**Result: macro-F1 0.6387 / accuracy 0.8303** (SELV-selected `STATIC: per-class W`, 2nd of 17 on test
+by 0.0007). **Do not compare these levels to v6's 0.6485 / 0.9123** — different class balance (Benign
+52.7% vs 73.5%), row counts and flow segmentation. The per-family, purity and bracket comparisons are
+the meaningful ones.
+
+| Space | n_ref | e_1NN | e\* bracket | accuracy ceiling |
+|---|---|---|---|---|
+| CIC DERIVED 75 | 64,936 | 0.3629 | [0.2053, 0.3632] | [0.6368, 0.7947] |
+| **UNSW-NB15 83** | **61,618** | **0.3043** | **[0.1680, 0.3043]** | **[0.6957, 0.8320]** |
+
+### Key findings
+
+- **The claim survives: the plateau is representation-bound.** $e_{1NN}$ falls **0.0586** vs CIC
+  DERIVED — **4.6× the entire round-1 feature gain**, and more than rounds 1 and 2 combined. The
+  comparison is **conservative**: UNSW has *fewer* attack rows (61,618 vs 64,936), and a smaller
+  reference set can only raise the 1-NN error.
+- **THE SURPRISE — the missing ingredient is NOT host/temporal context.** `knn_class_overlap.ipynb`
+  named host/window context as the way forward and `feature_engineering_v2.ipynb` proved it
+  unbuildable on the CIC file. UNSW has 14 such `ct_*` columns and they carry **only 6.8% of
+  importance**. The top five features are `svc_dns` (0.295), `ttl_diff` (0.226), `svc_http`, `sttl`,
+  `r_ttl` — **all built from service identity and TTL, two fields CICFlowMeter does not emit at all.**
+  This also explains why two rounds of algebra returned nothing: no ratio of packet counts and
+  durations can reconstruct *"this flow is DNS"* or *"TTL is 254 one way and 62 the other"*.
+  **Name those two fields in future work, not "richer features" generically.**
+- **Performance mostly tracks purity — 6 of 9 families move consistently**, in both directions.
+  Shellcode 0.388→**0.650** (purity +0.214; its neighbourhood is 15.5% Fuzzers here vs 46.5% on CIC),
+  Reconnaissance 0.640→**0.807**, Generic 0.828→0.924, Exploits 0.791→0.849. Exceptions: Fuzzers and
+  DoS (small purity gains that did not convert) and Worms (34 rows, meaningless either way).
+- **The gain is NOT uniform across the weak families — state this plainly.** Of CIC's four weakest
+  (Shellcode 0.388, Analysis 0.446, DoS 0.468, Worms 0.582), only **Shellcode clearly improves**;
+  Analysis and DoS get *worse*. The representation change trades one set of confusions for another
+  rather than lifting everything.
+- **Two families collapse.** **Backdoor 0.635 → 0.183** — precision 0.974, recall **0.101**; Analysis
+  is the mirror (0.163 / 0.779). A known Analysis/Backdoor/DoS labelling pathology in UNSW-NB15, not
+  something the pipeline introduced. **Worms +0.124 is on 34 test rows, contradicts the purity story
+  (purity fell), and must not be quoted.**
+- **The gate inverts.** CIC gate 0.9961 recall / 0.9280 precision; UNSW **0.9176 / 0.9209** — it
+  misses 8% of attacks. **The two representations are good at different halves**: CICFlowMeter's
+  timing/size statistics separate attack-from-benign, UNSW's service/TTL separate family-from-family.
+  The strongest system would be the union of both field sets.
+- **v4's finding replicated on an independent representation:** the static per-class `W` beats every
+  pure-dynamic combiner by **−0.031**, and the top three variants all carry `W`. Ensembling gain over
+  the single α=0.25 model is **+0.045** here vs +0.023 on CIC. Note SELV picked a *static* combiner
+  here and a *dynamic* one on CIC — the protocol adapts rather than inheriting a fixed answer.
+- **Still does not close the single-dataset gap** — that needs genuinely different traffic
+  (CIC-IDS2017). The UNSW pre-split files are also a curated subset, so their class balance is itself
+  an artifact of how that subset was drawn.
+
+## Dedupe ablation on UNSW-NB15 (`results/unsw_dedupe_ablation/`) — the 10–15 point claim does NOT replicate
+
+The v6-on-UNSW pipeline re-run with the dedupe step toggled off, everything else held fixed (same
+seeds, splits, prune rule, pool, combiner grid, SELV protocol). Motivated by
+`literature_artifact_audit.md`, which asserts deduplication moves reported accuracy by 10–15 points.
+
+| | DEDUPE | NO-DEDUPE | Δ |
+|---|---|---|---|
+| rows used | 162,745 | 257,673 | +94,928 |
+| features after prune | 83 | 80 | −3 |
+| **macro-F1** | **0.6378** | **0.6403** | **+0.0025** |
+| **accuracy** | **0.8299** | **0.8228** | **−0.0071** |
+| e_1NN | 0.3044 | 0.2435 | −0.0609 |
+| gate precision | 0.9242 | 0.9794 | +0.0552 |
+| test rows with an exact train twin | 0.00% | **42.70%** | — |
+
+- **⚠️ The 10–15 point claim does not hold for this pipeline on this dataset.** macro-F1 moves +0.0025
+  (inside the ±0.012 paired band) and accuracy moves *down* 0.7 points, despite **42.7% of test rows
+  having an exact features+label twin in train**. Before re-quoting the 10–15 figure, trace it to its
+  source — most likely the CyberAdaptAI **binary** repro, a different task where memorising a
+  duplicated flow pays off cleanly.
+- **THE DECISIVE DIAGNOSTIC — leaked rows score *worse* than clean ones.** Within the no-dedupe arm:
+  accuracy **0.8064** on the 22,007 leaked rows vs **0.8350** on the 29,528 clean ones. Same model,
+  same test set, only the partition differs, so this comparison carries no confounds. **The model is
+  not memorising.**
+- **MECHANISM: duplication acts as class re-weighting, not memorisation**, because duplicates are
+  wildly uneven across families — Generic 95.8% leaked, DoS 76.0%, Exploits 46.0%, Shellcode 4.6%,
+  Worms 2.9%. Generic (95.8% duplicated) does inflate, 0.914→**0.990**. But that is cancelled inside
+  the known DoS/Exploits/Analysis labelling triangle: DoS gets ~3× the effective weight, so DoS
+  recall 0.327→**0.844** while Exploits recall 0.827→**0.562**. Per-class DoS +0.123 and Generic
+  +0.076 against Exploits −0.167 and Analysis −0.104. **Net ≈ zero on the macro average.**
+- **Where leakage DOES contaminate: the distance-based diagnostics.** e_1NN 0.3044→**0.2435**, a
+  −0.061 move — larger than the entire round-1 feature-engineering gain — and pure artifact, since the
+  test row's own twin sits in the reference set. Gate precision similarly inflates 0.924→0.979.
+  **Dedupe is essential for the Cover–Hart bracket and every k-NN/purity/DES measurement, and nearly
+  irrelevant for the classifier score.** This is the sharper and more defensible version of the claim.
+- **⚠️ The two levels are not directly comparable.** The prune keeps 3 more columns under dedupe (83
+  vs 80 — duplication inflates correlations past 0.95), and the test sets are different distributions,
+  not just different sizes (Generic 1,520 → 11,774 test rows, 7.7×). Only the leaked-vs-clean split is
+  confound-free.
+- Reproduction note: the dedupe arm gives 0.6378/0.8299 vs the notebook's published 0.6387/0.8303, and
+  SELV picked `HYBRID W × OLA-cw k=30 p=8` where the notebook picked `STATIC: per-class W`. Those two
+  are 0.0026 apart — noise-band resolution failure, not a discrepancy. XGBoost `hist` with `n_jobs=-1`
+  is not bit-deterministic.
+
+## v6 on CIC-IDS2017 (`results/cicids2017_v6/`) — 0.9835, and why that is a RED FLAG not a win
+
+v6 re-run on `Resource/CIC-IDS2017/` (2,830,743 pooled flows → **2,520,798** after dropping 2,867
+inf/NaN rows and 10.86% exact duplicates). The three `Web Attack` variants collapsed into one class,
+DoS variants kept separate → **13 classes**. All 31 round-1 derived features map onto CICFlowMeter v3
+via a six-name rename (verified present, no silent zero-fill) → **78 features** (v6 had 75).
+
+**Result: macro-F1 0.9835 / accuracy 0.9991.** Excluding Heartbleed (2 test rows) and Infiltration
+(7): 0.9805.
+
+| | CIC-IDS2017 | CIC-UNSW-2024 | UNSW-NB15 |
+|---|---|---|---|
+| macro-F1 | **0.9835** | 0.6485 | 0.6387 |
+| accuracy | **0.9991** | 0.9123 | 0.8303 |
+| e_1NN | **0.0026** | 0.3629 | 0.3043 |
+| gate recall / precision | 0.9996 / 0.9955 | 0.9961 / 0.9280 | 0.9176 / 0.9209 |
+| exact-duplicate rate | **10.86%** | 32% | 36.8% |
+
+- **⚠️ TREAT THIS NUMBER WITH SUSPICION — it is the near-100% pattern CLAUDE.md warns about.**
+  **e_1NN = 0.0026**: 1-NN alone separates the 12 attack families with 99.74% accuracy, *after*
+  deduplication, vs ~0.30–0.36 error on both other datasets. Per-class F1 is 1.000 for DDoS,
+  FTP-Patator, SSH-Patator, Heartbleed and Infiltration; only **Bot (0.820)** sits below 0.99.
+- **⚠️ UNTESTED HYPOTHESIS:** that exact dedupe (only 10.86% here) leaves tool-generated *near*-
+  duplicate bursts intact, so every test row still has a near-twin in train. Consistent with the
+  evidence but **not verified** — the near-duplicate distance check was not run. Do not present the
+  mechanism as established.
+- **THE ARCHITECTURE BECOMES IRRELEVANT — the most informative finding here.** All 17 combiner
+  variants land within **0.0007** on test (best `DYN OLA-cw k=30 p=3` 0.9835, worst `single XGB α=1.0`
+  0.9828). α-weighting, the hierarchy, the 7-member ensemble and the dynamic combiner are jointly
+  worth nothing, against **+0.0502** for the full stack on CIC-UNSW. Even equal-average and plain
+  ExtraTrees match the winner. **The architecture's value is conditional on the problem being hard** —
+  the flip side of the v6 interaction result, and worth stating as a contribution in its own right.
+- **This does NOT close the single-dataset-evaluation gap.** CIC-IDS2017 as processed cannot test the
+  "plateau is representation-bound" claim, because there is no plateau to explain. Making it a genuine
+  generalisation test needs a **chronological split** (requires `GeneratedLabelledFlows.zip` for
+  timestamps) so a burst's siblings cannot appear in training.
+- **THE ONE SOLID POSITIVE — the engineered features replicate on a third extractor.** Derived columns
+  are 39.7% of the feature space but carry **59.0% of importance**, and the top three are all derived
+  (`hdr_per_pkt_fwd`, `frac_PSH`, `cv_bwd_len`). **`frac_PSH` lands top-2 on both CIC-UNSW and
+  CIC-IDS2017 independently** (CIC-UNSW: `PSH Flag Count` #1, `frac_PSH` #2). This survives whatever
+  the headline score turns out to mean.
+- `Destination Port` ranks 13th (0.0321) — mild evidence against the service-identity hypothesis from
+  the UNSW run, though on a dataset this easy nothing discriminates much.
+- **Do not compare the level to 0.6485/0.6387** — different taxonomy (13 classes vs 10), different
+  class balance (BENIGN 83.1%), different traffic. Note also that 0.9991 accuracy vs the bracket's
+  [0.9974, 0.9987] is **not** a ceiling violation: the bracket is Stage-B 12-family error on attack
+  rows, the accuracy is 13-class including an 83%-BENIGN majority.
+- Deviations from the notebook protocol, all forced by 10× scale and recorded in the JSON: combiner/DES
+  reference capped at 40,000 stratified attack rows (v6 used 32,468, v6-unsw 30,809, so the regime
+  matches); inf/NaN rows dropped not imputed; SMOTE `k_neighbors` clamped (Heartbleed has 11 rows);
+  float32. Runtime 30.4 min total, 23 min of which is the cross-fit.
+
+### CIC-IDS2017 dataset facts (`results/cicids2017_audit/`)
+
+Measured, not assumed — the equivalent of CLAUDE.md's "verified data facts" for this file.
+
+- **2,830,743 rows × 79 columns** (78 features + `Label`) across 8 day-files; all 8 agree on the column
+  list after stripping, so `concat` is safe.
+- **Not clean, unlike CIC-UNSW-2024**: `Flow Bytes/s` 1,358 NaN + 1,509 inf, `Flow Packets/s` 2,867
+  inf (0.10% of rows). These break `RobustScaler` and every distance computation.
+- **65 of 79 column names carry leading whitespace**; naming is CICFlowMeter v3
+  (`Fwd Avg Bytes/Bulk`) vs the 2024 file's `Fwd Bytes/Bulk Avg`.
+- **`Fwd Header Length` is duplicated** — pandas silently renames the copy to `Fwd Header Length.1`,
+  so a duplicate-*name* check finds nothing; the correlation prune catches it at r=1.000.
+- **The three `Web Attack` labels contain a non-ASCII en-dash** — read with `encoding="latin-1"` or the
+  classes silently fragment.
+- **Duplicates 10.89% on features+label, 10.92% on features only** → only **698 rows** carry
+  conflicting labels (0.02%). Contrast UNSW-NB15, where label ambiguity drove the whole dedupe result.
+- **Extreme imbalance, 206,645:1**: BENIGN 80.30% down to Heartbleed 11 rows, SQL Injection 21,
+  Infiltration 36. **Heartbleed and Infiltration cannot support a stratified split** (~2 and ~7 test
+  rows) — report them, but never in a headline macro average.
+- Prune: **78 → 70 → 47 features** (CIC-UNSW: 76 → 67 → 44), so the two representations are comparable
+  in width. All four `Subflow *` columns are r=1.000 duplicates of the corresponding `Total *`.
 
 ## What is left to try
 

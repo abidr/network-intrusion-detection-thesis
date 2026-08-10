@@ -125,8 +125,17 @@ Default config, batch 2000, full framework (real river Hoeffding Tree + native T
 
 ### Headline: the paper's numbers reproduce only with duplicate leakage AND no stream
 
-Binary attack-vs-benign (the setting comparable to Table 4). 2x2 over the two pipeline choices
-the paper leaves unspecified:
+> **⚠️ Correction (2026-08-09).** This section was written on the assumption that Table 4 is a
+> **binary** evaluation. It is not — **Fig. 4 is captioned "Multi-Class confusion matrices for
+> CIC-IDS2017 and UNSW-NB15"**, so Table 4's 0.968 is a 10-class number. The 2x2 below is still
+> valid and still the sharpest evidence about duplicate leakage and shuffling, but read it as
+> *"binary is an upper bound on what the framework can do"*, not as *"this is Table 4's setting"*.
+> The correct objection is the averaging scheme: the paper never states one ("macro" appears
+> nowhere in 21 pages) and its `P ≈ R ≈ F1 ≈ Accuracy` implies **micro-averaging**, so Table 4
+> must be compared against **weighted/micro F1**. See the multiclass subsection below, and the
+> correction box in README.md.
+
+Binary attack-vs-benign. 2x2 over the two pipeline choices the paper leaves unspecified:
 
 | Configuration | Accuracy | Precision | Recall | F1 | Weight dev. from uniform |
 |---|---|---|---|---|---|
@@ -174,10 +183,24 @@ four members' errors converge. Deviation across all runs to date:
 | UNSW-NB15, binary, shuffled | 0.0015 |
 | UNSW-NB15, binary, shuffled + no-dedup | **0.0012** |
 
-### Multiclass (10-class), leakage-safe, sequential
+### Multiclass (10-class), leakage-safe, sequential — THIS is the setting Table 4 reports
 
 Accuracy 0.7871, **macro-F1 0.4215**, macro P/R 0.4983/0.4120, weighted F1 0.7784, 10 drift
 events, 0.157 ms/instance. Duplicates removed: 94,928 (36.8%).
+
+**Comparison against Table 4 (0.968), on the metric Table 4 actually uses.** Since the paper's
+`P ≈ R ≈ F1 ≈ Accuracy` implies micro-averaging, the comparable columns are weighted F1 and
+accuracy — *not* macro-F1:
+
+| | duplicates | weighted F1 | accuracy | macro F1 |
+|---|---|---|---|---|
+| Paper Table 4 (UNSW) | not reported | — | **0.968** | not reported |
+| this reimplementation, leakage-safe | 94,928 removed | 0.7784 | 0.7871 | 0.4215 |
+| **thesis v6 port** (`final_model_v6_unsw.ipynb`) | 94,928 removed | **0.8380** | **0.8303** | **0.6387** |
+
+The two independent pipelines agree exactly on the duplicate count (94,928), which is good
+evidence both read the file correctly. The residual gap to 0.968 is duplicate leakage plus
+shuffling, as the 2x2 above quantifies.
 
 Per-class F1: Normal 0.892, Recon 0.773, Generic 0.745, Exploits 0.741, Fuzzers 0.607,
 Shellcode 0.333, DoS 0.072, Backdoor 0.032, Analysis 0.021, **Worms 0.000** (24 test rows).
@@ -188,6 +211,135 @@ setting, is a duplicate of Table 7 — see README critique).
 
 TreeSHAP: additivity residual 4.8e-06. Top features `ct_dst_src_ltm`, `smean`, `sbytes`, `sttl`,
 `ct_srv_dst`.
+
+### Multiclass + no-dedup + shuffled — the decisive cell (`results/unsw_repro_table4_multiclass`)
+
+Run after Fig. 4 established that Table 4 is **multi-class**. This is the multiclass twin of the
+`no-dedup + shuffled` cell that reproduced the paper in binary — i.e. Table 4's task with both
+leakage assumptions granted.
+
+| Configuration | task | dedup | shuffle | accuracy | weighted F1 | macro F1 |
+|---|---|---|---|---|---|---|
+| **Paper Table 4 (UNSW)** | ? | ? | ? | **0.968** | — | — |
+| **Paper Fig. 4 (its own matrix)** | multi-class | — | — | **0.303** | — | ~0.15 |
+| repro, binary + leakage | binary | no | yes | 0.9479 | 0.9590 | — |
+| **repro, multiclass + leakage** | multi-class | no | yes | **0.8324** | 0.8099 | 0.5470 |
+| repro, multiclass leakage-safe | multi-class | yes | no | 0.7871 | 0.7784 | 0.4215 |
+| **thesis v6 port** | multi-class | yes | no | **0.8303** | **0.8380** | **0.6387** |
+
+**Conclusion: Table 4's 0.968 is a binary-scale number.** Granting *both* leakage assumptions
+lifts multiclass only +0.045 (0.7871 → 0.8324); the remaining 13.6 points to 0.968 are not
+reachable by any dedup/shuffle setting, because the 9-way family split cannot score that high on
+this data. Binary + the same two assumptions lands at 0.9479 / 0.9590, within ~0.01-0.02.
+
+This **partially rehabilitates the original README assumption**, on firmer ground than it had:
+not *"the paper describes a binary evaluation"* — Fig. 4 explicitly says multi-class — but
+*"only a binary evaluation can produce that magnitude."* The paper's three pieces of evidence are
+therefore mutually incompatible:
+
+1. Fig. 4 caption: the evaluation is multi-class.
+2. Table 4 magnitude: only achievable in binary, and only with leakage.
+3. Fig. 4 contents: imply 0.303 accuracy, not 0.968.
+
+Two further observations from this run:
+
+- **Drift events = 0.** Shuffling makes the stream IID, so the configuration that best reproduces
+  the headline eliminates the drift phenomenon Tables 5/6 analyse. Weight deviation from uniform
+  is 0.0073.
+- **Generic reaches F1 0.988 on 11,815 rows** — duplicate inflation, it being the most duplicated
+  family in UNSW-NB15. Compare the leakage-safe run's 0.745.
+
+**The thesis comparison worth quoting:** the leakage-safe v6 port (0.8303 / 0.8380) *matches or
+beats* CyberAdaptAI's leakage-boosted multiclass run (0.8324 / 0.8099), and beats it by **+0.092
+macro-F1**, with duplicates removed and no shuffling.
+
+### Matching sweep — can any principled configuration hit Table 4's 0.968? (`results/match_*`)
+
+Six cumulative configurations on top of the reproducing base (binary + `--no-dedup` + `--shuffle`),
+each adding one assumption the paper leaves unspecified. Target: 0.968 / 0.965 / 0.970 / 0.968.
+
+| config | accuracy | precision | recall | F1 | added assumption |
+|---|---|---|---|---|---|
+| **Paper Table 4** | **0.9680** | 0.9650 | 0.9700 | 0.9680 | — |
+| base binary + leakage | 0.9479 | 0.9613 | 0.9567 | 0.9590 | `--no-dedup --shuffle` |
+| A | 0.9476 | 0.9633 | 0.9541 | 0.9587 | `--no-hoeffding` (Fig. 6/7 plots only RF/XGB/ET) |
+| B | 0.9476 | 0.9633 | 0.9541 | 0.9587 | `+ --retrain-scope cumulative` |
+| C | 0.9472 | 0.9630 | 0.9538 | 0.9584 | `+ --scaler global` |
+| **D** | **0.9807** | 0.9862 | 0.9835 | 0.9848 | **`+ --keep-id`** |
+| E | 0.9807 | 0.9861 | 0.9836 | 0.9848 | `+ --batch-size 1500` |
+| F | 0.9887 | 0.9852 | 0.9982 | 0.9917 | `+ --train-file-only` |
+
+**Only one knob matters, and it is the row index.** Pool composition, retrain scope, scaler fitting
+and batch size are collectively worth **0.0007** (0.9479 -> 0.9472, i.e. noise). Keeping the `id`
+column — a row counter with no network semantics — is worth **+0.034 on its own** and **overshoots
+the paper**.
+
+**Table 4 is bracketed, not reproduced:**
+
+```
+    0.9479  (no id)   <    0.968  (paper)   <    0.9807  (id kept)
+```
+
+No principled configuration lands on 0.968. Hitting it exactly from here would mean tuning knobs
+*toward the published value*, which is curve-fitting rather than reproduction, so the sweep stops
+here. What can be stated is the bracket, plus the earlier finding that the multiclass ceiling is
+0.8324 even with both leakage assumptions granted — so 0.968 is a binary-scale number regardless.
+
+**`--keep-id` is worth reporting in its own right.** UNSW-NB15's `id` is a row index; any model that
+gains 3.4 accuracy points from it is exploiting file ordering, not detecting intrusions. It is a
+plausible unstated preprocessing omission in any paper that does not list its dropped columns — and
+none of the ten reviewed papers publishes code that would let a reader check (see
+`../../literature_artifact_audit.md`).
+
+### The complete {dedup x order x id} cube, binary (`results/cube_*`)
+
+All eight cells, default 4-member pool, batch 2000. Target = 0.968.
+
+| dedup | order | `id` | accuracy | precision | recall | F1 | dev from 0.968 |
+|---|---|---|---|---|---|---|---|
+| ✓ | sequential | drop | **0.8065** | 0.7917 | 0.6812 | 0.7323 | 0.1615 |
+| ✗ | sequential | drop | 0.9019 | 0.9095 | 0.8570 | 0.8825 | 0.0661 |
+| ✓ | sequential | keep | 0.9016 | 0.9079 | 0.8581 | 0.8823 | 0.0664 |
+| ✗ | sequential | keep | 0.9016 | 0.9079 | 0.8581 | 0.8823 | 0.0664 |
+| ✓ | shuffled | drop | 0.9142 | 0.9020 | 0.8850 | 0.8934 | 0.0538 |
+| ✗ | shuffled | drop | 0.9479 | 0.9613 | 0.9567 | 0.9590 | 0.0201 |
+| ✓ | shuffled | keep | **0.9803** | 0.9862 | 0.9827 | 0.9845 | **0.0123** |
+| ✗ | shuffled | keep | **0.9803** | 0.9862 | 0.9827 | 0.9845 | **0.0123** |
+
+**Three findings.**
+
+**1. `--keep-id` silently disables deduplication.** The dedup and no-dedup rows are *identical to four
+decimals* whenever `id` is kept, in **both** ordering conditions. With a unique row index in the
+feature matrix no two rows are duplicates, so the dedup pass removes nothing. Keeping an index column
+does not merely add a leaky feature — **it reintroduces duplicate leakage through the back door.**
+
+> **Generalisable reviewing rule:** a paper that reports "duplicate records were removed" *and* retains
+> an `id`/index column has **not** deduplicated. The two statements are incompatible, and the second
+> silently voids the first. Worth stating in the review chapter — it is checkable from a methods
+> section without any code.
+
+**2. Shuffling is a NECESSARY condition for the paper's number, and it is the one that breaks their
+own narrative.** Every sequential cell is <= 0.9019; every cell within 2 points of 0.968 is shuffled.
+This was tested directly: the `no-dedup + sequential + keep-id` cell was run specifically to see
+whether the score could be reached *while preserving the stream* — it reaches only 0.9016. So there is
+**no configuration that reproduces Table 4 and leaves concept drift well-defined.**
+
+**3. Table 4 is bracketed but not reproducible.**
+
+```
+    0.9479  (shuffled, no id)   <    0.968  (paper)   <    0.9803  (shuffled, id kept)
+```
+
+Three necessary conditions for a number near 0.968, each measured: **binary** (multiclass caps at
+0.8324 with all leakage granted), **shuffled** (all sequential cells <= 0.9019), and **duplicates
+present** (directly, or indirectly via `id`). Two of the three contradict the paper's own method
+section, which specifies temporally ordered mini-batches (§3.2) and duplicate removal (§3.2).
+
+**Report the bracket and the three conditions, not a matched number.** Landing exactly on 0.968 from
+here would require tuning alpha / gamma / batch size toward the published value, which is fitting to
+the target, not reproduction. The one substantive untested variable is `--form full` (the 2.54M-row,
+49-column release rather than the 257k pre-split); the paper does not say which it used, and those
+files are not in `Resource/UNSW-NB15/`.
 
 ### Caveat on the sequential configuration
 

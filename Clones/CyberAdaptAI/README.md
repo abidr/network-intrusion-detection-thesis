@@ -80,18 +80,50 @@ Reproduce the paper's Table 4 on its own dataset (needs UNSW-NB15 in
 `Resource/UNSW-NB15/` — see the README there):
 
 ```bash
-# binary attack-vs-benign: the setting comparable to Table 4
+# binary attack-vs-benign
 run_experiment.py --dataset unsw-nb15 --task binary --out results/unsw_binary
-# 10-class: comparable to the thesis baselines
+# 10-class: what Table 4 actually reports, and comparable to the thesis baselines
 run_experiment.py --dataset unsw-nb15 --task multiclass --out results/unsw_multiclass
 ```
 
-**Why binary is the default for `unsw-nb15`.** Table 4 reports a single Precision/Recall/F1
-triple, Eq 13-15 are stated in bare TP/FP/FN form, and §4.6 says *"recasting the problem as a
-multi-class one results in numerous misclassifications for minority attack types"* — implying
-the headline evaluation was not multiclass. In binary mode the run prints
-`Precision/Recall/F1 (attack)`, which is the directly comparable triple. Multiclass mode prints
-macro-F1 as usual. The paper never states its averaging scheme, so **run both and report both**.
+> ### ⚠️ CORRECTION (2026-08-09): Table 4 is MULTI-CLASS, not binary
+>
+> An earlier version of this README argued Table 4 was a binary evaluation and made
+> `--task binary` the comparison of record. **That was wrong, and the paper settles it directly:
+> Fig. 4 is captioned "Multi-Class confusion matrices for CIC-IDS2017 and UNSW-NB15",** and the
+> surrounding text describes "strong diagonal values ... across categories". Table 4's 0.968 is a
+> 10-class number.
+>
+> The original inference was not unreasonable — Table 4 reports a single Precision/Recall/F1
+> triple and Eq 13-15 are stated in bare TP/FP/FN form — but the §4.6 sentence it leaned on
+> (*"recasting the problem as a multi-class one results in numerous misclassifications for
+> minority attack types"*) is about the **cross-dataset** experiment in §4.6, not about Table 4.
+>
+> **What the real objection is.** The paper never states its averaging scheme — **the word
+> "macro" does not appear anywhere in the 21 pages.** Its reported values are
+> Accuracy 0.968, P 0.965, R 0.970, F1 0.968: `P ≈ R ≈ F1 ≈ Accuracy` is the arithmetic
+> signature of **micro-averaging**, where micro-P = micro-R = micro-F1 = accuracy identically.
+> So Table 4 should be read as accuracy-equivalent, and compared against **weighted/micro F1**,
+> never against macro-F1.
+>
+> Concretely, the right comparison for Table 4's 0.968 on UNSW-NB15 is:
+>
+> | | task | duplicates | weighted F1 | accuracy | macro F1 |
+> |---|---|---|---|---|---|
+> | this reimplementation, leakage-safe | 10-class | 94,928 removed | 0.7784 | 0.7871 | 0.4215 |
+> | thesis v6 port (`final_model_v6_unsw.ipynb`) | 10-class | 94,928 removed | **0.8380** | 0.8303 | 0.6387 |
+>
+> **Follow-up (same day): Table 4's *magnitude* is binary even though its *task* is labelled
+> multi-class.** Running the multiclass twin of the cell that reproduced the paper in binary
+> (`--task multiclass --no-dedup --shuffle`, `results/unsw_repro_table4_multiclass`) reaches only
+> **accuracy 0.8324** — granting both leakage assumptions buys multiclass just +0.045 over the
+> leakage-safe 0.7871, leaving 13.6 points unexplained. Binary under the same assumptions hits
+> 0.9479 / F1 0.9590. So the original "binary" reading was wrong about what the paper *says* and
+> right about what the number *is*. The paper's three claims cannot be reconciled:
+> Fig. 4 caption (multi-class), Table 4 magnitude (binary-only), Fig. 4 contents (0.303).
+>
+> **Run both tasks and report both**, and quote Table 4 as a binary-scale figure with that
+> inconsistency stated.
 
 `river` (Hoeffding Tree) is **optional**: without it the Hoeffding Tree falls back to an SGD
 online learner — a substitution the paper itself sanctions in §3.4, *"Hoeffding Trees, adaptive
@@ -187,10 +219,51 @@ SHAP + imbalance):
   `f(x) - E[f(x)]`, are frequently negative, and would span the full feature set. The caption
   hedges it as "SHAP-**Like** analysis." For contrast, this reimplementation's native TreeSHAP
   gives an Eq-9 additivity residual of 3.8e-06 across 40+ features (see RESULTS.md).
-- **The metric averaging scheme is never stated**, and Eq 13-15 are written in binary TP/FP/FN
-  form. Table 4's 0.968 UNSW-NB15 accuracy is routine for binary attack-vs-benign but would sit
-  well above the usual 0.75-0.87 range for 10-class. Treat Table 4 as binary unless proven
-  otherwise — it changes what any comparison means.
+- **The metric averaging scheme is never stated — "macro" appears nowhere in the 21 pages**, and
+  Eq 13-15 are written in bare TP/FP/FN form. Table 4 is **multi-class** (Fig. 4: "Multi-Class
+  confusion matrices"), and its `P ≈ R ≈ F1 ≈ Accuracy` (0.965 / 0.970 / 0.968 / 0.968) is the
+  signature of **micro-averaging**, under which micro-F1 equals accuracy identically. **Compare
+  Table 4 against weighted/micro F1, never macro-F1** — it changes what any comparison means.
+  See the correction box in *Running* above.
+- **⚠️ Fig. 4's confusion matrices contradict Table 4 by a factor of three.** Counted directly from
+  the published figure (extracted image, page 12):
+
+  | panel | classes shown | total samples | diagonal | **implied accuracy** | **Table 4 claims** |
+  |---|---|---|---|---|---|
+  | (b) UNSW-NB15 | **6** of 10 | **300** | 91 | **0.303** | 0.968 |
+  | (a) CIC-IDS2017 | **5** of ~15 | **300** | 82 | **0.273** | 0.981 |
+
+  UNSW row sums: Normal 161, Analysis 49, Backdoor 28, DoS 38, Reconnaissance 16, Shellcode 8.
+  Exploits, Fuzzers, Generic and Worms do not appear at all. Per-class recall from the panel:
+  Normal 0.435, Analysis 0.224, Backdoor 0.071, DoS 0.184, Recon 0.062, **Shellcode 0.000** —
+  macro-F1 ≈ 0.15.
+
+  The surrounding text says *"Strong diagonal values indicate high true positive rates across
+  categories, while the minimal off-diagonal entries indicate little misclassification."* The
+  figure's own numbers show the reverse: the Backdoor row sends 18 of 28 to Normal and gets 2
+  right; Reconnaissance gets 1 of 16.
+
+  Both panels totalling **exactly 300** and omitting most classes is the signature of an
+  illustrative or synthetic figure rather than output of the evaluation Table 4 describes.
+  **Consequence: the paper's headline numbers cannot be reconciled with its own reported
+  confusion matrices, so "failing to reproduce Table 4" is not a reimplementation defect.**
+- **Fig. 6/7 plots only three ensemble members** — Random Forest, XGBoost, Extra Trees — with no
+  Hoeffding Tree, contradicting the four-member pool of §3.4 and §4.1. Its weights also swing
+  0.18 → 0.50 across batches, where this reimplementation measures them flat to within 1.3% of
+  uniform under the paper's own hyperparameters (see RESULTS.md).
+- **Table 8 is a copy-paste of Table 7.** It is captioned "Class-wise F1-Scores for Cross-Dataset
+  evaluation" but its contents are byte-identical to Table 7's feature-importance values — rows
+  `Flow Duration` / `Fwd Packet Length` / `Protocol` / `Src Bytes` / `Dst Bytes`, columns
+  "Instance 1/2/3". They are **features, not classes**. So the *only* place the paper promised
+  per-class numbers, it printed the wrong table, and **rare-class performance is unverifiable
+  from the published text** — which is exactly where a 10-class macro-F1 would be decided. For
+  contrast, this reimplementation's leakage-safe 10-class run gets Worms **0.000**,
+  Analysis 0.021, Backdoor 0.032.
+- **Table 3's batch-wise accuracies are monotone for all four models across all ten batches** —
+  RF 0.905→0.919, XGBoost 0.915→0.927, Static Ensemble 0.930→0.939, CyberAdaptAI 0.958→0.968,
+  every step +0.001 or +0.002 and never once decreasing. Real per-batch accuracy fluctuates with
+  batch composition; a strictly increasing sequence in every model at every step is worth
+  flagging when citing it.
 - **Dynamic weighting is the same lever this thesis already tested and rejected.**
   `two_stage_stageB_des.ipynb` found per-instance competence weights collapsed to
   0.333 +/- 0.02 (a static ensemble in disguise) and did not transfer to test. CyberAdaptAI's

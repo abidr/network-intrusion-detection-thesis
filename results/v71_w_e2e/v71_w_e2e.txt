@@ -1,0 +1,63 @@
+prep done 1m -- splits match v7/v7.1
+caches loaded; reject set 34101
+COMB gate-positives 49128 | background rows 993593
+W_stageB refit 27s (Stage-B mF1 0.6604 -- v7.1 notebook: 0.6604)
+W_e2e fitted 36s: COMB e2e mF1 uniform-init 0.6903 | warm-init 0.6906 -> using warm(W_sb)
+reference COMB e2e mF1: W_stageB 0.6875 | uniform 0.6657
+
+reject-column weights (member x reject): W_sb [0.14 0.25 0.14 0.14 0.14 0.14 0.14] -> W_e2e [0.14 0.25 0.14 0.14 0.14 0.14 0.14]
+
+--- SELV (t=0.5) ---
+                                variant    mF1     mP     mR    acc
+         HYBRID W_e2e x OLA-cw k=30 p=3 0.6717 0.6996 0.6673 0.9859
+         HYBRID W_e2e x OLA-cw k=30 p=1 0.6699 0.6987 0.6655 0.9859
+v7.1 ref: HYBRID W_sb x OLA-cw k=30 p=3 0.6695 0.7046 0.6560 0.9870
+                           STATIC W_e2e 0.6689 0.6968 0.6651 0.9859
+SELV winner among W_e2e variants: HYBRID W_e2e x OLA-cw k=30 p=3
+gate + pool refit 3m
+
+--- TEST (selection made on SELV) ---
+                                variant    mF1     mP     mR    acc
+         HYBRID W_e2e x OLA-cw k=30 p=3 0.6874 0.7111 0.6874 0.9866
+                           STATIC W_e2e 0.6863 0.7137 0.6849 0.9866
+         HYBRID W_e2e x OLA-cw k=30 p=1 0.6856 0.7116 0.6853 0.9866
+v7.1 ref: HYBRID W_sb x OLA-cw k=30 p=3 0.6843 0.7164 0.6744 0.9875
+
+SELV-selected 'HYBRID W_e2e x OLA-cw k=30 p=3': test mF1 0.6874 acc 0.9866
+
+paired delta (W_e2e - W_sb): +0.0032  95% CI [+0.0019, +0.0047]  p ~ 0.000
+W_e2e marginal: 0.6874 [0.6706, 0.7035]
+
+per-class F1 (W_sb -> W_e2e) and recall:
+  Benign           F1 0.9953 -> 0.9949 (-0.0004) | R 0.9958 -> 0.9935
+  Analysis         F1 0.1395 -> 0.1395 (+0.0000) | R 0.3117 -> 0.3117
+  Backdoor         F1 0.6623 -> 0.6667 (+0.0043) | R 0.5667 -> 0.5667
+  DoS              F1 0.6010 -> 0.6025 (+0.0015) | R 0.5554 -> 0.5554
+  Exploits         F1 0.8203 -> 0.8247 (+0.0044) | R 0.8632 -> 0.8464
+  Fuzzers          F1 0.6220 -> 0.6413 (+0.0193) | R 0.5763 -> 0.7310
+  Generic          F1 0.8772 -> 0.8780 (+0.0008) | R 0.8821 -> 0.8765
+  Reconnaissance   F1 0.8246 -> 0.8262 (+0.0016) | R 0.7744 -> 0.7744
+  Shellcode        F1 0.7205 -> 0.7205 (+0.0000) | R 0.6262 -> 0.6262
+  Worms            F1 0.5800 -> 0.5800 (+0.0000) | R 0.5918 -> 0.5918
+
+benign-as-attack: 2140 -> 3302 | real attacks swallowed by reject: 2457 -> 1712
+
+                precision    recall  f1-score   support
+
+        Benign      0.996     0.993     0.995    505063
+      Analysis      0.090     0.312     0.140        77
+      Backdoor      0.810     0.567     0.667        90
+           DoS      0.658     0.555     0.602       884
+      Exploits      0.804     0.846     0.825      6185
+       Fuzzers      0.571     0.731     0.641      5287
+       Generic      0.879     0.877     0.878       899
+Reconnaissance      0.886     0.774     0.826      2407
+     Shellcode      0.848     0.626     0.721       420
+         Worms      0.569     0.592     0.580        49
+
+      accuracy                          0.987    521361
+     macro avg      0.711     0.687     0.687    521361
+  weighted avg      0.988     0.987     0.987    521361
+
+
+total 5.7 min

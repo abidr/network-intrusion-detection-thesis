@@ -1,0 +1,236 @@
+==============================================================================
+1. LOAD + COLLAPSE WEB ATTACKS
+==============================================================================
+pooled 2830743 x 79
+D1: collapsed 2180 Web Attack rows (BruteForce/XSS/SqlInjection) into one class
+D3: dropping 2867 rows (0.1013%) with inf/NaN
+      BENIGN                 -1777
+      DoS Hulk               -949
+      PortScan               -126
+      Bot                    -10
+      FTP-Patator            -3
+      DDoS                   -2
+dedupe: 2827876 -> 2520798 (10.86% duplicates)
+
+13 classes
+  0 BENIGN                  2095057  83.1109%
+  1 Bot                        1948   0.0773%
+  2 DDoS                     128014   5.0783%
+  3 DoS GoldenEye             10286   0.4080%
+  4 DoS Hulk                 172846   6.8568%
+  5 DoS Slowhttptest           5228   0.2074%
+  6 DoS slowloris              5385   0.2136%
+  7 FTP-Patator                5931   0.2353%
+  8 Heartbleed                   11   0.0004%
+  9 Infiltration                 36   0.0014%
+  10 PortScan                  90694   3.5978%
+  11 SSH-Patator                3219   0.1277%
+  12 Web Attack                 2143   0.0850%
+
+==============================================================================
+2. PRUNE + DERIVED FEATURES
+==============================================================================
+zero-var dropped (8)
+|r|>=0.95 dropped (23)
+FULL 70 -> BASE 47
+derived built: 31 columns
+all derived inputs present -- no silent zero-fill (checked)
+derived constant-dropped (0): none
+DERIVED space: 78 features (CIC-UNSW v6 had 75)
+X (2520798, 78)  786 MB
+
+==============================================================================
+3. SPLIT
+==============================================================================
+train+val 2016638 (340593 attack) | test 504160 (85148 attack) | 12 families
+test support per class:
+  BENIGN                  419012
+  Bot                        389
+  DDoS                     25603
+  DoS GoldenEye             2057
+  DoS Hulk                 34569
+  DoS Slowhttptest          1046
+  DoS slowloris             1077
+  FTP-Patator               1186
+  Heartbleed                   2
+  Infiltration                 7
+  PortScan                 18139
+  SSH-Patator                644
+  Web Attack                 429
+
+==============================================================================
+4. COVER-HART BRACKET (attack rows, RobustScaler space)
+==============================================================================
+e_1NN 0.0026 (ref 60000, query 60000)  ->  e* in [0.0013, 0.0026]  acc ceiling [0.9974, 0.9987]
+CIC-UNSW DERIVED reference: e_1NN 0.3629 | UNSW-NB15: 0.3043
+
+==============================================================================
+5. v6 POOL -- 5-fold cross-fit
+==============================================================================
+  fold 1 gate 26s
+    XGB a=0.0        49s
+    XGB a=0.25       43s
+    XGB a=0.5        42s
+    XGB a=1.0        40s
+    XGB smote2000    41s
+    RF a=0.25        15s
+    ET a=0.25        7s
+  fold 1/5 total 263s (elapsed 4m)
+  fold 2 gate 24s
+    XGB a=0.0        39s
+    XGB a=0.25       39s
+    XGB a=0.5        41s
+    XGB a=1.0        42s
+    XGB smote2000    48s
+    RF a=0.25        15s
+    ET a=0.25        9s
+  fold 2/5 total 256s (elapsed 9m)
+  fold 3 gate 24s
+    XGB a=0.0        43s
+    XGB a=0.25       42s
+    XGB a=0.5        57s
+    XGB a=1.0        52s
+    XGB smote2000    55s
+    RF a=0.25        17s
+    ET a=0.25        8s
+  fold 3/5 total 298s (elapsed 14m)
+  fold 4 gate 24s
+    XGB a=0.0        40s
+    XGB a=0.25       45s
+    XGB a=0.5        47s
+    XGB a=1.0        45s
+    XGB smote2000    45s
+    RF a=0.25        14s
+    ET a=0.25        7s
+  fold 4/5 total 269s (elapsed 18m)
+  fold 5 gate 26s
+    XGB a=0.0        42s
+    XGB a=0.25       47s
+    XGB a=0.5        43s
+    XGB a=1.0        44s
+    XGB smote2000    49s
+    RF a=0.25        16s
+    ET a=0.25        9s
+  fold 5/5 total 277s (elapsed 23m)
+cross-fit 1363s
+OOF gate: attack recall 0.9994 / precision 0.9954
+
+==============================================================================
+6. COMBINER
+==============================================================================
+D2: reference capped 170297 -> 40000 stratified attack rows
+W fitted 25s on 40000 rows
+SELV kNN 6s (170977 queries)
+
+--- SELV ---
+                    variant    mF1     mP     mR    acc
+          single: XGB a=0.5 0.9677 0.9770 0.9647 0.9991
+          single: XGB a=1.0 0.9676 0.9767 0.9648 0.9990
+        STATIC: per-class W 0.9657 0.9707 0.9647 0.9991
+ HYBRID W x OLA-cw k=30 p=8 0.9657 0.9707 0.9647 0.9991
+HYBRID W x OLA-cw k=100 p=8 0.9657 0.9707 0.9647 0.9991
+      single: XGB smote2000 0.9655 0.9703 0.9648 0.9991
+          single: RF a=0.25 0.9655 0.9704 0.9647 0.9991
+      STATIC: equal average 0.9655 0.9702 0.9648 0.9991
+        DYN OLA-cw k=30 p=1 0.9655 0.9702 0.9648 0.9991
+        DYN OLA-cw k=30 p=3 0.9655 0.9702 0.9648 0.9991
+        DYN OLA-cw k=30 p=8 0.9655 0.9702 0.9648 0.9991
+       DYN OLA-cw k=100 p=1 0.9655 0.9702 0.9648 0.9991
+       DYN OLA-cw k=100 p=3 0.9655 0.9702 0.9648 0.9991
+       DYN OLA-cw k=100 p=8 0.9655 0.9702 0.9648 0.9991
+          single: XGB a=0.0 0.9655 0.9703 0.9648 0.9991
+         single: XGB a=0.25 0.9654 0.9701 0.9647 0.9991
+          single: ET a=0.25 0.9653 0.9701 0.9644 0.9991
+SELV winner: single: XGB a=0.5 (0.9677)
+
+==============================================================================
+7. REFIT ON train+val, TEST ONCE
+==============================================================================
+gate refit 35s
+  XGB a=0.0        57s
+  XGB a=0.25       52s
+  XGB a=0.5        52s
+  XGB a=1.0        59s
+  XGB smote2000    59s
+  RF a=0.25        16s
+  ET a=0.25        9s
+refit+test 346s
+
+--- TEST (selection already made on SELV) ---
+                    variant    mF1     mP     mR    acc
+        DYN OLA-cw k=30 p=3 0.9835 0.9766 0.9917 0.9991
+         single: XGB a=0.25 0.9835 0.9767 0.9916 0.9991
+          single: XGB a=0.5 0.9835 0.9766 0.9917 0.9991
+       DYN OLA-cw k=100 p=8 0.9835 0.9766 0.9917 0.9991
+        DYN OLA-cw k=30 p=8 0.9835 0.9767 0.9916 0.9991
+        STATIC: per-class W 0.9834 0.9768 0.9912 0.9991
+ HYBRID W x OLA-cw k=30 p=8 0.9834 0.9768 0.9912 0.9991
+       DYN OLA-cw k=100 p=3 0.9834 0.9766 0.9915 0.9991
+       DYN OLA-cw k=100 p=1 0.9834 0.9766 0.9915 0.9991
+HYBRID W x OLA-cw k=100 p=8 0.9834 0.9768 0.9912 0.9991
+        DYN OLA-cw k=30 p=1 0.9834 0.9766 0.9915 0.9991
+      STATIC: equal average 0.9834 0.9766 0.9915 0.9991
+      single: XGB smote2000 0.9834 0.9768 0.9914 0.9991
+          single: XGB a=0.0 0.9833 0.9764 0.9916 0.9991
+          single: RF a=0.25 0.9832 0.9767 0.9911 0.9991
+          single: ET a=0.25 0.9831 0.9766 0.9909 0.9991
+          single: XGB a=1.0 0.9828 0.9754 0.9915 0.9991
+
+SELV-selected 'single: XGB a=0.5' ranks 3 of 17 on test
+CIC-IDS2017: macro-F1 0.9835 | accuracy 0.9991
+reference levels (NOT comparable - different taxonomy):
+  CIC-UNSW-2024 v6 : 0.6485 / 0.9123
+  UNSW-NB15 v6     : 0.6387 / 0.8303
+
+                  precision    recall  f1-score   support
+
+          BENIGN      1.000     0.999     0.999    419012
+             Bot      0.744     0.913     0.820       389
+            DDoS      1.000     1.000     1.000     25603
+   DoS GoldenEye      0.996     0.999     0.997      2057
+        DoS Hulk      0.998     1.000     0.999     34569
+DoS Slowhttptest      0.988     0.996     0.992      1046
+   DoS slowloris      0.995     0.990     0.993      1077
+     FTP-Patator      1.000     0.999     1.000      1186
+      Heartbleed      1.000     1.000     1.000         2
+    Infiltration      1.000     1.000     1.000         7
+        PortScan      0.989     1.000     0.994     18139
+     SSH-Patator      1.000     1.000     1.000       644
+      Web Attack      0.986     0.998     0.992       429
+
+        accuracy                          0.999    504160
+       macro avg      0.977     0.992     0.984    504160
+    weighted avg      0.999     0.999     0.999    504160
+
+macro-F1 all 13 classes            : 0.9835
+macro-F1 excl. Heartbleed/Infiltr. : 0.9805  (11 classes)
+  -> the two tiny classes have 2 and 7 test rows
+
+gate on test: attack recall 0.9996 / precision 0.9955
+  CIC-UNSW v6 gate 0.9961/0.9280 | UNSW-NB15 0.9176/0.9209
+
+top 20 Stage-B features
+   1. hdr_per_pkt_fwd              0.0961 (der)
+   2. frac_PSH                     0.0952 (der)
+   3. cv_bwd_len                   0.0827 (der)
+   4. Bwd Packet Length Min        0.0636 
+   5. bpp_flow                     0.0626 (der)
+   6. cv_fwd_len                   0.0568 (der)
+   7. bpp_fwd                      0.0474 (der)
+   8. Bwd IAT Std                  0.0472 
+   9. bpp_bwd                      0.0440 (der)
+  10. Fwd Packet Length Max        0.0378 
+  11. Init_Win_bytes_backward      0.0345 
+  12. Bwd IAT Min                  0.0339 
+  13. Destination Port             0.0321 
+  14. FIN Flag Count               0.0294 
+  15. hdr_per_pkt_bwd              0.0292 (der)
+  16. Flow IAT Std                 0.0211 
+  17. Total Length of Fwd Packets  0.0203 
+  18. min_seg_size_forward         0.0172 
+  19. asym_byte                    0.0167 (der)
+  20. frac_SYN                     0.0167 (der)
+derived = 39.7% of columns, 59.0% of importance
+Destination Port importance rank 13 (0.0321)
+
+total 30.4 min

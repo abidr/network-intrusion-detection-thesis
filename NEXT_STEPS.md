@@ -1,186 +1,135 @@
-# Next Steps — where the remaining improvement is
+# Next Steps — after the service-identity / v7 campaign
 
-Written 2026-08-07, after `final_model.ipynb` was consolidated (test macro-F1 **0.6339**, or
-`0.634 [0.617, 0.651]` at the reporting yardstick).
-
-Companion to `results_summary.md`, which records what has been **done**. This file records what is
-**left**, ranked by expected value, with the evidence for each ranking. Read `results_summary.md`
-§"Ablation + bootstrap significance" before acting on anything here.
+Updated **2026-08-09**, end of session. Previous version (2026-08-07) predates everything below;
+its Tier-1/Tier-2 items are now all resolved. Companion to `results_summary.md` / `CLAUDE.md`
+(what has been **done**) and `results_short.md` (the metrics table).
 
 ---
 
-## The constraint everything below is measured against
+## What changed on 2026-08-09 (one screen)
 
-Two facts bound the remaining work:
+1. **`CICFlowMeter_out.csv` obtained** (full official release, 3.54M rows) — carries the Flow ID /
+   IPs / **ports** / protocol / **timestamps** that `Data.csv` stripped. The old "host/temporal
+   context is impossible on this file" claim is **obsolete**; `Data.csv` verified as a verbatim
+   subset (all attacks kept, Benign ~10× downsampled); the 0–9 label mapping is now file-verified.
+2. **Service identity broke the plateau** (`results/cic_unsw_svc/`): DERIVED+svc **0.7460** on the
+   curated file, paired **+0.0982, p<0.001** — the largest gain in the project. The UNSW-extractor
+   prediction transferred almost quantitatively (Shellcode 0.658 vs predicted 0.650).
+3. **v7 generation on the full release** (Benign 97.5%, not level-comparable to the curated file):
+   v7 0.6601 → v7.1 reject class 0.6843 (+0.0242, p<0.001) → v7.1b e2e-objective W **0.6874**
+   (+0.0032, p<0.001). **Headline: `0.687 [0.671, 0.704]` / acc 0.9866.**
+4. **TTL ruled out as a feature** (`results/ttl_join/`): join succeeded at 100% coverage, but sttl
+   is a measured **attacker-host label proxy** (benign 97% sttl∈{31,29} at 0.0000 attack share;
+   attacks ≥98% sttl∈{62,254}). The UNSW "ask for TTL" recommendation is withdrawn.
+5. **Hyperparameters null** (`results/v72_hparam/`): 40-config sweep, probe cleared the bar but the
+   pipeline did not confirm (+0.0054 [−0.0037, +0.0136], p≈0.23). Defaults kept.
+6. **Reject-set enrichment null** (`results/v71c_reject_enrich/`): +0.0009, p≈0.82 — only 5,240
+   benign rows live in p∈(0.2,0.5]; boundary estimation is saturated.
 
-1. **Irreducible error.** The k-NN overlap analysis gave a Cover–Hart bracket of
-   **e\* ∈ [0.213, 0.376]** for the 9-family sub-problem → accuracy ceiling [0.625, 0.787]. The final
-   model's Stage-B accuracy is **0.737**, inside that bracket near its top.
-2. **Resolution.** The paired bootstrap noise band is **±0.012** macro-F1. Any lever that returns less
-   than that cannot be claimed, no matter how clean the idea.
-
-**Six** modelling levers (focal weighting, dynamic ensemble selection, per-class thresholds, wider α
-grid, per-instance competence over an α-diverse pool, per-class × per-instance hybrid) have now
-returned ~nothing, because all six operate *downstream* of a constraint that lives in the features.
-
-The v4 result is the sharpest evidence for this. It gave the competence estimator everything v1 lacked
-— the right diversity axis and 5× the reference data — and the per-instance weights **still** sat
-within 4.5% of uniform. Local neighbourhoods in the 44-feature space are too impure to say which model
-to trust where. That is a statement about the representation, not about combiners.
-
-**The loophole:** the Cover–Hart bracket was measured **in the 44-feature RobustScaler space**. It
-bounds *this representation*, not the problem. Changing the representation is the only lever that moves
-the bound rather than approaching it. That is why Tier 1 is what it is.
-
----
-
-## Tier 1 — can actually move macro-F1
-
-### 1.1 Un-prune the correlation drop — do this first (~30 min)
-
-The unsupervised prune took 67 non-constant features → 44 by dropping |r| ≥ 0.95 pairs. **Correlated is
-not redundant for tree ensembles** when the redundancy is only near-linear: a split on the "duplicate"
-column can still cut the space differently.
-
-- Re-run the α=0.25 Stage-B on all 67 non-constant columns, everything else identical.
-- Re-measure the **1-NN error in the 67-D space** — this is the real point of the experiment. If the
-  bracket tightens, the ceiling is representation-bound and Tier 1.2 is justified. If it does not move,
-  the prune is independently validated a second time (the label-ambiguity notebook already showed the
-  prune creates zero new ambiguity) and that is a clean methodology result for the write-up.
-- Cheap, decisive either way, and it calibrates how much to invest in 1.2.
-
-### 1.2 Derived features — highest expected value
-
-CICFlowMeter emits raw counts and durations; trees cannot express `a/b` without deep, sample-hungry
-splits. Candidates, all constructible from the existing 44:
-
-- forward/backward **ratios** (byte ratio, packet ratio, segment-size ratio) — the asymmetry, not the
-  magnitudes
-- **bytes per packet**, per direction
-- **duration-normalised rates** where only the raw totals are present
-- **IAT coefficient of variation** (std/mean) — burstiness independent of scale
-- **flag counts as fractions** of total packets rather than absolute counts
-
-Rationale: if Analysis is 51.4% Exploits *by neighbourhood* and Shellcode 46.5% Fuzzers, a feature that
-separates those geometrically is worth more than any classifier change. Feed 1.3 (SHAP) into this — SHAP
-on a confused pair names the columns whose interaction is doing the separating work, which is where the
-ratio should be built.
-
-Evaluate on the **same** leakage-safe protocol; a new feature set does not license a new split.
-
-### 1.3 Block-structured Stage B — the one untested architectural idea
-
-The k-NN analysis found the confusion matrix is block-structured. Route **block first, family within
-block second**:
-
-- {Exploits, DoS, Analysis}
-- {Fuzzers, Reconnaissance, Shellcode}
-- {Generic, Backdoor, Worms}
-
-This is the direct extension of the project's only significant architectural win — and it must carry
-**α-tempered weighting at every level**, because the ablation showed the hierarchy is an *interaction*
-effect (+0.0178 at α=0.25, −0.0061 under `balanced`, n.s.). A block hierarchy under `balanced` would
-likely reproduce the negative result.
-
-**Risk, stated up front:** if the blocks are internally inseparable this relocates the error rather than
-removing it — the block gate will be accurate and the within-block classifiers will absorb the full
-confusion. That outcome is still reportable (it localises the difficulty), but do not expect a gain
-merely because the two-stage hierarchy worked at the Benign/Attack boundary; the gate worked there
-because it was nearly *solved* (attack recall ≈ 0.997), and no block boundary looks that clean.
+**The in-scope lever list is now EMPTY.** Established: α=0.25 weighting, DERIVED features, service
+identity, hierarchy + reject class, e2e-objective W. Everything else: tested null or measured
+artifact. The only remaining score path is **payload from PCAPs** → future-work chapter.
 
 ---
 
-## Tier 2 — cheap, low expected gain, closes a hole
+## Current headline numbers (two settings — never compare across)
 
-### 2.1 Hyperparameter search — never done
+| Setting | Model | macro-F1 | Accuracy |
+|---|---|---|---|
+| Curated file (Benign 80%) | v6+svc, `results/cic_unsw_svc/` | **0.746 [0.727, 0.763]** | 0.9486 |
+| Full release (Benign 97.5%) | v7.1b, `final_model_v7_1_reject.ipynb` §7 | **0.687 [0.671, 0.704]** | 0.9866 |
 
-`n_estimators=400, max_depth=8, learning_rate=0.1, subsample=0.9, colsample_bytree=0.9` have been
-hand-fixed since the first notebook. There is **no `GridSearchCV` / `RandomizedSearchCV` / Optuna
-anywhere in the repository**.
-
-The project record predicts this returns little ("gains come from weighting or data, never model
-capacity" — DT→RF→XGB moved macro-F1 only ~5 points). But the current state cannot support the sentence
-*"we searched the capacity axis and it is not the bottleneck"*, and that is a hole an examiner will find.
-Run it once, report the negative result, move on.
-
-**Constraint:** `SEL` is spent (used for both architecture selection and thresholds). Any new tuning
-needs a fresh split carved from `train`, or cross-fitting as in v3.
+Reporting rules unchanged: marginal CI ≈ ±0.017 for one config, paired ≈ ±0.012 for comparisons,
+quote SELV-selected numbers never test-max, rare classes as intervals (Worms ±0.13, Analysis wide).
 
 ---
 
-## Tier 3 — improves the thesis rather than the number
+## Open items, ranked
 
-This is where the time is best spent. The score is near a measured floor; the *contribution* is not.
+### 1. Chronological split — NOW POSSIBLE, run it first
 
-### 3.1 SHAP — the last outstanding item in the novelty stack
+Timestamps are sitting unused in `CICFlowMeter_out.csv` (offset vs epoch verified: +14400 s,
+`results/ttl_join/`). This is the evaluation-realism gap **all 10 reviewed papers** share.
+Two cuts, both on the v7.1b architecture:
+- **Session split**: train on the 22 Jan 2015 capture, test on 17 Feb — genuine cross-campaign.
+- Fallback/secondary: time-ordered 80/20 within the whole capture.
 
-Missing XAI is one of the four literature gaps the review named, and it is the only element of the
-planned contribution not yet delivered. Target it at the **overlap pairs** — Exploits↔Reconnaissance
-(451 confusions, zero exact ambiguity), DoS↔Exploits (442, zero), Fuzzers↔Shellcode — **not** at rare
-classes generically. Two reasons: those pairs are where the error actually is, and the per-class
-intervals on the rare families (Worms ±0.13) cannot support a per-class explanatory claim anyway.
+Design constraints decided in advance: no stratification is possible — print the per-family test
+support table *before* any metric and floor tiny families out of the headline macro; reject set,
+combiner reference and all fitting from training-period rows only; levels are NOT comparable to the
+random split — report the paired gap of same-pipeline-both-ways. **Informative in both directions**
+(hold = certifies the headline; drop = measures the realism gap). Existing caches do not apply —
+full re-run, ~30–45 min.
 
-Feeds directly into 1.2.
+### 2. SHAP — the last outstanding novelty-stack item
 
-### 3.2 Multi-seed / repeated-split variance
+Missing XAI is a named literature gap and the only undelivered element of the planned contribution.
+Targets are sharper now than when this was first listed:
+- **What does the reject class key on**, and why does it swallow Fuzzers specifically?
+- **Why is `svc_rpc` worth 0.372–0.418 of importance** (Recon/port-111 concentration) — and what
+  does that say about testbed service-targeting (feeds the honesty section)?
+- The surviving overlap pairs: Exploits↔Recon (515 confusions), DoS↔Exploits — the ones service
+  identity did **not** fix because those attacks target the same services.
+Not rare classes generically (their CIs cannot support per-class claims).
 
-Current confidence intervals capture **test-set sampling only** — `results_summary.md` already flags
-them as optimistic. Five seeds of the entire split→train→evaluate pipeline converts that caveat into a
-measurement, and is the single cheapest credibility gain available.
+### 3. Multi-seed variance — ⏳ UNFINISHED (1 of 10 runs done)
 
-### 3.3 Cross-dataset evaluation
+`multiseed_variance.ipynb` is built and validated (seed 42/BASE reproduces 0.6157/0.6334/0.6363 to
+four decimals); needs **~2 h of compute**, pins all 16 cores. Resume:
 
-"Single-dataset evaluation" is another named gap from the review. Original UNSW-NB15 or CIC-IDS2017.
-Will not improve the number on this test set; addresses the gap directly.
+```
+python -m jupyter nbconvert --to notebook --execute --inplace multiseed_variance.ipynb
+```
+
+Progress: `python -c "import pandas as pd; print(pd.read_csv('cache_multiseed.csv').to_string())"`.
+Note its grid covers the **curated-file v6-era ladder** (BASE/DERIVED). That still matters — the
+0.746 svc headline sits on that pipeline — but consider whether one v7.1b seed-repeat is worth
+adding (~35 min/seed) so the full-release headline also gets an across-seed check.
+
+### 4. Optional: TTL artifact quantification (half a day)
+
+One paired run with sttl added would measure *how many macro-F1 points the testbed topology is
+worth* — i.e., what sttl-using UNSW-NB15 papers gain from the artifact. Frame strictly as an audit
+measurement (feeds the literature-audit chapter), never as a model improvement. Skip if time is
+short; the fingerprint tables in `results/ttl_join/` already carry the qualitative claim.
+
+### 5. Writing — the thesis is no longer score-limited
+
+The arc is complete and unusually defensible: five established gains, twelve pre-registered nulls,
+one measured artifact, a diagnosed plateau with an externally-confirmed missing ingredient that was
+then cashed in (+0.098). Key framings already worked out (see CLAUDE.md sections): moderate-not-full
+rebalancing; architecture value is conditional on problem hardness (three demonstrations); fit the
+combiner on the deployment objective; the Fuzzers↔Benign boundary as a SOC operating choice;
+near-100% literature numbers vs the dedupe/leakage/TTL mechanics this project measured.
 
 ---
 
-## Do not re-open
+## Do not re-open (extended)
 
-Closed with measurements, recorded in `results_summary.md`:
+Everything from the 2026-08-07 table still stands (balanced weighting, full/capped SMOTE, focal,
+DES/algorithm pools, per-class thresholds, soft routing, gate threshold+weighting, α>1.0, label
+noise, per-instance competence incl. META-DES-class, hybrid, D2 algebra, bracket-chasing
+transforms). Added this session:
 
 | Lever | Verdict |
 |---|---|
-| `class_weight='balanced'` | ranked 12th of 14, below no weighting; use α ≈ 0.25 |
-| full SMOTE | macro-F1 0.5807 → 0.5088 |
-| capped SMOTE | superseded by weighting (0.6123 vs 0.5988) and cheaper |
-| focal / dynamic weighting | γ=2 collapses the model (0.3497) |
-| DES / algorithm-diverse pool | did not transfer to test (−0.0007) |
-| per-class thresholds | algebraically redundant with `W`; verified on 100.0000% of rows |
-| soft routing | +0.0000 |
-| gate-threshold tuning | gate is already optimally calibrated (`t_0 = 1.0`) |
-| α > 1.0 | axis saturates; 10-member pool scored below the 7-member subset |
-| "labels are noisy" | refuted — only 0.35% ambiguous rows |
-| **per-instance competence (v4)** | **weights sit within 4.5% of uniform even with the α-diverse pool and 5× reference data — both of v1's excuses eliminated** |
-| **per-class × per-instance hybrid (v4)** | **ties v3 (−0.0039, inside noise); the per-class matrix does the work, the dynamic term is inert** |
+| TTL / sttl features | label proxy — equivalent to source IP; `results/ttl_join/` |
+| XGB hyperparameters | 40-config sweep; probe +0.0079 did not survive the pipeline (p≈0.23) |
+| reject-set enrichment | +0.0009, p≈0.82; only 5,240 rows in p∈(0.2,0.5] — estimation saturated |
+| gate threshold at real base rate | redundant once the reject class exists (v7.1: t=0.7 ≡ t=0.5) |
+| ensembling at full scale / easy regimes | v7: all 21 variants within 0.004 of single XGB; also CIC-IDS2017. Value is conditional on hardness |
+| block-structured Stage B (old Tier 1.3) | **obsolete before testing** — svc features dissolved the block geometry it was designed around (Recon 0.83, Shellcode 0.72); the surviving confusions are within-service, which a block gate cannot separate either |
 
-Three standing methodological rules from those failures: **do not justify a pool by its oracle bound**
-(headroom rose +55% v2→v3 for +0.004 realised; v4 had 0.1579 and realised 0), **asymmetric per-class
-P/R is not evidence of a bad threshold**, and **do not read a SELV/test rank change as a wrong pick
-when the candidates sit inside the ±0.012 band** — that is resolution failure, not selection error.
-
-> **Note on v4 and the thesis framing.** v4 is retained as the **dynamic-ensemble contribution**
-> (`v4-hybrid` 0.630, `v4-dynamic` 0.626) even though neither beats v3 — see `results_summary.md`. It is
-> closed as a *lever for improving the score*, not as a deliverable. Do not re-run it hoping for a
-> different number.
+Standing methodological rules: don't justify a pool by its oracle bound; asymmetric P/R is not a
+bad threshold; SELV/test rank shuffles inside ±0.012 are resolution failure, not selection error;
+**probe gains must survive the full pipeline before being believed** (v7.2's lesson).
 
 ---
 
 ## Recommended order
 
-_Updated 2026-08-08, after v4._
-
-1. **3.1 (SHAP)** — now first. It is the **last outstanding item in the novelty stack** and is required
-   regardless of what it finds, which is no longer true of anything score-related: six levers have
-   returned nothing and the score sits at a measured floor. v4 also makes it more informative — there
-   are now seven members whose per-class weights specialise, so SHAP can explain *why* α=0.0 owns
-   Shellcode while α=1.0 owns DoS.
-2. **1.1** (67-feature ablation) — 30-minute diagnostic; decides whether 1.2 is worth funding. Decisive
-   either way: if the Cover–Hart bracket tightens, the ceiling is representation-bound; if it does not
-   move, the prune is independently validated a second time.
-3. **1.2** (derived features) — driven by what 3.1 surfaces. The only lever that moves the bound rather
-   than approaching it.
-4. Then 1.3 / 2.1 / 3.2 as time allows.
-
-SHAP moved ahead of 1.1 because the thesis now needs *contribution*, not score. The dynamic-ensemble
-contribution is delivered (v4); XAI is the one named literature gap still open.
+1. **Chronological split** (item 1) — one run, biggest remaining credibility item.
+2. **SHAP** (item 2) — required regardless of what it finds.
+3. **Multi-seed** (item 3) — pure execution, ~2 h unattended.
+4. TTL quantification (item 4) only if time allows.
+5. **Write.** The contribution is delivered; the chapters are waiting.

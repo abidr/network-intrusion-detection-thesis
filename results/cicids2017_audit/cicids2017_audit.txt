@@ -1,0 +1,126 @@
+==============================================================================
+1. PER-FILE SHAPE AND COLUMN AGREEMENT
+==============================================================================
+Monday-WorkingHours.pcap_ISCX.csv                            529918 x  79  ws-cols=65  dup-cols=none
+Tuesday-WorkingHours.pcap_ISCX.csv                           445909 x  79  ws-cols=65  dup-cols=none
+Wednesday-workingHours.pcap_ISCX.csv                         692703 x  79  ws-cols=65  dup-cols=none
+Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv       170366 x  79  ws-cols=65  dup-cols=none
+Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.cs   288602 x  79  ws-cols=65  dup-cols=none
+Friday-WorkingHours-Morning.pcap_ISCX.csv                    191033 x  79  ws-cols=65  dup-cols=none
+Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv         286467 x  79  ws-cols=65  dup-cols=none
+Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv             225745 x  79  ws-cols=65  dup-cols=none
+
+all 8 files share an identical column list (after strip): True
+
+pooled: 2830743 rows x 79 cols
+label column: 'Label'
+
+==============================================================================
+2. DTYPES AND NON-NUMERIC COLUMNS
+==============================================================================
+features: 78 | non-numeric: none
+dtype counts: {'int64': 54, 'float64': 24}
+
+==============================================================================
+3. NaN / inf  (CIC-UNSW had ZERO of both -- expect otherwise here)
+==============================================================================
+columns with NaN: 1
+  Flow Bytes/s                       1358  (0.0480%)
+columns with inf: 2
+  Flow Packets/s                     2867  (0.1013%)
+  Flow Bytes/s                       1509  (0.0533%)
+rows affected by NaN or inf: 2867 (0.1013%)
+
+==============================================================================
+4. CLASS DISTRIBUTION
+==============================================================================
+15 distinct labels
+  BENIGN                           2273097  80.3004%
+  DoS Hulk                          231073   8.1630%
+  PortScan                          158930   5.6144%
+  DDoS                              128027   4.5227%
+  DoS GoldenEye                      10293   0.3636%
+  FTP-Patator                         7938   0.2804%
+  SSH-Patator                         5897   0.2083%
+  DoS slowloris                       5796   0.2048%
+  DoS Slowhttptest                    5499   0.1943%
+  Bot                                 1966   0.0695%
+  Web Attack ï¿½ Brute Force          1507   0.0532%
+  Web Attack ï¿½ XSS                   652   0.0230%
+  Infiltration                          36   0.0013%
+  Web Attack ï¿½ Sql Injection          21   0.0007%
+  Heartbleed                            11   0.0004%
+
+imbalance ratio (largest:smallest) = 206645 : 1
+
+==============================================================================
+5. DUPLICATE ROWS -- the leakage trap
+==============================================================================
+exact duplicates on features+label : 308381  (10.89%)
+exact duplicates on features only  : 309079  (10.92%)
+=> feature-vectors with CONFLICTING labels account for 698 rows
+CIC-UNSW-2024 reference: 447,915 -> 306,173 (32%% duplicates)
+UNSW-NB15 reference    : 257,673 -> 162,745 (36.8%% duplicates)
+
+after dedupe: 2522362 rows
+  label                           before     after    kept%
+  BENIGN                         2273097   2096484    92.2%
+  DoS Hulk                        231073    172849    74.8%
+  PortScan                        158930     90819    57.1%
+  DDoS                            128027    128016   100.0%
+  DoS GoldenEye                    10293     10286    99.9%
+  FTP-Patator                       7938      5933    74.7%
+  SSH-Patator                       5897      3219    54.6%
+  DoS slowloris                     5796      5385    92.9%
+  DoS Slowhttptest                  5499      5228    95.1%
+  Bot                               1966      1953    99.3%
+  Web Attack ï¿½ Brute Force        1507      1470    97.5%
+  Web Attack ï¿½ XSS                 652       652   100.0%
+  Infiltration                        36        36   100.0%
+  Web Attack ï¿½ Sql Injection        21        21   100.0%
+  Heartbleed                          11        11   100.0%
+
+==============================================================================
+6. ZERO-VARIANCE COLUMNS (unsupervised prune, step 1)
+==============================================================================
+zero-variance: 8
+  Bwd PSH Flags                  constant = 0
+  Bwd URG Flags                  constant = 0
+  Fwd Avg Bytes/Bulk             constant = 0
+  Fwd Avg Packets/Bulk           constant = 0
+  Fwd Avg Bulk Rate              constant = 0
+  Bwd Avg Bytes/Bulk             constant = 0
+  Bwd Avg Packets/Bulk           constant = 0
+  Bwd Avg Bulk Rate              constant = 0
+(CIC-UNSW had 9 such columns)
+
+==============================================================================
+7. |r| >= 0.95 REDUNDANCY (unsupervised prune, step 2)
+==============================================================================
+redundant (dropped): 23
+  Total Backward Packets         r=0.999 with Total Fwd Packets
+  Total Length of Bwd Packets    r=0.997 with Total Fwd Packets
+  Fwd Packet Length Std          r=0.969 with Fwd Packet Length Max
+  Bwd Packet Length Mean         r=0.958 with Bwd Packet Length Max
+  Bwd Packet Length Std          r=0.983 with Bwd Packet Length Max
+  Fwd IAT Total                  r=0.999 with Flow Duration
+  Fwd IAT Max                    r=0.998 with Flow IAT Max
+  Fwd Packets/s                  r=0.980 with Flow Packets/s
+  Packet Length Std              r=0.984 with Max Packet Length
+  SYN Flag Count                 r=1.000 with Fwd PSH Flags
+  CWE Flag Count                 r=1.000 with Fwd URG Flags
+  ECE Flag Count                 r=0.998 with RST Flag Count
+  Average Packet Size            r=0.998 with Packet Length Mean
+  Avg Fwd Segment Size           r=1.000 with Fwd Packet Length Mean
+  Avg Bwd Segment Size           r=1.000 with Bwd Packet Length Mean
+  Fwd Header Length.1            r=1.000 with Fwd Header Length
+  Subflow Fwd Packets            r=1.000 with Total Fwd Packets
+  Subflow Fwd Bytes              r=1.000 with Total Length of Fwd Packets
+  Subflow Bwd Packets            r=1.000 with Total Backward Packets
+  Subflow Bwd Bytes              r=1.000 with Total Length of Bwd Packets
+  Idle Mean                      r=0.980 with Flow IAT Max
+  Idle Max                       r=0.990 with Idle Mean
+  Idle Min                       r=0.990 with Idle Mean
+
+FULL 78 -> after zero-var 70 -> BASE 47 features
+(CIC-UNSW: 76 -> 67 -> 44)

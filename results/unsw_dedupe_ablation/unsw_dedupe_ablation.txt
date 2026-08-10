@@ -1,0 +1,171 @@
+
+==============================================================================
+ARM: DEDUPE
+==============================================================================
+pooled 257673 -> 162745 rows (DEDUPE)
+prune: FULL 64 -> BASE 57 ; DERIVED space 83 features
+  zero-var dropped (0): none
+  |r|>=0.95 dropped (7): sbytes, dbytes, sloss, dloss, dwin, ct_ftp_cmd, st_FIN
+LEAKAGE: 0 of 32549 test rows (0.00%) have an exact (features+label) twin in train
+train+val 130196 (61618 attack) | test 32549 (15405 attack)
+e_1NN 0.3044  ->  e* bracket [0.1681, 0.3044]  (n_ref=61618)
+  fold 1/5 (81s)
+  fold 2/5 (79s)
+  fold 3/5 (80s)
+  fold 4/5 (78s)
+  fold 5/5 (79s)
+cross-fit 398s
+OOF gate: attack recall 0.9176 / precision 0.9209
+W fitted in 15s | reference 30809 attack rows
+SELV winner: HYBRID W x OLA-cw k=30 p=8 (0.6319)
+refit + test in 87s
+
+--- TEST TABLE (DEDUPE) ---
+                    variant    mF1     mP     mR    acc
+        STATIC: per-class W 0.6404 0.7262 0.6718 0.8301
+ HYBRID W x OLA-cw k=30 p=8 0.6378 0.7203 0.6718 0.8299
+HYBRID W x OLA-cw k=100 p=8 0.6365 0.7081 0.6695 0.8303
+          single: XGB a=1.0 0.6079 0.6111 0.6209 0.8210
+       DYN OLA-cw k=100 p=3 0.6074 0.6234 0.6075 0.8256
+        DYN OLA-cw k=30 p=1 0.6071 0.6301 0.6014 0.8253
+        DYN OLA-cw k=30 p=3 0.6070 0.6246 0.6063 0.8252
+       DYN OLA-cw k=100 p=8 0.6068 0.6198 0.6093 0.8254
+       DYN OLA-cw k=100 p=1 0.6065 0.6319 0.5982 0.8253
+        DYN OLA-cw k=30 p=8 0.6062 0.6199 0.6089 0.8250
+      STATIC: equal average 0.5959 0.6232 0.5828 0.8236
+          single: XGB a=0.5 0.5948 0.6092 0.5941 0.8226
+         single: XGB a=0.25 0.5936 0.6205 0.5811 0.8235
+      single: XGB smote2000 0.5850 0.6149 0.5705 0.8235
+          single: RF a=0.25 0.5813 0.6192 0.5595 0.8216
+          single: XGB a=0.0 0.5670 0.6029 0.5482 0.8228
+          single: ET a=0.25 0.5616 0.6082 0.5377 0.8213
+
+SELV-selected 'HYBRID W x OLA-cw k=30 p=8' ranks 2 of 17 on test
+DEDUPE: macro-F1 0.6378 | accuracy 0.8299
+
+per-class report (DEDUPE)
+                precision    recall  f1-score   support
+
+        Benign      0.927     0.932     0.930     17144
+      Analysis      0.163     0.776     0.269       407
+      Backdoor      0.976     0.106     0.192       376
+           DoS      0.478     0.327     0.389      1100
+      Exploits      0.872     0.827     0.849      5487
+       Fuzzers      0.708     0.646     0.676      4192
+       Generic      0.932     0.896     0.913      1520
+Reconnaissance      0.875     0.732     0.797      1998
+     Shellcode      0.578     0.739     0.649       291
+         Worms      0.694     0.735     0.714        34
+
+      accuracy                          0.830     32549
+     macro avg      0.720     0.672     0.638     32549
+  weighted avg      0.859     0.830     0.837     32549
+
+accuracy on LEAKED test rows  : nan  (n=0)
+accuracy on CLEAN  test rows  : 0.8299  (n=32549)
+
+==============================================================================
+ARM: NO-DEDUPE
+==============================================================================
+pooled 257673 -> 257673 rows (NO-DEDUPE)
+prune: FULL 64 -> BASE 54 ; DERIVED space 80 features
+  zero-var dropped (0): none
+  |r|>=0.95 dropped (10): sbytes, dbytes, sloss, dloss, dwin, ct_src_dport_ltm, ct_dst_src_ltm, ct_ftp_cmd, ct_srv_dst, st_FIN
+LEAKAGE: 22007 of 51535 test rows (42.70%) have an exact (features+label) twin in train
+train+val 206138 (131738 attack) | test 51535 (32935 attack)
+e_1NN 0.2435  ->  e* bracket [0.1315, 0.2435]  (n_ref=131738)
+  fold 1/5 (115s)
+  fold 2/5 (112s)
+  fold 3/5 (118s)
+  fold 4/5 (111s)
+  fold 5/5 (106s)
+cross-fit 562s
+OOF gate: attack recall 0.9426 / precision 0.9774
+W fitted in 27s | reference 65869 attack rows
+SELV winner: HYBRID W x OLA-cw k=100 p=8 (0.6174)
+refit + test in 128s
+
+--- TEST TABLE (NO-DEDUPE) ---
+                    variant    mF1     mP     mR    acc
+HYBRID W x OLA-cw k=100 p=8 0.6403 0.6860 0.6573 0.8228
+ HYBRID W x OLA-cw k=30 p=8 0.6391 0.6747 0.6549 0.8224
+        DYN OLA-cw k=30 p=8 0.6369 0.6979 0.6303 0.8323
+        STATIC: per-class W 0.6361 0.7212 0.6465 0.8225
+       DYN OLA-cw k=100 p=8 0.6357 0.7061 0.6282 0.8320
+        DYN OLA-cw k=30 p=3 0.6325 0.6923 0.6221 0.8310
+       DYN OLA-cw k=100 p=3 0.6304 0.6980 0.6191 0.8307
+        DYN OLA-cw k=30 p=1 0.6251 0.6891 0.6108 0.8291
+          single: XGB a=0.5 0.6246 0.6377 0.6308 0.8226
+       DYN OLA-cw k=100 p=1 0.6236 0.6807 0.6087 0.8286
+      STATIC: equal average 0.6166 0.6395 0.6052 0.8257
+         single: XGB a=0.25 0.6151 0.6372 0.6048 0.8267
+          single: XGB a=0.0 0.6064 0.7564 0.5769 0.8309
+      single: XGB smote2000 0.6010 0.7510 0.5735 0.8308
+          single: XGB a=1.0 0.5937 0.6136 0.6055 0.7896
+          single: RF a=0.25 0.5870 0.6369 0.5606 0.8235
+          single: ET a=0.25 0.5797 0.6312 0.5510 0.8230
+
+SELV-selected 'HYBRID W x OLA-cw k=100 p=8' ranks 1 of 17 on test
+NO-DEDUPE: macro-F1 0.6403 | accuracy 0.8228
+
+per-class report (NO-DEDUPE)
+                precision    recall  f1-score   support
+
+        Benign      0.903     0.965     0.933     18600
+      Analysis      0.505     0.099     0.166       535
+      Backdoor      0.171     0.247     0.202       466
+           DoS      0.367     0.844     0.511      3271
+      Exploits      0.867     0.562     0.682      8905
+       Fuzzers      0.786     0.522     0.627      4849
+       Generic      0.996     0.983     0.990     11774
+Reconnaissance      0.923     0.771     0.840      2798
+     Shellcode      0.636     0.752     0.689       302
+         Worms      0.707     0.829     0.763        35
+
+      accuracy                          0.823     51535
+     macro avg      0.686     0.657     0.640     51535
+  weighted avg      0.862     0.823     0.826     51535
+
+accuracy on LEAKED test rows  : 0.8064  (n=22007)
+accuracy on CLEAN  test rows  : 0.8350  (n=29528)
+
+==============================================================================
+SIDE BY SIDE
+==============================================================================
+                                     DEDUPE      NO-DEDUPE      delta
+rows used                            162745         257673 +94928.0000
+features                                 83             80    -3.0000
+test rows                             32549          51535 +18986.0000
+macro-F1                             0.6378         0.6403    +0.0025
+accuracy                             0.8299         0.8228    -0.0071
+macro-P                              0.7203         0.6860    -0.0343
+macro-R                              0.6718         0.6573    -0.0145
+e_1NN                                0.3044         0.2435    -0.0609
+gate recall                          0.9184         0.9415    +0.0231
+gate precision                       0.9242         0.9794    +0.0552
+test rows leaked                     0.0000         0.4270    +0.4270
+
+per-class F1
+family               DEDUPE   NO-DEDUP      delta
+Benign               0.9297     0.9329    +0.0032
+Analysis             0.2694     0.1656    -0.1038
+Backdoor             0.1918     0.2019    +0.0101
+DoS                  0.3886     0.5112    +0.1226
+Exploits             0.8492     0.6820    -0.1672
+Fuzzers              0.6756     0.6274    -0.0482
+Generic              0.9135     0.9895    +0.0760
+Reconnaissance       0.7973     0.8403    +0.0430
+Shellcode            0.6486     0.6889    +0.0403
+Worms                0.7143     0.7632    +0.0489
+
+leakage rate by class (NO-DEDUPE arm)
+  Benign            10.40%
+  Analysis          35.51%
+  Backdoor          27.25%
+  DoS               76.03%
+  Exploits          46.05%
+  Fuzzers           19.59%
+  Generic           95.83%
+  Reconnaissance    32.88%
+  Shellcode          4.64%
+  Worms              2.86%

@@ -1,0 +1,278 @@
+==============================================================================
+1. IDENTITY RECOVERY (dst port / protocol via feature-vector join)
+==============================================================================
+indexed 1904001 unique feature vectors from CICFlowMeter_out (12s)
+identity cached (17s total)
+raw rows: port unambiguous 77.31% | protocol unambiguous 100.00%
+
+==============================================================================
+2. LOAD + DEDUPE + PRUNE + DERIVED (exact final_model_v6.ipynb)
+==============================================================================
+dedupe: 447915 -> 306173 rows
+prune: 76 -> 44 (zero-var 9, |r|>=0.95 23)
+DERIVED: 75 = 44 BASE + 31 engineered
+SVC columns: 26 (constant-dropped: ['svc_ftpdata'])
+DERIVED_SVC: 101 features
+
+deduped rows: port unambiguous 94.09% overall, by class:
+  Benign            225003 rows | port known  92.44% | top ports: {80: 24312, 53: 20702, 6881: 16030, 5190: 14274}
+  Analysis             385 rows | port known 100.00% | top ports: {80: 379, 25: 6}
+  Backdoor             452 rows | port known 100.00% | top ports: {80: 96, 8080: 26, 2140: 20, 23476: 14}
+  DoS                 4412 rows | port known  97.55% | top ports: {80: 2029, 25: 435, 445: 132, 21: 109}
+  Exploits           30910 rows | port known  99.66% | top ports: {80: 14597, 25: 4301, 110: 1530, 143: 1524}
+  Fuzzers            26395 rows | port known  98.59% | top ports: {179: 9072, 445: 8034, 1723: 2664, 80: 2340}
+  Generic             4496 rows | port known  96.66% | top ports: {80: 1649, 25: 467, 53: 448, 143: 301}
+  Reconnaissance     12031 rows | port known  99.66% | top ports: {111: 8214, 80: 3691, 53: 41, 161: 20}
+  Shellcode           1848 rows | port known  84.09% | top ports: {47694: 4, 28954: 4, 62557: 4, 12213: 4}
+  Worms                241 rows | port known  98.34% | top ports: {80: 225, 69: 5, 1434: 5, 3533: 1}
+
+==============================================================================
+3. SHARED SPLITS (identical across arms; stratify on y only)
+==============================================================================
+train+val 244938 (64936 attack) | test 61235 (16234 attack)
+COMB attack reference: 32468 rows | SELV: 122469 rows
+
+==============================================================================
+ARM DERIVED (75 features)
+==============================================================================
+e_1NN 0.3632  (DERIVED reference from feature_engineering.ipynb: 0.3629)
+  fold 1/5 done (87s)
+  fold 2/5 done (100s)
+  fold 3/5 done (86s)
+  fold 4/5 done (79s)
+  fold 5/5 done (80s)
+cross-fit 431s
+OOF gate: attack recall 0.9959 / precision 0.9280
+W fitted 14s
+
+--- SELV (DERIVED) ---
+                    variant  e2e_mF1  e2e_mP  e2e_mR  e2e_acc
+        DYN OLA-cw k=30 p=8   0.6462  0.6883  0.6401   0.9122
+       DYN OLA-cw k=100 p=8   0.6448  0.6917  0.6372   0.9127
+        DYN OLA-cw k=30 p=3   0.6443  0.6937  0.6314   0.9124
+ HYBRID W x OLA-cw k=30 p=3   0.6421  0.6694  0.6461   0.9116
+ HYBRID W x OLA-cw k=30 p=1   0.6413  0.6682  0.6472   0.9113
+HYBRID W x OLA-cw k=100 p=1   0.6407  0.6678  0.6466   0.9112
+        STATIC: per-class W   0.6401  0.6661  0.6453   0.9110
+       DYN OLA-cw k=100 p=3   0.6400  0.6919  0.6257   0.9123
+HYBRID W x OLA-cw k=100 p=3   0.6395  0.6660  0.6458   0.9113
+    HYBRID W x LCA k=30 p=1   0.6383  0.6667  0.6395   0.9109
+        DYN OLA-cw k=30 p=1   0.6359  0.6913  0.6181   0.9118
+       DYN OLA-cw k=100 p=1   0.6323  0.6894  0.6134   0.9117
+               DYN LCA k=30   0.6286  0.6894  0.6063   0.9111
+      STATIC: equal average   0.6270  0.6866  0.6049   0.9109
+          single: XGB a=0.5   0.6248  0.6528  0.6188   0.9087
+          single: ET a=0.25   0.6207  0.6609  0.5989   0.9075
+          single: RF a=0.25   0.6196  0.6936  0.5864   0.9087
+         single: XGB a=0.25   0.6167  0.6759  0.5928   0.9105
+          single: XGB a=0.0   0.6066  0.7117  0.5653   0.9109
+      single: XGB smote2000   0.6058  0.6722  0.5865   0.9109
+          single: XGB a=1.0   0.6038  0.5806  0.6521   0.9006
+SELV winner: DYN OLA-cw k=30 p=8 (0.6462)
+refit 90s
+
+--- TEST (DERIVED; selection already made on SELV) ---
+                    variant  e2e_mF1  e2e_mP  e2e_mR  e2e_acc
+        DYN OLA-cw k=30 p=8   0.6478  0.6937  0.6380   0.9127
+       DYN OLA-cw k=100 p=8   0.6464  0.7030  0.6322   0.9128
+       DYN OLA-cw k=100 p=3   0.6449  0.7064  0.6249   0.9127
+        DYN OLA-cw k=30 p=3   0.6443  0.7025  0.6266   0.9128
+        DYN OLA-cw k=30 p=1   0.6426  0.7057  0.6205   0.9123
+       DYN OLA-cw k=100 p=1   0.6418  0.7096  0.6175   0.9124
+    HYBRID W x LCA k=30 p=1   0.6400  0.6701  0.6379   0.9111
+               DYN LCA k=30   0.6390  0.7098  0.6122   0.9117
+      STATIC: equal average   0.6375  0.7067  0.6114   0.9117
+ HYBRID W x OLA-cw k=30 p=3   0.6369  0.6617  0.6387   0.9114
+        STATIC: per-class W   0.6349  0.6638  0.6335   0.9110
+ HYBRID W x OLA-cw k=30 p=1   0.6341  0.6607  0.6347   0.9114
+HYBRID W x OLA-cw k=100 p=1   0.6337  0.6602  0.6351   0.9111
+HYBRID W x OLA-cw k=100 p=3   0.6307  0.6569  0.6309   0.9113
+         single: XGB a=0.25   0.6258  0.7031  0.5988   0.9117
+          single: XGB a=0.5   0.6256  0.6542  0.6196   0.9096
+      single: XGB smote2000   0.6149  0.6909  0.5900   0.9113
+          single: XGB a=0.0   0.6135  0.7199  0.5736   0.9119
+          single: RF a=0.25   0.6109  0.6825  0.5788   0.9081
+          single: XGB a=1.0   0.6053  0.5781  0.6596   0.8999
+          single: ET a=0.25   0.5959  0.6424  0.5734   0.9064
+SELV-selected 'DYN OLA-cw k=30 p=8' ranks 1 of 21 on test -> mF1 0.6478 acc 0.9127
+
+                precision    recall  f1-score   support
+
+        Benign      0.999     0.972     0.985     45001
+      Analysis      0.333     0.610     0.431        77
+      Backdoor      0.810     0.522     0.635        90
+           DoS      0.650     0.361     0.464       883
+      Exploits      0.823     0.763     0.792      6182
+       Fuzzers      0.603     0.903     0.723      5279
+       Generic      0.836     0.823     0.830       899
+Reconnaissance      0.733     0.572     0.642      2406
+     Shellcode      0.401     0.354     0.376       370
+         Worms      0.750     0.500     0.600        48
+
+      accuracy                          0.913     61235
+     macro avg      0.694     0.638     0.648     61235
+  weighted avg      0.924     0.913     0.914     61235
+
+gate on test: attack recall 0.9961 / precision 0.9267
+
+top 25 Stage-B features (XGB a=0.25):
+   1. PSH Flag Count           0.1308 
+   2. frac_PSH                 0.1121 (der)
+   3. Bwd Packet Length Max    0.0501 
+   4. Bwd Packet Length Min    0.0410 
+   5. hdr_per_pkt_bwd          0.0381 (der)
+   6. frac_ACK                 0.0280 (der)
+   7. Packet Length Max        0.0276 
+   8. Packet Length Mean       0.0268 
+   9. Bwd Bytes/Bulk Avg       0.0261 
+  10. hdr_per_pkt_fwd          0.0256 (der)
+  11. Total Bwd packets        0.0242 
+  12. bpp_flow                 0.0213 (der)
+  13. frac_SYN                 0.0212 (der)
+  14. asym_byte                0.0211 (der)
+  15. bwd_len_span_rel         0.0208 (der)
+  16. r_byte_fwd_bwd           0.0185 (der)
+  17. Packet Length Std        0.0179 
+  18. Fwd Packet Length Max    0.0178 
+  19. cv_pkt_len               0.0152 (der)
+  20. Bwd Packet Length Mean   0.0148 
+  21. Total Length of Fwd Packet 0.0147 
+  22. fwd_len_span_rel         0.0143 (der)
+  23. Total Fwd Packet         0.0136 
+  24. asym_pkt                 0.0131 (der)
+  25. cv_fwd_len               0.0121 (der)
+
+==============================================================================
+ARM DERIVED_SVC (101 features)
+==============================================================================
+e_1NN 0.2098  (DERIVED reference from feature_engineering.ipynb: 0.3629)
+  fold 1/5 done (95s)
+  fold 2/5 done (97s)
+  fold 3/5 done (91s)
+  fold 4/5 done (86s)
+  fold 5/5 done (87s)
+cross-fit 456s
+OOF gate: attack recall 0.9956 / precision 0.9414
+W fitted 14s
+
+--- SELV (DERIVED_SVC) ---
+                    variant  e2e_mF1  e2e_mP  e2e_mR  e2e_acc
+        DYN OLA-cw k=30 p=8   0.7374  0.7482  0.7540   0.9477
+       DYN OLA-cw k=100 p=8   0.7336  0.7473  0.7469   0.9479
+        DYN OLA-cw k=30 p=3   0.7330  0.7509  0.7410   0.9478
+       DYN OLA-cw k=100 p=3   0.7324  0.7542  0.7373   0.9479
+    HYBRID W x LCA k=30 p=1   0.7324  0.7440  0.7463   0.9473
+ HYBRID W x OLA-cw k=30 p=3   0.7322  0.7373  0.7545   0.9474
+        STATIC: per-class W   0.7311  0.7378  0.7489   0.9474
+        DYN OLA-cw k=30 p=1   0.7309  0.7565  0.7316   0.9478
+HYBRID W x OLA-cw k=100 p=1   0.7309  0.7368  0.7501   0.9475
+ HYBRID W x OLA-cw k=30 p=1   0.7308  0.7362  0.7513   0.9474
+HYBRID W x OLA-cw k=100 p=3   0.7305  0.7353  0.7523   0.9475
+       DYN OLA-cw k=100 p=1   0.7291  0.7564  0.7278   0.9477
+      STATIC: equal average   0.7274  0.7576  0.7225   0.9475
+               DYN LCA k=30   0.7271  0.7607  0.7205   0.9475
+          single: XGB a=0.5   0.7233  0.7353  0.7308   0.9466
+          single: RF a=0.25   0.7218  0.7705  0.7004   0.9464
+         single: XGB a=0.25   0.7172  0.7487  0.7100   0.9470
+          single: XGB a=1.0   0.7163  0.6920  0.7631   0.9426
+          single: ET a=0.25   0.7149  0.7412  0.7016   0.9453
+      single: XGB smote2000   0.7109  0.7454  0.7050   0.9466
+          single: XGB a=0.0   0.7089  0.7707  0.6828   0.9468
+SELV winner: DYN OLA-cw k=30 p=8 (0.7374)
+refit 94s
+
+--- TEST (DERIVED_SVC; selection already made on SELV) ---
+                    variant  e2e_mF1  e2e_mP  e2e_mR  e2e_acc
+       DYN OLA-cw k=100 p=3   0.7472  0.7806  0.7469   0.9491
+        STATIC: per-class W   0.7463  0.7636  0.7554   0.9484
+        DYN OLA-cw k=30 p=3   0.7462  0.7789  0.7469   0.9487
+        DYN OLA-cw k=30 p=8   0.7460  0.7706  0.7522   0.9486
+        DYN OLA-cw k=30 p=1   0.7457  0.7842  0.7411   0.9489
+ HYBRID W x OLA-cw k=30 p=1   0.7456  0.7615  0.7561   0.9483
+HYBRID W x OLA-cw k=100 p=1   0.7455  0.7619  0.7556   0.9485
+       DYN OLA-cw k=100 p=8   0.7451  0.7727  0.7492   0.9489
+       DYN OLA-cw k=100 p=1   0.7449  0.7818  0.7402   0.9488
+HYBRID W x OLA-cw k=100 p=3   0.7447  0.7590  0.7570   0.9485
+ HYBRID W x OLA-cw k=30 p=3   0.7443  0.7579  0.7573   0.9483
+               DYN LCA k=30   0.7438  0.7881  0.7338   0.9485
+    HYBRID W x LCA k=30 p=1   0.7433  0.7640  0.7497   0.9481
+      STATIC: equal average   0.7408  0.7817  0.7315   0.9483
+          single: XGB a=0.5   0.7367  0.7577  0.7399   0.9469
+      single: XGB smote2000   0.7259  0.7829  0.7079   0.9479
+         single: XGB a=0.25   0.7257  0.7692  0.7130   0.9476
+          single: XGB a=1.0   0.7228  0.7029  0.7702   0.9420
+          single: XGB a=0.0   0.7147  0.7775  0.6885   0.9473
+          single: RF a=0.25   0.7140  0.7804  0.6844   0.9470
+          single: ET a=0.25   0.7049  0.7481  0.6827   0.9456
+SELV-selected 'DYN OLA-cw k=30 p=8' ranks 4 of 21 on test -> mF1 0.7460 acc 0.9486
+
+                precision    recall  f1-score   support
+
+        Benign      0.999     0.977     0.988     45001
+      Analysis      0.359     0.610     0.452        77
+      Backdoor      0.927     0.567     0.703        90
+           DoS      0.676     0.478     0.560       883
+      Exploits      0.815     0.888     0.850      6182
+       Fuzzers      0.856     0.946     0.899      5279
+       Generic      0.861     0.909     0.884       899
+Reconnaissance      0.853     0.813     0.833      2406
+     Shellcode      0.552     0.814     0.658       370
+         Worms      0.806     0.521     0.633        48
+
+      accuracy                          0.949     61235
+     macro avg      0.771     0.752     0.746     61235
+  weighted avg      0.952     0.949     0.949     61235
+
+gate on test: attack recall 0.9964 / precision 0.9411
+
+top 25 Stage-B features (XGB a=0.25):
+   1. svc_rpc                  0.3721 (svc)
+   2. svc_bgp                  0.0606 (svc)
+   3. frac_PSH                 0.0435 (der)
+   4. SYN Flag Count           0.0349 
+   5. svc_ambiguous            0.0291 (svc)
+   6. svc_smb                  0.0273 (svc)
+   7. svc_pptp                 0.0267 (svc)
+   8. svc_http                 0.0235 (svc)
+   9. svc_rip                  0.0172 (svc)
+  10. PSH Flag Count           0.0172 
+  11. dst_port_num             0.0165 (svc)
+  12. svc_other_low            0.0163 (svc)
+  13. Bwd Packet Length Max    0.0149 
+  14. svc_registered           0.0149 (svc)
+  15. svc_imap                 0.0145 (svc)
+  16. svc_aim                  0.0125 (svc)
+  17. Packet Length Max        0.0111 
+  18. svc_syslog               0.0110 (svc)
+  19. svc_netbios              0.0104 (svc)
+  20. Total Bwd packets        0.0091 
+  21. svc_smtp                 0.0088 (svc)
+  22. svc_ephemeral            0.0085 (svc)
+  23. svc_https                0.0085 (svc)
+  24. hdr_per_pkt_bwd          0.0078 (der)
+  25. svc_telnet               0.0075 (svc)
+svc columns = 25.7% of features, 70.4% of importance
+
+==============================================================================
+4. PAIRED COMPARISON (N4: 2000 stratified bootstrap resamples)
+==============================================================================
+DERIVED     : mF1 0.6478 acc 0.9127  (published v6: 0.6485 / 0.9123)
+DERIVED_SVC : mF1 0.7460 acc 0.9486
+control reproduces published v6: NO -- INVESTIGATE
+
+paired delta (SVC - DERIVED): +0.0982  95% CI [+0.0885, +0.1081]  p ~ 0.000
+DERIVED_SVC marginal: 0.7460 [0.7272, 0.7627]
+
+per-class F1 delta (SVC - DERIVED):
+  Benign           0.9849 -> 0.9880  (+0.0031)
+  Analysis         0.4312 -> 0.4519  (+0.0207)
+  Backdoor         0.6351 -> 0.7034  (+0.0683)
+  DoS              0.4643 -> 0.5601  (+0.0958)
+  Exploits         0.7916 -> 0.8499  (+0.0583)
+  Fuzzers          0.7232 -> 0.8989  (+0.1757)
+  Generic          0.8296 -> 0.8842  (+0.0546)
+  Reconnaissance   0.6424 -> 0.8327  (+0.1903)
+  Shellcode        0.3759 -> 0.6579  (+0.2820)
+  Worms            0.6000 -> 0.6329  (+0.0329)
+
+total 19.0 min

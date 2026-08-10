@@ -1,0 +1,110 @@
+prep done 1m -- splits match v7/v7.1
+reject set 34101
+stage-1: train 49541 COMB rows | eval 49379 SELV gate-positives (+993342 background)
+
+==========================================================================
+STAGE 1 -- random search (40 configs + default)
+==========================================================================
+  0/40 DEFAULT                                selv 0.6185 (17s)
+  1/40 d6  lr0.05 n800 mcw20 sub0.9 col0.7 l1  selv 0.6142  -0.0043 (20s)
+  2/40 d6  lr0.10 n400 mcw20 sub1.0 col1.0 l1  selv 0.6226  +0.0041 (9s)
+  3/40 d6  lr0.20 n400 mcw1  sub0.7 col0.7 l1  selv 0.6046  -0.0139 (13s)
+  4/40 d8  lr0.05 n800 mcw20 sub1.0 col1.0 l10 selv 0.6204  +0.0020 (23s)
+  5/40 d12 lr0.10 n400 mcw20 sub0.9 col0.7 l1  selv 0.6206  +0.0021 (15s)
+  6/40 d10 lr0.20 n400 mcw5  sub0.7 col0.7 l10 selv 0.6086  -0.0099 (18s)
+  7/40 d6  lr0.05 n800 mcw5  sub0.7 col0.9 l10 selv 0.6197  +0.0012 (28s)
+  8/40 d6  lr0.10 n800 mcw20 sub0.9 col1.0 l1  selv 0.6112  -0.0073 (24s)
+  9/40 d6  lr0.20 n400 mcw20 sub0.9 col1.0 l10 selv 0.6088  -0.0097 (12s)
+ 10/40 d6  lr0.10 n400 mcw1  sub1.0 col0.7 l10 selv 0.6207  +0.0023 (11s)
+ 11/40 d8  lr0.05 n800 mcw1  sub0.9 col0.9 l10 selv 0.6193  +0.0008 (35s)
+ 12/40 d8  lr0.10 n800 mcw5  sub0.9 col0.7 l10 selv 0.6197  +0.0013 (29s)
+ 13/40 d8  lr0.05 n800 mcw20 sub1.0 col0.7 l1  selv 0.6241  +0.0056 (23s)
+ 14/40 d12 lr0.20 n400 mcw5  sub1.0 col1.0 l1  selv 0.6180  -0.0005 (20s)
+ 15/40 d6  lr0.10 n800 mcw1  sub0.7 col0.9 l10 selv 0.6117  -0.0068 (27s)
+ 16/40 d6  lr0.10 n800 mcw1  sub1.0 col1.0 l10 selv 0.6173  -0.0012 (24s)
+ 17/40 d12 lr0.10 n400 mcw5  sub1.0 col0.9 l1  selv 0.6264  +0.0079 (19s)
+ 18/40 d8  lr0.10 n800 mcw1  sub1.0 col1.0 l10 selv 0.6145  -0.0040 (33s)
+ 19/40 d12 lr0.20 n400 mcw5  sub0.7 col0.7 l10 selv 0.6089  -0.0096 (24s)
+ 20/40 d6  lr0.05 n800 mcw1  sub0.7 col1.0 l1  selv 0.6174  -0.0010 (28s)
+ 21/40 d6  lr0.20 n400 mcw5  sub0.9 col1.0 l10 selv 0.6177  -0.0008 (13s)
+ 22/40 d6  lr0.10 n800 mcw20 sub1.0 col0.7 l10 selv 0.6139  -0.0046 (22s)
+ 23/40 d6  lr0.10 n800 mcw5  sub0.9 col0.7 l10 selv 0.6148  -0.0037 (22s)
+ 24/40 d10 lr0.05 n800 mcw20 sub0.7 col1.0 l1  selv 0.6130  -0.0055 (31s)
+ 25/40 d8  lr0.10 n800 mcw1  sub0.9 col0.7 l1  selv 0.6174  -0.0011 (31s)
+ 26/40 d12 lr0.10 n800 mcw1  sub0.7 col0.9 l10 selv 0.6077  -0.0108 (73s)
+ 27/40 d6  lr0.10 n400 mcw1  sub1.0 col0.7 l1  selv 0.6248  +0.0063 (10s)
+ 28/40 d6  lr0.20 n400 mcw20 sub0.7 col0.7 l10 selv 0.6111  -0.0074 (11s)
+ 29/40 d10 lr0.10 n400 mcw20 sub1.0 col0.9 l1  selv 0.6188  +0.0003 (14s)
+ 30/40 d10 lr0.10 n400 mcw5  sub1.0 col1.0 l10 selv 0.6199  +0.0014 (19s)
+ 31/40 d12 lr0.20 n400 mcw1  sub0.7 col0.7 l1  selv 0.6103  -0.0081 (27s)
+ 32/40 d6  lr0.10 n800 mcw20 sub1.0 col0.7 l1  selv 0.6163  -0.0021 (20s)
+ 33/40 d6  lr0.05 n800 mcw20 sub1.0 col0.7 l1  selv 0.6197  +0.0012 (21s)
+ 34/40 d6  lr0.05 n800 mcw5  sub0.7 col1.0 l1  selv 0.6130  -0.0055 (24s)
+ 35/40 d12 lr0.10 n800 mcw1  sub1.0 col0.7 l10 selv 0.6226  +0.0042 (56s)
+ 36/40 d12 lr0.10 n400 mcw5  sub0.7 col0.7 l1  selv 0.6192  +0.0007 (21s)
+ 37/40 d10 lr0.20 n400 mcw5  sub0.9 col0.9 l1  selv 0.6171  -0.0014 (17s)
+ 38/40 d6  lr0.05 n800 mcw5  sub1.0 col0.9 l1  selv 0.6177  -0.0008 (22s)
+ 39/40 d8  lr0.10 n400 mcw1  sub1.0 col0.9 l1  selv 0.6182  -0.0003 (15s)
+ 40/40 d8  lr0.20 n400 mcw5  sub0.9 col0.7 l1  selv 0.6152  -0.0033 (14s)
+
+--- STAGE 1 RANKING (top 10) ---
+cfg   selv  n_estimators  max_depth  learning_rate  min_child_weight  subsample  colsample_bytree  reg_lambda
+C17 0.6264           400         12           0.10                 5        1.0               0.9           1
+C27 0.6248           400          6           0.10                 1        1.0               0.7           1
+C13 0.6241           800          8           0.05                20        1.0               0.7           1
+C02 0.6226           400          6           0.10                20        1.0               1.0           1
+C35 0.6226           800         12           0.10                 1        1.0               0.7          10
+C10 0.6207           400          6           0.10                 1        1.0               0.7          10
+C05 0.6206           400         12           0.10                20        0.9               0.7           1
+C04 0.6204           800          8           0.05                20        1.0               1.0          10
+C30 0.6199           400         10           0.10                 5        1.0               1.0          10
+C33 0.6197           800          6           0.05                20        1.0               0.7           1
+
+default SELV 0.6185 | best 0.6264 (C17) | gain +0.0079 | pre-registered bar +0.005
+
+==========================================================================
+STAGE 2 -- bar cleared: tuned pool, W_e2e, SELV select, test once
+==========================================================================
+tuned params: {'max_depth': 12, 'learning_rate': 0.1, 'n_estimators': 400, 'min_child_weight': 5, 'subsample': 1.0, 'colsample_bytree': 0.9, 'reg_lambda': 1}  (RF/ET members stay default -- not tuned)
+loaded cache_oof_v72_tuned.npz
+tuned W_e2e fitted 15s (COMB e2e 0.6892)
+
+--- SELV (tuned pool) ---
+                       variant    mF1     mP     mR    acc
+HYBRID W_e2e x OLA-cw k=30 p=3 0.6713 0.7104 0.6550 0.9862
+HYBRID W_e2e x OLA-cw k=30 p=1 0.6698 0.7126 0.6518 0.9861
+     STATIC W_e2e (tuned pool) 0.6696 0.7138 0.6507 0.9861
+       single tuned XGB a=0.25 0.6427 0.7002 0.6087 0.9869
+SELV winner: HYBRID W_e2e x OLA-cw k=30 p=3
+gate + tuned pool + default pool refit 6m
+
+--- TEST (selection made on SELV) ---
+                       variant    mF1     mP     mR    acc
+HYBRID W_e2e x OLA-cw k=30 p=3 0.6942 0.7331 0.6781 0.9869
+HYBRID W_e2e x OLA-cw k=30 p=1 0.6941 0.7362 0.6769 0.9868
+     STATIC W_e2e (tuned pool) 0.6915 0.7327 0.6749 0.9868
+      v7.1b ref (default pool) 0.6888 0.7152 0.6908 0.9860
+       single tuned XGB a=0.25 0.6721 0.7386 0.6348 0.9875
+
+SELV-selected 'HYBRID W_e2e x OLA-cw k=30 p=3': test mF1 0.6942 | v7.1b ref 0.6888
+paired delta (tuned - v7.1b): +0.0054  95% CI [-0.0037, +0.0136]  p ~ 0.231
+
+                precision    recall  f1-score   support
+
+        Benign      0.996     0.994     0.995    505063
+      Analysis      0.101     0.286     0.150        77
+      Backdoor      0.831     0.600     0.697        90
+           DoS      0.691     0.524     0.596       884
+      Exploits      0.784     0.872     0.826      6185
+       Fuzzers      0.591     0.689     0.637      5287
+       Generic      0.888     0.881     0.884       899
+Reconnaissance      0.884     0.768     0.822      2407
+     Shellcode      0.872     0.617     0.722       420
+         Worms      0.692     0.551     0.614        49
+
+      accuracy                          0.987    521361
+     macro avg      0.733     0.678     0.694    521361
+  weighted avg      0.988     0.987     0.987    521361
+
+
+total 23.3 min

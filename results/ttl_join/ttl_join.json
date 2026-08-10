@@ -1,0 +1,118 @@
+{
+  "n_unsw": 2486024,
+  "unsw_skipped": 54023,
+  "offset_s": 14400,
+  "match_pct": {
+    "direct": 93.14,
+    "reversed": 4.6,
+    "ippair": 2.26,
+    "none": 0.0
+  },
+  "per_class": {
+    "Analysis": {
+      "rows": 385,
+      "flow_match": 1.0,
+      "any_match": 1.0,
+      "top_sttl": {
+        "62": 0.984,
+        "254": 0.016
+      }
+    },
+    "Backdoor": {
+      "rows": 452,
+      "flow_match": 1.0,
+      "any_match": 1.0,
+      "top_sttl": {
+        "254": 0.869,
+        "62": 0.131
+      }
+    },
+    "Benign": {
+      "rows": 3450658,
+      "flow_match": 0.9768,
+      "any_match": 1.0,
+      "top_sttl": {
+        "31": 0.934,
+        "29": 0.036,
+        "254": 0.014,
+        "252": 0.012
+      }
+    },
+    "DoS": {
+      "rows": 4467,
+      "flow_match": 1.0,
+      "any_match": 1.0,
+      "top_sttl": {
+        "254": 0.588,
+        "62": 0.412,
+        "255": 0.0
+      }
+    },
+    "Exploits": {
+      "rows": 30951,
+      "flow_match": 1.0,
+      "any_match": 1.0,
+      "top_sttl": {
+        "62": 0.52,
+        "254": 0.48,
+        "255": 0.0,
+        "63": 0.0
+      }
+    },
+    "Fuzzers": {
+      "rows": 29613,
+      "flow_match": 0.9992,
+      "any_match": 1.0,
+      "top_sttl": {
+        "254": 0.999,
+        "62": 0.001,
+        "255": 0.0
+      }
+    },
+    "Generic": {
+      "rows": 4632,
+      "flow_match": 0.9983,
+      "any_match": 1.0,
+      "top_sttl": {
+        "254": 0.724,
+        "62": 0.276
+      }
+    },
+    "Reconnaissance": {
+      "rows": 16735,
+      "flow_match": 0.9999,
+      "any_match": 1.0,
+      "top_sttl": {
+        "254": 0.999,
+        "62": 0.001,
+        "255": 0.0
+      }
+    },
+    "Shellcode": {
+      "rows": 2102,
+      "flow_match": 1.0,
+      "any_match": 1.0,
+      "top_sttl": {
+        "254": 1.0
+      }
+    },
+    "Worms": {
+      "rows": 246,
+      "flow_match": 1.0,
+      "any_match": 1.0,
+      "top_sttl": {
+        "254": 1.0
+      }
+    }
+  },
+  "attack_share_by_sttl": {
+    "29": 0.0,
+    "31": 0.0,
+    "32": 0.0,
+    "60": 0.0,
+    "62": 0.7389,
+    "252": 0.0,
+    "254": 0.5859
+  },
+  "minutes": 0.6
+}

@@ -1,0 +1,90 @@
+{
+  "experiment": "reject-set enrichment (train reject on OOF gate p>0.2)",
+  "n_reject_train": 39341,
+  "n_reject_default": 34101,
+  "selv_winner": "HYBRID W_e2e x OLA-cw k=30 p=3",
+  "test": {
+    "enriched": 0.6898,
+    "ref": 0.6888
+  },
+  "paired_delta": 0.0009,
+  "paired_ci": [
+    -0.0082,
+    0.0096
+  ],
+  "paired_p": 0.821,
+  "benign_as_attack": [
+    3809,
+    3865
+  ],
+  "attacks_swallowed": [
+    1465,
+    1436
+  ],
+  "per_class_f1": {
+    "Benign": 0.9946,
+    "Analysis": 0.1533,
+    "Backdoor": 0.6543,
+    "DoS": 0.6068,
+    "Exploits": 0.8231,
+    "Fuzzers": 0.6315,
+    "Generic": 0.8778,
+    "Reconnaissance": 0.825,
+    "Shellcode": 0.7268,
+    "Worms": 0.6047
+  },
+  "selv_table": [
+    {
+      "variant": "HYBRID W_e2e x OLA-cw k=30 p=3",
+      "mF1": 0.6749,
+      "mP": 0.7072,
+      "mR": 0.6655,
+      "acc": 0.9852
+    },
+    {
+      "variant": "HYBRID W_e2e x OLA-cw k=30 p=1",
+      "mF1": 0.6738,
+      "mP": 0.7062,
+      "mR": 0.6647,
+      "acc": 0.9853
+    },
+    {
+      "variant": "STATIC W_e2e (enriched)",
+      "mF1": 0.6714,
+      "mP": 0.7046,
+      "mR": 0.6622,
+      "acc": 0.9853
+    }
+  ],
+  "test_table": [
+    {
+      "variant": "STATIC W_e2e (enriched)",
+      "mF1": 0.6957,
+      "mP": 0.7253,
+      "mR": 0.6886,
+      "acc": 0.986
+    },
+    {
+      "variant": "HYBRID W_e2e x OLA-cw k=30 p=1",
+      "mF1": 0.6915,
+      "mP": 0.7204,
+      "mR": 0.6839,
+      "acc": 0.9859
+    },
+    {
+      "variant": "HYBRID W_e2e x OLA-cw k=30 p=3",
+      "mF1": 0.6898,
+      "mP": 0.7164,
+      "mR": 0.6833,
+      "acc": 0.9859
+    },
+    {
+      "variant": "v7.1b ref (default reject set)",
+      "mF1": 0.6888,
+      "mP": 0.7152,
+      "mR": 0.6908,
+      "acc": 0.986
+    }
+  ],
+  "minutes": 19.6
+}

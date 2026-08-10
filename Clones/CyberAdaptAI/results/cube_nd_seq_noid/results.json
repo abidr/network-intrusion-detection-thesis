@@ -1,0 +1,180 @@
+{
+  "config": {
+    "batch_size": 2000,
+    "weight_rule": "hybrid",
+    "diversity_measure": "disagreement",
+    "alpha": 0.6,
+    "gamma": 0.8,
+    "adwin_delta": 0.002,
+    "scaler_fit": "first_batch",
+    "retrain_scope": "window",
+    "seed": 42
+  },
+  "notes": [
+    "duplicates_removed=0",
+    "scaler=first_batch (leakage-safe)"
+  ],
+  "members": [
+    "random_forest",
+    "xgboost",
+    "extra_trees",
+    "hoeffding_tree"
+  ],
+  "overall": {
+    "accuracy": 0.9018636425212393,
+    "precision_macro": 0.9030779458956382,
+    "recall_macro": 0.8963523304453402,
+    "f1_macro": 0.8991184599494824,
+    "precision_weighted": 0.9021809342341623,
+    "recall_weighted": 0.9018636425212393,
+    "f1_weighted": 0.9014510922074875,
+    "n": 51673,
+    "precision_binary": 0.909477405178179,
+    "recall_binary": 0.8570335358991672,
+    "f1_binary": 0.8824769983081879,
+    "auc_ovr_macro": null
+  },
+  "streaming_aggregate": {
+    "accuracy": 0.9018636425212393,
+    "precision_macro": 0.5668194423830968,
+    "recall_macro": 0.5571250420585018,
+    "f1_macro": 0.5586566064118482,
+    "precision_weighted": 0.9311125116973796,
+    "recall_weighted": 0.9018636425212393,
+    "f1_weighted": 0.9115939677744389,
+    "precision_binary": 0.3861849512819664,
+    "recall_binary": 0.3839250497304046,
+    "f1_binary": 0.38504710881526605,
+    "auc_ovr_macro": 0.7464087287367138,
+    "auc_batches_defined": 2,
+    "latency_per_instance_ms": 0.10693922626851868,
+    "n_batches": 26,
+    "n_instances": 51673
+  },
+  "per_class": {
+    "0": {
+      "precision": 0.8966784866130973,
+      "recall": 0.9356711249915134,
+      "f1": 0.9157599215907769,
+      "support": 29458
+    },
+    "1": {
+      "precision": 0.909477405178179,
+      "recall": 0.8570335358991672,
+      "f1": 0.8824769983081879,
+      "support": 22215
+    }
+  },
+  "confusion_matrix": [
+    [
+      27563,
+      1895
+    ],
+    [
+      3176,
+      19039
+    ]
+  ],
+  "classes": [
+    0,
+    1
+  ],
+  "final_weights": {
+    "random_forest": 0.24794740711650862,
+    "xgboost": 0.24915072544587205,
+    "extra_trees": 0.2480941551187865,
+    "hoeffding_tree": 0.2548077123188328
+  },
+  "weight_movement": {
+    "per_member_mean": {
+      "random_forest": 0.2422,
+      "xgboost": 0.244,
+      "extra_trees": 0.2417,
+      "hoeffding_tree": 0.2721
+    },
+    "per_member_std": {
+      "random_forest": 0.0117,
+      "xgboost": 0.011,
+      "extra_trees": 0.0108,
+      "hoeffding_tree": 0.0332
+    },
+    "max_abs_deviation_from_uniform": 0.14519384573844207,
+    "mean_abs_deviation_from_uniform": 0.011793760528423474,
+    "uniform_weight": 0.25
+  },
+  "n_drift_events": 8,
+  "drift_events": [
+    {
+      "batch": 4,
+      "reason": "adwin",
+      "accuracy": 0.903,
+      "retrained": [
+        "hoeffding_tree"
+      ]
+    },
+    {
+      "batch": 5,
+      "reason": "adwin",
+      "accuracy": 0.541,
+      "retrained": [
+        "random_forest",
+        "xgboost",
+        "extra_trees"
+      ]
+    },
+    {
+      "batch": 6,
+      "reason": "adwin+accuracy",
+      "accuracy": 0.489,
+      "retrained": []
+    },
+    {
+      "batch": 7,
+      "reason": "accuracy_drop",
+      "accuracy": 0.0,
+      "retrained": [
+        "random_forest",
+        "xgboost",
+        "extra_trees"
+      ]
+    },
+    {
+      "batch": 8,
+      "reason": "adwin",
+      "accuracy": 0.9885,
+      "retrained": [
+        "random_forest"
+      ]
+    },
+    {
+      "batch": 18,
+      "reason": "adwin+accuracy",
+      "accuracy": 0.82,
+      "retrained": [
+        "random_forest",
+        "xgboost",
+        "extra_trees"
+      ]
+    },
+    {
+      "batch": 19,
+      "reason": "adwin",
+      "accuracy": 0.897,
+      "retrained": [
+        "random_forest",
+        "extra_trees"
+      ]
+    },
+    {
+      "batch": 20,
+      "reason": "adwin",
+      "accuracy": 0.948,
+      "retrained": [
+        "random_forest",
+        "xgboost",
+        "extra_trees"
+      ]
+    }
+  ],
+  "shap": null
+}
