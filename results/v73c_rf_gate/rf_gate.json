@@ -1,0 +1,246 @@
+{
+  "experiment": "RF vs XGB gate and Stage B, end-to-end robustness under noise",
+  "held_fixed": "reject set, Stage-B pool, W_e2e, competence reference (all from cached XGB OOF gate)",
+  "gate_train_rows": 800000,
+  "target_fpr": 0.0168,
+  "thresholds": {
+    "XGB": 0.32803011050224434,
+    "RF": 0.07
+  },
+  "budgets": [
+    0.0,
+    0.002,
+    0.01,
+    0.02,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "results": [
+    {
+      "budget": 0.0,
+      "macro_f1": 0.6865,
+      "accuracy": 0.986,
+      "attack_recall": 0.8983,
+      "gate_recall": 0.9862,
+      "arm": "A baseline   XGB gate + 7-member"
+    },
+    {
+      "budget": 0.002,
+      "macro_f1": 0.6089,
+      "accuracy": 0.9845,
+      "attack_recall": 0.8595,
+      "gate_recall": 0.9425,
+      "arm": "A baseline   XGB gate + 7-member"
+    },
+    {
+      "budget": 0.01,
+      "macro_f1": 0.5575,
+      "accuracy": 0.9835,
+      "attack_recall": 0.8414,
+      "gate_recall": 0.9226,
+      "arm": "A baseline   XGB gate + 7-member"
+    },
+    {
+      "budget": 0.02,
+      "macro_f1": 0.4797,
+      "accuracy": 0.9801,
+      "attack_recall": 0.7451,
+      "gate_recall": 0.8363,
+      "arm": "A baseline   XGB gate + 7-member"
+    },
+    {
+      "budget": 0.05,
+      "macro_f1": 0.3621,
+      "accuracy": 0.9748,
+      "attack_recall": 0.5839,
+      "gate_recall": 0.6687,
+      "arm": "A baseline   XGB gate + 7-member"
+    },
+    {
+      "budget": 0.1,
+      "macro_f1": 0.2978,
+      "accuracy": 0.9719,
+      "attack_recall": 0.4967,
+      "gate_recall": 0.5611,
+      "arm": "A baseline   XGB gate + 7-member"
+    },
+    {
+      "budget": 0.2,
+      "macro_f1": 0.2433,
+      "accuracy": 0.9696,
+      "attack_recall": 0.4217,
+      "gate_recall": 0.4686,
+      "arm": "A baseline   XGB gate + 7-member"
+    },
+    {
+      "budget": 0.0,
+      "macro_f1": 0.6827,
+      "accuracy": 0.9859,
+      "attack_recall": 0.8983,
+      "gate_recall": 0.9823,
+      "arm": "B RF gate    RF  gate + 7-member"
+    },
+    {
+      "budget": 0.002,
+      "macro_f1": 0.6178,
+      "accuracy": 0.9849,
+      "attack_recall": 0.8807,
+      "gate_recall": 0.9975,
+      "arm": "B RF gate    RF  gate + 7-member"
+    },
+    {
+      "budget": 0.01,
+      "macro_f1": 0.5698,
+      "accuracy": 0.9843,
+      "attack_recall": 0.8766,
+      "gate_recall": 0.9977,
+      "arm": "B RF gate    RF  gate + 7-member"
+    },
+    {
+      "budget": 0.02,
+      "macro_f1": 0.5072,
+      "accuracy": 0.9824,
+      "attack_recall": 0.8468,
+      "gate_recall": 0.9948,
+      "arm": "B RF gate    RF  gate + 7-member"
+    },
+    {
+      "budget": 0.05,
+      "macro_f1": 0.4121,
+      "accuracy": 0.9794,
+      "attack_recall": 0.8094,
+      "gate_recall": 0.9858,
+      "arm": "B RF gate    RF  gate + 7-member"
+    },
+    {
+      "budget": 0.1,
+      "macro_f1": 0.3498,
+      "accuracy": 0.9773,
+      "attack_recall": 0.7953,
+      "gate_recall": 0.9762,
+      "arm": "B RF gate    RF  gate + 7-member"
+    },
+    {
+      "budget": 0.2,
+      "macro_f1": 0.2996,
+      "accuracy": 0.9759,
+      "attack_recall": 0.79,
+      "gate_recall": 0.9688,
+      "arm": "B RF gate    RF  gate + 7-member"
+    },
+    {
+      "budget": 0.0,
+      "macro_f1": 0.6617,
+      "accuracy": 0.9871,
+      "attack_recall": 0.8198,
+      "gate_recall": 0.9862,
+      "arm": "C RF stageB  XGB gate + RF only"
+    },
+    {
+      "budget": 0.002,
+      "macro_f1": 0.612,
+      "accuracy": 0.9861,
+      "attack_recall": 0.7967,
+      "gate_recall": 0.9425,
+      "arm": "C RF stageB  XGB gate + RF only"
+    },
+    {
+      "budget": 0.01,
+      "macro_f1": 0.534,
+      "accuracy": 0.9853,
+      "attack_recall": 0.7939,
+      "gate_recall": 0.9226,
+      "arm": "C RF stageB  XGB gate + RF only"
+    },
+    {
+      "budget": 0.02,
+      "macro_f1": 0.4619,
+      "accuracy": 0.9828,
+      "attack_recall": 0.729,
+      "gate_recall": 0.8363,
+      "arm": "C RF stageB  XGB gate + RF only"
+    },
+    {
+      "budget": 0.05,
+      "macro_f1": 0.3541,
+      "accuracy": 0.9784,
+      "attack_recall": 0.5954,
+      "gate_recall": 0.6687,
+      "arm": "C RF stageB  XGB gate + RF only"
+    },
+    {
+      "budget": 0.1,
+      "macro_f1": 0.29,
+      "accuracy": 0.9757,
+      "attack_recall": 0.5156,
+      "gate_recall": 0.5611,
+      "arm": "C RF stageB  XGB gate + RF only"
+    },
+    {
+      "budget": 0.2,
+      "macro_f1": 0.2377,
+      "accuracy": 0.9736,
+      "attack_recall": 0.4405,
+      "gate_recall": 0.4686,
+      "arm": "C RF stageB  XGB gate + RF only"
+    },
+    {
+      "budget": 0.0,
+      "macro_f1": 0.6563,
+      "accuracy": 0.9869,
+      "attack_recall": 0.8199,
+      "gate_recall": 0.9823,
+      "arm": "D both       RF  gate + RF only"
+    },
+    {
+      "budget": 0.002,
+      "macro_f1": 0.6208,
+      "accuracy": 0.9863,
+      "attack_recall": 0.8083,
+      "gate_recall": 0.9975,
+      "arm": "D both       RF  gate + RF only"
+    },
+    {
+      "budget": 0.01,
+      "macro_f1": 0.5427,
+      "accuracy": 0.9856,
+      "attack_recall": 0.8136,
+      "gate_recall": 0.9977,
+      "arm": "D both       RF  gate + RF only"
+    },
+    {
+      "budget": 0.02,
+      "macro_f1": 0.4855,
+      "accuracy": 0.9844,
+      "attack_recall": 0.8089,
+      "gate_recall": 0.9948,
+      "arm": "D both       RF  gate + RF only"
+    },
+    {
+      "budget": 0.05,
+      "macro_f1": 0.4051,
+      "accuracy": 0.9824,
+      "attack_recall": 0.8094,
+      "gate_recall": 0.9858,
+      "arm": "D both       RF  gate + RF only"
+    },
+    {
+      "budget": 0.1,
+      "macro_f1": 0.3515,
+      "accuracy": 0.9809,
+      "attack_recall": 0.8169,
+      "gate_recall": 0.9762,
+      "arm": "D both       RF  gate + RF only"
+    },
+    {
+      "budget": 0.2,
+      "macro_f1": 0.2953,
+      "accuracy": 0.9798,
+      "attack_recall": 0.8204,
+      "gate_recall": 0.9688,
+      "arm": "D both       RF  gate + RF only"
+    }
+  ],
+  "minutes": 4.3
+}

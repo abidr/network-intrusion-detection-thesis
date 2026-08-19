@@ -1,0 +1,285 @@
+{
+  "experiment": "brittleness: integer-rounding validity check + model-family diagnostic",
+  "integer_columns": [
+    "Flow Duration",
+    "Total Fwd Packet",
+    "Total Bwd packets",
+    "Total Length of Fwd Packet",
+    "Total Length of Bwd Packet",
+    "Fwd Packet Length Max",
+    "Fwd Packet Length Min",
+    "Bwd Packet Length Max",
+    "Bwd Packet Length Min",
+    "Flow IAT Max",
+    "Flow IAT Min",
+    "Fwd IAT Total",
+    "Fwd IAT Max",
+    "Fwd IAT Min",
+    "Bwd IAT Total",
+    "Bwd IAT Max",
+    "Bwd IAT Min",
+    "Fwd PSH Flags",
+    "Fwd Header Length",
+    "Bwd Header Length",
+    "Packet Length Min",
+    "Packet Length Max",
+    "FIN Flag Count",
+    "SYN Flag Count",
+    "RST Flag Count",
+    "PSH Flag Count",
+    "ACK Flag Count",
+    "Down/Up Ratio",
+    "Bwd Bytes/Bulk Avg",
+    "Bwd Packet/Bulk Avg",
+    "Bwd Bulk Rate Avg",
+    "Subflow Fwd Packets",
+    "Subflow Fwd Bytes",
+    "Subflow Bwd Packets",
+    "Subflow Bwd Bytes",
+    "FWD Init Win Bytes",
+    "Bwd Init Win Bytes",
+    "Fwd Act Data Pkts",
+    "Fwd Seg Size Min",
+    "Active Max",
+    "Active Min",
+    "Idle Max",
+    "Idle Min"
+  ],
+  "budgets": [
+    0.0,
+    0.002,
+    0.005,
+    0.01,
+    0.02,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "clean_gate": {
+    "attack_recall": 0.9893,
+    "benign_fpr": 0.0168
+  },
+  "part1_rounding": [
+    {
+      "budget": 0.0,
+      "recall_continuous": 0.9893,
+      "recall_rounded": 0.9893
+    },
+    {
+      "budget": 0.002,
+      "recall_continuous": 0.9339,
+      "recall_rounded": 0.9424
+    },
+    {
+      "budget": 0.005,
+      "recall_continuous": 0.9172,
+      "recall_rounded": 0.9249
+    },
+    {
+      "budget": 0.01,
+      "recall_continuous": 0.9015,
+      "recall_rounded": 0.9119
+    },
+    {
+      "budget": 0.02,
+      "recall_continuous": 0.8391,
+      "recall_rounded": 0.8285
+    },
+    {
+      "budget": 0.05,
+      "recall_continuous": 0.6639,
+      "recall_rounded": 0.6574
+    },
+    {
+      "budget": 0.1,
+      "recall_continuous": 0.5469,
+      "recall_rounded": 0.5444
+    },
+    {
+      "budget": 0.2,
+      "recall_continuous": 0.4502,
+      "recall_rounded": 0.4533
+    }
+  ],
+  "part2_families": [
+    {
+      "family": "XGB d8/400 (the gate)",
+      "threshold": 0.2471,
+      "clean_recall": 0.9838,
+      "recall": {
+        "0.0": 0.9838,
+        "0.002": 0.944,
+        "0.005": 0.9236,
+        "0.01": 0.9054,
+        "0.02": 0.8218,
+        "0.05": 0.656,
+        "0.1": 0.5457,
+        "0.2": 0.4534
+      },
+      "retained": {
+        "0.0": 1.0,
+        "0.002": 0.9595,
+        "0.005": 0.9388,
+        "0.01": 0.9203,
+        "0.02": 0.8353,
+        "0.05": 0.6668,
+        "0.1": 0.5547,
+        "0.2": 0.4609
+      }
+    },
+    {
+      "family": "XGB d3/400",
+      "threshold": 0.8293,
+      "clean_recall": 0.9847,
+      "recall": {
+        "0.0": 0.9847,
+        "0.002": 0.9745,
+        "0.005": 0.9496,
+        "0.01": 0.904,
+        "0.02": 0.7575,
+        "0.05": 0.5401,
+        "0.1": 0.4267,
+        "0.2": 0.3484
+      },
+      "retained": {
+        "0.0": 1.0,
+        "0.002": 0.9897,
+        "0.005": 0.9644,
+        "0.01": 0.9181,
+        "0.02": 0.7693,
+        "0.05": 0.5485,
+        "0.1": 0.4334,
+        "0.2": 0.3539
+      }
+    },
+    {
+      "family": "XGB d8/50",
+      "threshold": 0.8462,
+      "clean_recall": 0.9845,
+      "recall": {
+        "0.0": 0.9845,
+        "0.002": 0.9629,
+        "0.005": 0.9585,
+        "0.01": 0.9551,
+        "0.02": 0.8753,
+        "0.05": 0.7117,
+        "0.1": 0.6148,
+        "0.2": 0.5359
+      },
+      "retained": {
+        "0.0": 1.0,
+        "0.002": 0.9781,
+        "0.005": 0.9736,
+        "0.01": 0.9701,
+        "0.02": 0.8891,
+        "0.05": 0.723,
+        "0.1": 0.6245,
+        "0.2": 0.5443
+      }
+    },
+    {
+      "family": "DT d6",
+      "threshold": 0.9241,
+      "clean_recall": 0.8723,
+      "recall": {
+        "0.0": 0.8723,
+        "0.002": 0.8673,
+        "0.005": 0.8672,
+        "0.01": 0.8685,
+        "0.02": 0.8457,
+        "0.05": 0.823,
+        "0.1": 0.7964,
+        "0.2": 0.7567
+      },
+      "retained": {
+        "0.0": 1.0,
+        "0.002": 0.9943,
+        "0.005": 0.9942,
+        "0.01": 0.9956,
+        "0.02": 0.9696,
+        "0.05": 0.9435,
+        "0.1": 0.9131,
+        "0.2": 0.8675
+      }
+    },
+    {
+      "family": "RF 100",
+      "threshold": 0.09,
+      "clean_recall": 0.9758,
+      "recall": {
+        "0.0": 0.9758,
+        "0.002": 0.9953,
+        "0.005": 0.9958,
+        "0.01": 0.995,
+        "0.02": 0.9848,
+        "0.05": 0.959,
+        "0.1": 0.9293,
+        "0.2": 0.9056
+      },
+      "retained": {
+        "0.0": 1.0,
+        "0.002": 1.02,
+        "0.005": 1.0206,
+        "0.01": 1.0197,
+        "0.02": 1.0092,
+        "0.05": 0.9828,
+        "0.1": 0.9523,
+        "0.2": 0.9281
+      }
+    },
+    {
+      "family": "15-NN",
+      "threshold": 0.2,
+      "clean_recall": 0.9224,
+      "recall": {
+        "0.0": 0.9224,
+        "0.002": 0.7613,
+        "0.005": 0.7477,
+        "0.01": 0.7767,
+        "0.02": 0.777,
+        "0.05": 0.7219,
+        "0.1": 0.6625,
+        "0.2": 0.632
+      },
+      "retained": {
+        "0.0": 1.0,
+        "0.002": 0.8254,
+        "0.005": 0.8106,
+        "0.01": 0.842,
+        "0.02": 0.8423,
+        "0.05": 0.7827,
+        "0.1": 0.7182,
+        "0.2": 0.6852
+      }
+    },
+    {
+      "family": "LogReg",
+      "threshold": 0.8563,
+      "clean_recall": 0.0511,
+      "recall": {
+        "0.0": 0.0511,
+        "0.002": 0.0293,
+        "0.005": 0.0277,
+        "0.01": 0.0266,
+        "0.02": 0.0257,
+        "0.05": 0.027,
+        "0.1": 0.0463,
+        "0.2": 0.1077
+      },
+      "retained": {
+        "0.0": 1.0,
+        "0.002": 0.5726,
+        "0.005": 0.5414,
+        "0.01": 0.521,
+        "0.02": 0.503,
+        "0.05": 0.5282,
+        "0.1": 0.9052,
+        "0.2": 2.108
+      }
+    }
+  ],
+  "sub_train": 400000,
+  "knn_ref": 150000,
+  "attack_rows": 16298,
+  "minutes": 3.1
+}

@@ -882,7 +882,9 @@ the meaningful ones.
 
 The v6-on-UNSW pipeline re-run with the dedupe step toggled off, everything else held fixed (same
 seeds, splits, prune rule, pool, combiner grid, SELV protocol). Motivated by
-`literature_artifact_audit.md`, which asserts deduplication moves reported accuracy by 10–15 points.
+`literature_artifact_audit.md`, which **at the time** asserted deduplication moves reported accuracy by
+10–15 points. That assertion has since been **scoped to CyberAdaptAI's binary + sequential-stream
+setting** — this ablation is what forced the correction, and the audit now carries it.
 
 | | DEDUPE | NO-DEDUPE | Δ |
 |---|---|---|---|
@@ -997,7 +999,457 @@ Measured, not assumed — the equivalent of CLAUDE.md's "verified data facts" fo
 - Prune: **78 → 70 → 47 features** (CIC-UNSW: 76 → 67 → 44), so the two representations are comparable
   in width. All four `Subflow *` columns are r=1.000 duplicates of the corresponding `Total *`.
 
+### v7.1d — per-region W (`results/v71d_region_w/`) — NULL, but it brackets the granularity axis
+
+The combiner ladder had two endpoints and nothing between them: `K=1` global per-class `W`
+(established) and `K=N` per-instance competence (inert). This fills the gap. KMeans over the 70-dim
+**decision space** (v5: decision space beats feature space) gives K regions; each gets its own 7×10
+`W` fitted by the same coordinate ascent under the same **end-to-end objective** as v7.1b. Shrinkage
+`W_k ← (1−λ)·W_glob + λ·W_k` and a 500-row minimum region size guard the small-sample overfitting v2
+warned about. `K=1` reproduces `STATIC W_e2e` on **100.0000%** of rows (asserted), so any delta is
+attributable to regions alone. Same prep/splits/caches as v7/v7.1/v7.1b; SELV selects, test once.
+
+**SELV-selected `REGION K=2 × OLA-cw k=30 p=3`: test macro-F1 0.6907 / acc 0.9859, rank 4 of 14.
+Paired vs v7.1b +0.0018, 95% CI [−0.0034, +0.0076], p ≈ 0.550 — NOT established. Keep v7.1b.**
+
+- **Regional specialisation is REAL — this is not the v4/v5 null.** Distinct locally-best members per
+  region: 2 of 2, 2 of 3, 3 of 5, **4 of 8** (`XGB a=0.0`, `a=0.5`, `a=1.0`, `smote2000`). The fitted
+  matrices genuinely diverge: mean `|W_k − W_glob|` 0.109–0.165, mean pairwise `|W_a − W_b|`
+  0.20–0.31 — against v4's dynamic weights sitting within **4.5% of uniform**.
+- **The regions are semantically meaningful and unsupervised.** K=8 recovers the project's own
+  confusion structure with no labels: Exploits 90% (n=9,589), Recon 90% (4,149), Generic 90% (1,670),
+  Shellcode 73% (766) — and the two **highest-spread** regions are exactly the two long-standing
+  problems, the Benign 59%/Fuzzers 40% sink (spread 0.069) and the Exploits 42%/DoS 19%/Recon 15%
+  triangle (0.070).
+- **THE MECHANISM — disagreement is concentrated where it is useless.** Across the 8 regions,
+  best-member accuracy and best-worst spread are anti-correlated at **Spearman ρ = −0.857 (p = 0.007)**.
+  Where members disagree most, all of them are wrong (acc 0.521, 0.593); where they are accurate they
+  agree almost perfectly (acc 0.898 at spread 0.009). Local selection can only act where selection
+  cannot pay. This one fact explains v4, v5 and v7.1d together. ⚠️ **It is a symptom, not the binding
+  constraint — see v7.1e, which removes it and still gets no dynamic gain.**
+- **Classic in-sample → held-out shrinkage:** COMB +0.0076 → SELV +0.0009 → test +0.0018. Same
+  winner's-curse pattern the v7.2 two-stage protocol was built to catch.
+- **⚠️ Do not read the shrinkage ordering as evidence.** On SELV λ=0.5 beat λ=1.0 at **every** K
+  (monotone in the constraint); on test the ordering **reverses** at K=2, 3 and 8. Both orderings sit
+  inside the noise band, so neither is informative.
+- **Total SELV↔test inversion, and it is resolution failure not selection error**: `REGION K=8 λ=1.0`
+  was *last* on SELV (0.6643) and *first* on test (0.6924); v7.1b was 1st on SELV and 10th on test.
+  All 14 variants span **0.0043** — about a third of the ±0.012 paired band.
+- The nominal +0.0018 is rare-class noise: Worms +0.0339 (**49** test rows) and Backdoor +0.0309
+  (**90**), paid by Fuzzers −0.0181 (5,287) and Exploits −0.0124 (6,185). Macro precision rises
+  0.7152 → 0.7241 while recall falls — the precision/recall knob again, not a free win.
+- Runtime 6.1 min. Same-run v7.1b reference 0.6888 vs 0.6874 previously (±0.0014 refit jitter).
+
+### v7.1e — disjoint feature-view pool (`results/v71e_view_pool/`) — the mechanism prediction lands, the payoff does not
+
+v7.1d's ρ = −0.86 was traced to pool construction: all 7 members see the **same 99 features** and
+differ only in class weighting, which moves decision boundaries but not information, so every member
+is blind on the same rows. This tests the implied fix — members trained on **disjoint feature views**
+should fail on *different* rows, producing member-specific competence rather than shared row
+difficulty. The 99 columns are partitioned (disjoint and exhaustive, asserted in code) into
+`SVC` 25, `TIME` 25, `SIZE` 39, `FLAG` 10, plus an `ALL` 99 full-feature control member. Three pools
+are scored under one protocol: **ALPHA** (the current 7, class-weight diversity), **VIEW** (5 members,
+information diversity), **UNION** (12). Go/no-go criteria were pre-registered and printed *before* the
+combiner grid.
+
+**Diagnostic — the hypothesis is CONFIRMED:**
+
+| measure | ALPHA | **VIEW** | UNION |
+|---|---|---|---|
+| shared variance in competence weights | 93.4% | **51.2%** | 54.9% |
+| median within-row weight spread | 0.0000 | **0.2956** | 0.3296 |
+| mean pairwise weight correlation | 0.928 | **0.465** | 0.664 |
+| region acc-vs-spread Spearman ρ | **−0.857** (p=0.007) | **+0.071** (p=0.867) | +0.429 |
+| mean pairwise disagreement | 0.107 | **0.366** | 0.252 |
+
+**Score — SELV-selected `UNION HYBRID W × OLA-cw p=1`: test macro-F1 0.6955 / acc 0.9868, rank 3 of
+21. Paired vs v7.1b +0.0066, 95% CI [−0.0017, +0.0144], p ≈ 0.105 — NOT established (point-positive).**
+
+- **The anti-correlation is annihilated (−0.857 → +0.071) and dynamism still does not pay.** The cell
+  v7.1d said had to fill, filled — VIEW regions now include high-spread **and** high-accuracy cells
+  (best-acc 0.949 / spread 0.396; 0.909 / 0.704), which did not exist under ALPHA. **⚠️ This REFUTES
+  the v7.1d mechanism as the binding constraint.** Competence became estimable and dispersed exactly
+  as designed, and the payoff never arrived.
+- **THE REAL MECHANISM — competence optimises the wrong objective.** Every pure-dynamic variant, in
+  every pool, has the **highest accuracy and highest macro-precision and lowest macro-recall** in the
+  table (UNION `DYN OLA-cw p=8`: mP 0.7912 / mR 0.6417 / acc 0.9881, vs `UNION STATIC W` 0.7219 /
+  0.7008 / 0.9868). Competence *is* local accuracy, so competence weighting minimises **error rate**
+  while the objective is macro-F1; it buys accuracy already saturated at 98.7% and pays in rare-class
+  recall. Same trap as `knn_class_overlap.ipynb`'s "plurality voting minimises error rate, not
+  macro-F1", and the mirror image of v7.1b's lesson: **fit the combiner on the deployment objective.**
+- **Dynamic-vs-static is flat or negative in all three pools** — ALPHA +0.0007 / VIEW −0.0025 /
+  UNION −0.0003 for the hybrid, and **−0.0119 / −0.0123 / −0.0149** for pure-dynamic. The best test
+  variant overall is `UNION STATIC W` (0.6976).
+- **The gain is the POOL, not the dynamism:** ALPHA STATIC 0.6881 → UNION STATIC 0.6976 = **+0.0095**;
+  UNION STATIC → UNION HYBRID p=1 = **−0.0021**; net +0.0066.
+- **SELV transferred at the pool level and not below it**: all three UNION variants ranked 1-2-3 on
+  both SELV and test, shuffling only among themselves.
+- **v2's rule replicates a third time — pick members for complementarity, not quality.** `V:ALL` is the
+  single best member (mF1 0.6325) while `V:FLAG` (0.2279) and `V:TIME` (0.3296) are the worst in the
+  project, and adding them helps. `VIEW EQUAL-AVG` is catastrophic (0.6345 test, 0.6005 SELV): the
+  weak views only pay **with** learned per-class weights.
+- **VIEW alone does not beat ALPHA** (static 0.6845 vs 0.6881). The union of strong-but-redundant and
+  weak-but-complementary members is what moves.
+- Per-class, 6 of 10 improve and the large families are flat-to-positive (Exploits +0.0007,
+  Fuzzers +0.0082, Recon +0.0032), but **Backdoor +0.0354 (90 rows) and Analysis +0.0217 (77 rows)
+  carry most of the gain** — the usual rare-class caveat.
+- **⚠️ ALPHA's shared variance here is 93.4%, not v5's 98.1%** — different setting (10-class reject
+  problem on the full release). Same conclusion, different number; do not quote them as identical.
+- Deployment cost: 12 members per flow vs 7, for an unestablished +0.0066. **Headline stays v7.1b.**
+- Runtime 16.1 min (7 min cross-fit); view OOF cached to `cache_oof_v71e_views.npz`.
+
+**Joint conclusion of v7.1d + v7.1e — dynamic combination is closed, properly.** Three combiner
+families (per-instance, per-region, hybrid) across two pool constructions (class-weight diversity,
+information diversity), with the suspected confounder eliminated by construction. The negative is now
+mechanistic rather than empirical: *we built a pool where competence is demonstrably estimable and
+member-specific, and dynamic weighting still did not pay, because local accuracy optimises a different
+objective than macro-F1.*
+
+### v7.3 — adversarial evasion under an attacker-controllable budget (`results/v73_adv_budget/`)
+
+The standard adversarial-NIDS experiment perturbs the feature vector freely, as if it were an image.
+A flow record is not a picture: it is a receipt of packets that had to traverse a network and still
+work as an attack. Two constraints follow. **(1) Some columns cannot move at all** — if the attack
+exploits RPC, the traffic goes to port 111; setting `svc_rpc = 0` describes a different attack, not a
+stealthier one. Those columns carry **70.4% of importance**. **(2) The vector must stay internally
+consistent** — so the attacker sets PRIMITIVES only and every derivable column (CICFlowMeter rates and
+ratios plus all 31 engineered features) is **recomputed**. Buckets: FREE 49 raw cols (timing, padding,
+size shape), COSTLY 18 (packet/byte/flag counts, half budget), IMPOSSIBLE 25 (svc/proto/dst port).
+Budget in units of each column's train IQR; greedy per-feature sign search against the gate's
+`p(attack)`; only the 16,298 test attack rows are perturbed; model fixed. Clean run reproduces v7.1b
+(0.6888 / 0.9860).
+
+| budget (IQR) | clean | **random** | realisable adversarial | unconstrained |
+|---|---|---|---|---|
+| 0.002 | 0.6888 | **0.5592** | 0.4758 | 0.3489 |
+| 0.020 | 0.6888 | **0.4826** | 0.3379 | 0.2522 |
+| 0.200 | 0.6888 | **0.2815** | 0.1280 | 0.1089 |
+
+- **THE HEADLINE IS THE CONTROL: undirected random noise does most of the damage.** At 0.002 IQR
+  (realised L2 0.008) *uniform noise with no model access* costs 0.13 macro-F1 and drops attack recall
+  0.8994 → 0.7737. Adversarial search roughly doubles that (gap 0.08–0.18), so the model is attackable
+  too — but the primary property is **brittleness**, which is far broader than evasion: it implies
+  degradation under ordinary measurement noise, a different flow timeout, or another CICFlowMeter
+  build. Consistent with Cover–Hart: rows sit near boundaries, so small displacements flip them.
+- **⚠️ THE ORIGINAL HYPOTHESIS IS REFUTED.** The prediction was that the curve would stay flat because
+  `svc` is 70.4% of importance and outside attacker control. It does not — attack recall halves at a
+  realisable budget of **0.020 IQR** (L2 0.071 across ~16 columns). **Feature importance does not
+  predict adversarial robustness**: a model can lean 70% on unforgeable evidence and still be evaded
+  through the remaining 30%, because the attacker needs only *some* direction the boundary is close in.
+- **THE METHODOLOGICAL RESULT SURVIVES, with a number**: the realisability gap is **+0.127 macro-F1 at
+  0.002**, 0.06–0.12 across the realistic regime, decaying to 0.019 at 0.20. **The standard
+  unconstrained experiment overstates the damage by 0.10–0.13** by editing evidence no attacker owns
+  and emitting records whose rates contradict their own primitives.
+- Constraint ordering is monotone (timing/size-only 0.5656 > free+costly 0.4758 at 0.002), evidence the
+  bucketing is meaningful rather than arbitrary.
+- **Three bugs were found and fixed mid-run; the first version's numbers are void**: budget accumulated
+  across greedy passes instead of being clipped (stated budgets wrong by up to 2×); no random control;
+  and an L∞ budget across 67 columns was described as if it were small. Realised L∞/L2/n_moved now
+  print per row. Runtime 9.6 min.
+
+### v7.3b — is the brittleness real, and is it the model or the representation? (`results/v73b_brittle_diag/`)
+
+Two pre-registered checks before attempting any fix. **PART 1**: v7.3 perturbed integer-valued columns
+continuously; **43 of 67** raw columns are integers, and sub-integer moves are not realisable flows.
+**PART 2**: seven model families spanning the capacity range, identical data, identical noise — the
+same eliminative move that killed the label-noise hypothesis.
+
+- **PART 1 — the claim SURVIVES.** Integer rounding moves recall **+0.0085** at budget 0.002 and stays
+  within ±0.011 across the sweep. Sub-integer moves were not driving it.
+- **REFINEMENT worth carrying:** the *gate* only falls 0.9893 → 0.9339 at 0.002, while end-to-end
+  attack recall falls 0.8994 → 0.7737 and macro-F1 falls 0.13. **Most of the damage is Stage B
+  scrambling which family, not the gate missing the attack.**
+- **PART 2 — MODEL-bound, not representation-bound.** At matched benign fpr = 0.0168:
+
+| family | clean recall | retained @0.02 | retained @0.20 |
+|---|---|---|---|
+| **RF 100** | **0.9758** | **1.009** | **0.928** |
+| DT d6 | 0.8723 | 0.970 | 0.868 |
+| XGB d8/50 | 0.9845 | 0.889 | 0.544 |
+| **XGB d8/400 (deployed gate)** | **0.9838** | **0.835** | **0.461** |
+| XGB d3/400 | 0.9847 | 0.769 | 0.354 |
+| 15-NN | 0.9224 | 0.842 | 0.685 |
+| LogReg | 0.0511 | *degenerate* | *degenerate* |
+
+- **⚠️ MATCHING THE OPERATING POINT INVERTED THE ANSWER.** Compared at the default 0.5 cut, RF looked
+  *worst* (retained 0.392) and `XGB d8/50` best. RF's probabilities are compressed (matched threshold
+  0.0900), so the naive comparison measured threshold placement, not robustness. **Never compare
+  robustness across families without matching fpr first.**
+- **Depth is not the lever** — `d3/400` is *worse* than `d8/400`. It is the averaging-of-independent-trees
+  inductive bias, not capacity.
+- **LogReg is degenerate, not robust**: clean recall 0.0511 at 1.68% fpr — a linear boundary cannot do
+  this task at that operating point, so its retention figures (2.108 at 0.20) are arithmetic on a broken
+  model. The script's verdict line quotes it as the low end of the span; the real span across usable
+  families is 0.769–1.009. **Smoothness alone is not the answer.**
+- **Retention above 1.0 is real**: RF's recall *rises* slightly under small noise — the signature of a
+  model whose decision regions are wide relative to the perturbation.
+- Scope: binary gate task, 400k stratified subsample (`d8/400` scores 0.9838 here vs 0.9893 deployed).
+  Runtime 3.1 min.
+
+### v7.3c — RF vs XGB end-to-end (`results/v73c_rf_gate/`) — the GATE is the lever, not Stage B
+
+Four arms isolate the two stages. Both gates trained on the same 800k subsample and thresholded to the
+same benign fpr. **Pre-registered prediction: arm C (Stage-B swap) would help more than arm B (gate
+swap), since v7.3b showed most damage is family scrambling. REFUTED.**
+
+| budget | A: XGB gate | **B: RF gate** | C: RF Stage B | D: both |
+|---|---|---|---|---|
+| 0.000 | 0.6865 | 0.6827 | 0.6617 | 0.6563 |
+| 0.020 | 0.4797 | **0.5072** | 0.4619 | 0.4855 |
+| 0.200 | 0.2433 | **0.2996** | 0.2377 | 0.2953 |
+
+- **Gate recall tells the whole story**: XGB 0.9862 → **0.4686** at budget 0.20; RF 0.9823 → **0.9688**.
+  The RF gate loses 1.4% of its detections where XGB loses more than half.
+- **Swapping Stage B buys nothing** (arm C −0.0056 vs baseline at 0.20) *and* costs −0.0248 clean.
+  Arm D is no better than B. The entire benefit is the gate.
+- **THE RESIDUAL PROBLEM:** even with the RF gate, end-to-end macro-F1 still falls 0.6827 → 0.2996 while
+  attack recall holds at 0.79. **Detection can be made robust; family attribution cannot, by either
+  model family.** In SOC terms: you still get the alert, you just cannot trust the label on it.
+- **Confound, stated:** the reject set, Stage-B pool, `W_e2e` and competence reference all derive from
+  the cached **XGB** OOF gate. Arm B is scored on a gate-positive population its reject class never saw,
+  so the confound works **against** RF and the result is conservative. Runtime 4.3 min.
+
+### v7.3d — paired bootstrap for the gate swap (`results/v73d_rf_gate_sig/`) — ESTABLISHED both ways
+
+2,000 stratified resamples, both arms on the same resample each iteration. Predictions cached to
+`rf_gate_sig_preds.npz`.
+
+| budget | XGB | RF | delta | 95% CI | p | verdict |
+|---|---|---|---|---|---|---|
+| 0.000 | 0.6865 | 0.6827 | **−0.0038** | [−0.0064, −0.0013] | 0.005 | **worse, established** |
+| 0.002 | 0.6089 | 0.6178 | +0.0089 | [+0.0048, +0.0131] | 0.001 | ESTABLISHED |
+| 0.010 | 0.5575 | 0.5698 | +0.0123 | [+0.0074, +0.0179] | <0.001 | ESTABLISHED |
+| 0.020 | 0.4797 | 0.5072 | +0.0275 | [+0.0202, +0.0366] | <0.001 | ESTABLISHED |
+| 0.050 | 0.3621 | 0.4121 | +0.0500 | [+0.0417, +0.0607] | <0.001 | ESTABLISHED |
+| 0.100 | 0.2978 | 0.3498 | +0.0520 | [+0.0465, +0.0587] | <0.001 | ESTABLISHED |
+| 0.200 | 0.2433 | 0.2996 | **+0.0563** | [+0.0516, +0.0619] | <0.001 | ESTABLISHED |
+
+- **NOT a free win — a cheap, well-characterised trade.** Pay **0.0038 macro-F1 clean** (a real,
+  established loss, p=0.005); gain **+0.009 to +0.056** under noise, established at every budget down
+  to 0.002 IQR. Report as an operating choice, the same shape as weights-vs-capped-SMOTE and the reject
+  class's sink inversion: clean in-distribution traffic → keep XGBoost; measurement drift or an
+  adversary → take RF.
+- **⚠️ THE ±0.012 PAIRED BAND IS NOT A CONSTANT — see the correction in CLAUDE.md.** The measured paired
+  CI here is ≈**±0.0025**, five times tighter, because the two arms share the Stage-B pool, reject set,
+  `W_e2e` and every benign prediction and differ *only* in the gate. Applying the remembered ±0.012
+  would have hidden a real effect.
+- **Textbook illustration of the two-yardsticks rule:** the marginal intervals overlap almost entirely
+  (XGB 0.6865 [0.6699, 0.7027] vs RF 0.6827 [0.6657, 0.6987]) while the paired difference is
+  significant at p=0.005. Same data, opposite conclusions, depending on the yardstick.
+- Runtime 5.9 min.
+
+### TON-IoT dataset audit (`results/toniot_audit/`) — gate FAILS on `src_ip`; the data is too easy
+
+`Train_Test_Network.csv`, 211,043 rows × 44 cols (file verified complete; note this is **not** the
+461k-row version commonly cited). Author-balanced: normal 50,000 (23.7%), eight families at exactly
+20,000, `mitm` 1,043 — **attack share 76.31%**, an artificial base rate. Duplicates **50.07%**, the
+highest in the project, with 1,781 conflicting labels. Prune 52 → 46 after dropping 15 columns that are
+>99% missing (all `ssl_*`, `http_*`, `weird_*` — the application-layer richness is absent in this file).
+
+- **LEAKAGE GATE FAILS on `src_ip`**: out-of-sample recall **0.9998 at fpr 0.0402**, in-sample 0.9999.
+  In-sample ≈ out-of-sample is the signature of a genuine fingerprint, exactly like `sttl`. Any TON-IoT
+  result including `src_ip` measures the testbed.
+- **The out-of-sample guard earned its keep**: `src_port` scores rec_in 0.9720 → **OOS 0.2797** (26,628
+  values, none with ≥20 support). Scored in-sample it would have been flagged SUSPECT — a false alarm on
+  an innocuous column. `dst_ip` hit recall 0.9949 at fpr 0.7733 and was correctly not flagged: at a 76%
+  attack share, predicting "attack" for nearly everything is free recall.
+- **TOO EASY to test the architecture**: attack-only **e_1NN 0.0306**, bracket [0.0155, 0.0306],
+  accuracy ceiling [0.969, 0.985]. That is the CIC-IDS2017 regime (0.0026), where all 17 combiner
+  variants landed within 0.0007 — not the CIC-UNSW regime (0.3629). Eight of nine families have k=10
+  purity ≥ 0.91; only `mitm` (0.6212, 1,043 rows) is below.
+- **PREDICTION CONFIRMED**: service identity is worth only **−0.0028 e_1NN** here versus **−0.153** on
+  CIC-UNSW. The +0.0982 svc gain was recovering an omission specific to CICFlowMeter; Zeek already ships
+  `service` and `dst_port`, so there is nothing to recover.
+- **Usable two ways**: (1) as a *pre-registered prediction test* — write down in advance that all
+  combiner variants will tie within ~0.005, then run it; a predicted null on a fourth dataset is far
+  stronger than three post-hoc ones. (2) the `src_ip` finding stands alone in the literature-audit
+  chapter, next to TTL: two datasets, two measured endpoint-identity label proxies, same failure mode.
+- A bug was found and fixed during development: the fingerprint rule was originally scored in-sample,
+  which flagged `ts` and `src_port` as SUSPECT purely because nearly every value is unique to one row.
+  Validated on a synthetic file with a planted `src_ip` leak. See `results/toniot_audit/README.md`.
+
+### Literature positioning (web search, 2026-08-18)
+
+Six searches; two sources could not be retrieved directly (PDF parse failure, and a 403).
+
+- **TTL as a "hidden label" is independently confirmed.** The Sarhan / Layeghy / Portmann feature-analysis
+  line reports that `sttl`, `dttl` and `ct_state_ttl` should be **removed** from UNSW-NB15 for
+  "unrealistically high predictive power, similar to what could be called a *hidden label*."
+  **⚠️ Quote comes from search snippets, not a verified PDF — get the exact citation before it goes in
+  the thesis**, since it is load-bearing for the literature-audit chapter. Our contribution beyond it:
+  we *measured the mechanism* (benign 97% `sttl ∈ {31,29}` at 0.0000 attack share; the rule
+  `sttl ∈ {62,254}` matches the entire 99-feature learned gate) and withdrew our own prior
+  recommendation on the strength of it.
+- **"The exporter matters more than the classifier" is published** — [Flow Exporter Impact on
+  Intelligent Intrusion Detection Systems](https://arxiv.org/pdf/2412.14021) (2024) compares
+  CICFlowMeter, Zeek, Argus and nfstream. Independent confirmation of the representation claim. We added
+  the quantified ceiling (Cover–Hart bracket), one pipeline across three extractors, and then *cashed the
+  diagnosis in* for +0.0982.
+- **Tempered class weighting is corroborated outside NIDS**: the imbalanced-learning literature
+  independently reports full inverse-frequency weighting as detrimental with the optimum far below it.
+  α=0.25 with `balanced` ranking 12/14 is the NIDS instance of a general result.
+- **No published multiclass macro-F1 baseline was found on CIC-UNSW-NB15-2024.** The under-explored
+  premise holds — though six searches is not a systematic review.
+- Closest related work to chase: [Zoghi & Serpen 2024](https://onlinelibrary.wiley.com/doi/full/10.1002/cpe.8242)
+  on UNSW-NB15 *data overlap and imbalance* — the nearest published thing to the k-NN overlap analysis.
+  Returned 403; get it through the university library and position against it explicitly.
+
 ## What is left to try
 
 See **`NEXT_STEPS.md`** — the forward-looking counterpart to this file. Ranked roadmap, the evidence
 behind the ranking, and the list of levers already closed so they are not re-opened.
+
+### v7.3e — targeted white-box attack on the RF gate (`results/v73e_rf_whitebox/`) — H1 SUPPORTED, but it scopes v7.3c/d
+
+The one flank the v7.3 series left open. RF's smoother decision surface is the property credited for
+its noise robustness — and smoothness is also what makes a surface easier to descend deliberately. So:
+is RF actually more robust, or was it merely never the target? Five arms at matched benign fpr 0.0168,
+same attacker-controllable budget, greedy per-feature sign search (2 passes), pre-registration printed
+before any result. 8.3 min.
+
+Retained fraction of clean **gate recall** at budget 0.20 IQR:
+
+| Arm | Retained | Reading |
+|---|---|---|
+| `XGB<-XGB` white-box on XGB | **0.0313** | the deployed gate is destroyed |
+| `RF <-RF` white-box on RF | **0.2143** | better, still loses 79% |
+| `RF <-XGB` transfer from XGB | **0.8916** | what v7.3c-style evidence shows |
+
+- **Pre-registered H1 SUPPORTED**: `retained(RF<-RF) - retained(XGB<-XGB) = +0.1830` against a +0.10
+  threshold. **RF's advantage is a property of the model, not of the attack being aimed elsewhere** —
+  the v7.3c/d recommendation stands. End-to-end macro-F1 agrees (RF 0.2146 vs XGB 0.1446).
+- **⚠️ SURROGATE INFLATION +0.6773 — the reusable methodological result.** Aim the attack at RF and
+  four-fifths of its apparent robustness evaporates (0.8916 -> 0.2143). **Every v7.3c/d number was
+  measured under noise or an XGB-aimed attack, so all of them overstate RF's protection against a
+  real adversary.** Any cross-model robustness claim from a surrogate or from noise must report this
+  gap. It is the robustness analogue of the matched-fpr rule from v7.3b.
+- **⚠️ THE DETECTION/ATTRIBUTION LADDER INVERTS WITH THE THREAT MODEL.** Under undirected noise RF
+  retains 0.9931 gate recall vs 0.4834 macro-F1 (**attribution fails first**); under targeted
+  white-box it retains 0.2143 vs 0.3144 (**detection fails first**). Mechanism: the attack optimises
+  against the gate, so the gate is what breaks; noise has no target and damages the harder
+  sub-problem. **Which layer fails first is a property of what the adversary optimises, not of the
+  system alone.** The `novelty.md` headline must always carry its threat model.
+- **State RF as "more robust", never "robust".** It is near-immune to undirected noise (retains
+  0.9931) and clearly not to a targeted attack (0.2143).
+- **A targeted attack is far stronger than noise at equal budget** for both families (XGB gate recall
+  0.4871 random vs 0.0309 white-box). v7.3's "adversarial ~ 2x random" was measured on a full-data
+  gate at a 0.5 cut; at matched fpr the multiple is much larger.
+- **The pre-registered stall trap did NOT fire** (`moved` = 0.998 on RF<-RF at every budget), so the
+  RF number is a genuine descent of RF's surface, not a greedy search stalling on piecewise-constant
+  probabilities. The check was written in advance precisely so a stall could not be reported as
+  robustness.
+- **⚠️ `rf_whitebox.txt` prints a reproduction WARNING (max deviation 0.0718). It is a FALSE ALARM
+  from a check that was mis-specified**: v7.3c `perturb()` applies `budget*IQR` to every column
+  uniformly, while v7.3e's random arm applies the attacker structure (COSTLY at half budget) and is
+  therefore strictly weaker noise. `verify_repro.py` re-ran it under the uniform model and reproduced
+  v7.3c arm A at **0.0000 deviation across all seven budgets**. Prep, gate and threshold are exact;
+  the greedy arms never used the v7.3c noise model. The warning is left in the log as the honest
+  record, with the resolution beside it in that directory's README.
+- **Confound carried over unchanged** from v7.3c: reject set, Stage-B pool, `W_e2e` and the competence
+  reference all derive from the cached XGB OOF gate, so `RF<-RF` is scored on a population its reject
+  class never saw. Works **against** RF, so the RF result is conservative.
+
+### v7.3f — the misattribution threat model (`results/v73f_misattribution/`) — H1 REFUTED, threat model survives
+
+Every adversarial-NIDS attack in the literature optimises `P(benign | x_hat)` -- Tafreshian & Zhang
+(TrustCom 2024) state that fitness literally; the surveys describe the field the same way. **That
+objective is inexpressible in a binary detector**, so nobody asks the other question: what if the
+attacker does not hide, but makes you misidentify what they are? Stage A and Stage B being separately
+trained components is what makes the question implementable and measurable. Three objectives, one
+budget machinery, mutually exclusive outcomes (undetected / misattributed / correct), pre-registered.
+15.8 min.
+
+| Objective | success metric | b50 |
+|---|---|---|
+| EVASION | final prediction is Benign | **0.0145 IQR** |
+| MISATTRIBUTION | detected, wrong family | **0.0545 IQR** |
+| ABSTENTION | gate fires, Stage B rejects | >0.20 (never reached) |
+| RANDOM control | misattributed | >0.20 (never reached) |
+
+- **PRE-REGISTERED H1 REFUTED, in the opposite direction.** Predicted price ratio > 2; measured
+  **0.27**. **Misattribution costs ~3.8x MORE than evasion** -- the cheapest attack on this NIDS is
+  still hiding from it, not lying to it. The inference from "attribution collapses under undirected
+  noise" (v7.3c/e) to "attribution is cheap to corrupt deliberately" was **wrong**: fragility under
+  undirected perturbation does not imply cheapness under direction. Third instance in this project of
+  a plausible mechanism failing to predict a realisable effect.
+  - ⚠️ `b50` is mildly biased against misattribution (~28% of rows abstain, capping achievable
+    misattribution at ~0.72, so its 0.50 target is ~69% of still-attributable rows). Far too small to
+    flip a 0.27-vs-2 verdict; quote the ratio as approximate.
+- **BOTH TRIVIALITY GUARDS PASSED, so the threat model survives its own refutation.** (a) The 2x2 is
+  not diagonal -- the EVASION attack drives misattribution *down* to 0.0038 from a 0.1122 baseline,
+  because you cannot mislabel a row you have deleted from the alert stream; these are genuinely
+  different attacks. (b) **Direction buys a great deal**: directed misattribution reaches 0.6311 at
+  budget 0.20 where random noise plateaus at 0.1497 (**delta +0.481**, growing monotonically from
+  +0.069). The claim is "attribution is cheap to TARGET", not merely "attribution is fragile".
+- **WHAT MISATTRIBUTION BUYS IS STEALTH, NOT CHEAPNESS -- the reportable finding.** At budget 0.20
+  evasion drops gate recall to **0.0309** (97% of attack flows stop alerting -- any volume monitor
+  sees that), while misattribution holds gate recall at **0.9969** with **63% of labels wrong**.
+  Alert volume looks normal. It is also the most efficient attack on the *metric* at every budget
+  (macro-F1 0.4712 at budget 0.002 vs evasion 0.5494, random 0.6035) and the worst on alert volume.
+  **An evasion-only literature is structurally unable to see this attack.**
+- **UNPLANNED FINDING: the reject class is an attack surface.** v7.1's reject class was a *defence*
+  (benign-as-attack false alarms 8,370 -> 2,093, +0.0242 macro-F1). Under attack it inverts:
+  `abstained` rises 0.0879 -> 0.2238 at budget **0.002** and plateaus near 0.29. In the misattribution
+  arm `undetected` ~ `abstained` at every budget (0.2571 vs 0.2541 at 0.20), so **essentially every
+  missed detection there is a reject-class abstention, not a gate miss** -- the gate never fails
+  (0.997) and Stage B files the row as a false alarm. The attacker was never told to do this; told
+  only to corrupt the label while staying detected, it **found the reject class as the cheapest
+  route**. The dedicated ABSTAIN arm confirms the channel is directly targetable and cheap (0.2258 at
+  budget 0.002) but bounded (never 50%). **Report the +0.0242 gain and this surface together, never
+  the gain alone** -- same shape as the v7.1 Fuzzers operating-choice finding, extended to the
+  adversarial case.
+- **Scope**: attacker is white-box on ONE component (gate, or Stage-B member `XGB a=0.25`); deployed
+  system is the full 7-member dynamic combiner. v7.3e measured surrogate inflation at +0.6773, so
+  these attacks are **understated** -- conservative for the stealth and reject-surface findings, and
+  the true misattribution price is likely below 0.0545, though not enough to claim H1 would flip.
+  Symmetric across arms (each objective attacks exactly one model white-box), so the price comparison
+  is fair. Gate, splits, pool, `W_e2e`, threshold and budget machinery identical to v7.3c/e; same
+  XGB-OOF-derived confound, unchanged.
+
+### v7.3g — controllability-aware feature allocation (`results/v73g_controllability_aware/`) — REFUTED
+
+The natural defence to build from the v7.3 series: allocate feature access per stage by THREAT
+EXPOSURE rather than accuracy -- restrict the gate to the 25 uncontrollable svc/proto/port features
+(the easy stage can afford to be robust), keep Stage B at full width (the hard stage cannot). 2x2 over
+gate x Stage-B feature access; Stage B a single XGB a=0.25 in every arm so feature access is the only
+moving part. Pre-registered. 21.7 min. **Refuted, and the failure is more informative than the claim.**
+
+| Test | Result |
+|---|---|
+| P1 svc-only gate recall constant under frozen svc | **PASS**, spread 0.00e+00 -- partition airtight, run valid |
+| P2a hardening defends evasion (gap > 0.30) | PASS +0.3044 -- **but misleading, see below** |
+| P2b hardening does NOT defend misattribution (abs < 0.10) | **FAIL** +0.4109 |
+| P3 clean cost < 0.02 macro-F1 | **FAIL** -0.3354 |
+| P4 non-tautology under service retargeting | **catastrophic collapse** |
+
+- **THE PREMISE WAS WRONG, and it was a reasoning error worth recording.** The svc-only gate has clean
+  recall **0.4603 vs the full gate's 0.9862** -- it misses 54% of attacks before any adversary appears.
+  "svc lifted gate precision 0.9267 -> 0.9411" describes svc **added to** the full feature set at
+  unchanged recall, and svc's 70.4% importance was measured on the **Stage-B family** problem. **Two
+  different importance claims, on two different sub-problems, were conflated into a design premise
+  neither supports.** Attack-vs-benign needs the behavioural features; "which service" does not tell
+  you "is this malicious". The pre-registered cost test (P3) is what caught it.
+- Clean macro-F1 across the 2x2: A full/full **0.6718** | B svcGate/full 0.3365 | C svcGate/svcB
+  0.2977 | D full/svcB 0.4362. Not level-comparable to the 0.687 headline (single-model Stage B).
+- **WHY P2a's PASS IS MISLEADING.** Arm B's evasion rate barely moves under attack (0.6650 clean ->
+  0.6659 at budget 0.20) -- but only because it is **already failing at budget zero**. A pre-emptively
+  broken detector is not a robust detector.
+- **MEASUREMENT LESSON, generally applicable: `misattributed` is upper-bounded by gate recall** -- a
+  row that never passes the gate cannot be mislabelled. Arm B's low misattribution (0.2305 vs A's
+  0.6414) is an artifact of its broken gate, not protection. **Never compare attribution metrics
+  across arms with different gate recall without normalising by rows that reached Stage B.**
+- **P4 IS THE REAL FINDING: restriction CONCENTRATES risk, it does not remove it.** With svc frozen an
+  svc-only gate is unattackable by construction (a tautology, which is why the MOBILE arm exists).
+  Allow the attacker to retarget the service -- switch dst port, svc block recomputed coherently --
+  and arm B collapses **totally at the SMALLEST budget tested**: undetected 0.6659 -> **1.0000**, gate
+  recall **0.0000**, 99.98% of rows retargeted, at 0.002 IQR. The full-feature gate by contrast
+  degrades **gracefully** across the same grid (0.9862 -> 0.7508 -> ... -> 0.0309). **A model
+  concentrated on uncontrollable evidence has a single point of failure; a model spread across many
+  features degrades continuously.**
+- **Mirror image of v7.3's refuted hypothesis.** There, a model leaning 70% on unforgeable evidence
+  was still evaded through the other 30%. Here, a model leaning 100% on unforgeable evidence is
+  destroyed the moment that evidence becomes forgeable. **Feature restriction is not a robustness
+  mechanism in either direction.**
+- **What survives**: nothing recommendable -- 13th pre-registered null. Keep the generalisable claim
+  (*robustness through feature restriction concentrates risk*), the measurement lesson, and the
+  conflation error as a methodological note.

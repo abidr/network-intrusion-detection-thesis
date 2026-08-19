@@ -1,0 +1,124 @@
+prep done 1m -- splits match v7/v7.1/v7.1b
+caches loaded; reject set 34101
+COMB gate-positives 49128 | background rows 993593
+W_e2e (global, K=1) fitted 24s: COMB e2e mF1 0.6903  [v7.1b run: 0.6906]
+
+=== REGION DIAGNOSTICS (decision space, 70-dim) ===
+
+K=2
+  region 0  n= 22409  top: Exploits 52%, Reconnaissance 21%, Generic 8%  best member: XGB a=0.0      (acc 0.786, spread 0.022)
+  region 1  n= 26719  top: Benign 58%, Fuzzers 37%, Exploits 2%        best member: XGB smote2000  (acc 0.696, spread 0.030)
+  distinct locally-best members across regions: 2 of 2  -> ['XGB a=0.0', 'XGB smote2000']
+
+K=3
+  region 0  n= 28965  top: Benign 54%, Fuzzers 34%, Generic 4%         best member: XGB a=0.0      (acc 0.707, spread 0.029)
+  region 1  n=  4444  top: Reconnaissance 86%, Exploits 8%, Benign 5%  best member: XGB smote2000  (acc 0.866, spread 0.012)
+  region 2  n= 15719  top: Exploits 71%, DoS 9%, Benign 6%             best member: XGB a=0.0      (acc 0.756, spread 0.030)
+  distinct locally-best members across regions: 2 of 3  -> ['XGB a=0.0', 'XGB smote2000']
+
+K=5
+  region 0  n= 14179  top: Exploits 77%, Reconnaissance 6%, DoS 6%     best member: XGB a=0.0      (acc 0.765, spread 0.037)
+  region 1  n= 18104  top: Benign 70%, Fuzzers 23%, Exploits 4%        best member: XGB a=0.0      (acc 0.703, spread 0.031)
+  region 2  n=  8799  top: Fuzzers 66%, Benign 33%, Exploits 1%        best member: XGB smote2000  (acc 0.676, spread 0.036)
+  region 3  n=  4519  top: Reconnaissance 86%, Exploits 8%, Benign 5%  best member: XGB smote2000  (acc 0.860, spread 0.013)
+  region 4  n=  3527  top: Generic 45%, DoS 19%, Shellcode 16%         best member: XGB a=1.0      (acc 0.814, spread 0.024)
+  distinct locally-best members across regions: 3 of 5  -> ['XGB a=0.0', 'XGB a=1.0', 'XGB smote2000']
+
+K=8
+  region 0  n=  8180  top: Benign 59%, Fuzzers 40%, Exploits 1%        best member: XGB smote2000  (acc 0.593, spread 0.069)
+  region 1  n=  9589  top: Exploits 90%, Benign 4%, DoS 4%             best member: XGB a=0.0      (acc 0.898, spread 0.009)
+  region 2  n=  4149  top: Reconnaissance 90%, Exploits 5%, Benign 4%  best member: XGB a=0.5      (acc 0.897, spread 0.008)
+  region 3  n=  6374  top: Fuzzers 73%, Benign 25%, Exploits 1%        best member: XGB a=0.0      (acc 0.737, spread 0.024)
+  region 4  n=  6407  top: Exploits 42%, DoS 19%, Reconnaissance 15%   best member: XGB a=0.0      (acc 0.521, spread 0.070)
+  region 5  n= 11993  top: Benign 75%, Fuzzers 17%, Exploits 5%        best member: XGB smote2000  (acc 0.749, spread 0.030)
+  region 6  n=  1670  top: Generic 90%, Exploits 5%, Benign 4%         best member: XGB a=1.0      (acc 0.896, spread 0.025)
+  region 7  n=   766  top: Shellcode 73%, Benign 15%, Exploits 7%      best member: XGB smote2000  (acc 0.762, spread 0.022)
+  distinct locally-best members across regions: 4 of 8  -> ['XGB a=0.0', 'XGB a=0.5', 'XGB a=1.0', 'XGB smote2000']
+
+K=2 fitted 25s | COMB e2e 0.6950 (global 0.6903, +0.0047) | regions refit 2/2
+   mean |W_k - W_glob| 0.1645 | max 2.0000 | mean pairwise |W_a - W_b| 0.3066 | rows changed 7.35%
+
+K=3 fitted 24s | COMB e2e 0.6956 (global 0.6903, +0.0053) | regions refit 3/3
+   mean |W_k - W_glob| 0.1180 | max 2.0000 | mean pairwise |W_a - W_b| 0.2109 | rows changed 6.25%
+
+K=5 fitted 21s | COMB e2e 0.6979 (global 0.6903, +0.0076) | regions refit 5/5
+   mean |W_k - W_glob| 0.1495 | max 2.0000 | mean pairwise |W_a - W_b| 0.2707 | rows changed 5.56%
+
+K=8 fitted 17s | COMB e2e 0.6978 (global 0.6903, +0.0075) | regions refit 8/8
+   mean |W_k - W_glob| 0.1092 | max 2.0000 | mean pairwise |W_a - W_b| 0.2013 | rows changed 6.99%
+
+control: K=1 regional reproduces STATIC W_e2e on 100.0000% of SELV rows
+
+--- SELV (t=0.5) ---
+                                         variant    mF1     mP     mR    acc
+K=1 HYBRID W_e2e x OLA-cw k=30 p=3 (v7.1b FINAL) 0.6732 0.7031 0.6713 0.9853
+                    REGION K=2 x OLA-cw k=30 p=3 0.6719 0.7116 0.6626 0.9852
+                    REGION K=3 x OLA-cw k=30 p=3 0.6719 0.7012 0.6674 0.9854
+                              REGION K=5 lam=0.5 0.6713 0.7023 0.6676 0.9853
+                    REGION K=5 x OLA-cw k=30 p=3 0.6707 0.6997 0.6666 0.9853
+                 K=1 STATIC W_e2e (v7.1b static) 0.6704 0.7043 0.6665 0.9853
+                              REGION K=2 lam=0.5 0.6701 0.7126 0.6607 0.9851
+                              REGION K=3 lam=0.5 0.6699 0.7001 0.6663 0.9853
+                              REGION K=5 lam=1.0 0.6693 0.6998 0.6644 0.9853
+                    REGION K=8 x OLA-cw k=30 p=3 0.6687 0.7020 0.6638 0.9850
+                              REGION K=2 lam=1.0 0.6685 0.7134 0.6571 0.9852
+                              REGION K=8 lam=0.5 0.6674 0.7028 0.6623 0.9850
+                              REGION K=3 lam=1.0 0.6669 0.6963 0.6623 0.9854
+                              REGION K=8 lam=1.0 0.6643 0.6983 0.6595 0.9850
+SELV winner among REGION variants: REGION K=2 x OLA-cw k=30 p=3
+gate + pool refit 3m
+
+--- TEST (selection made on SELV) ---
+                                         variant    mF1     mP     mR    acc
+                              REGION K=8 lam=1.0 0.6924 0.7223 0.6910 0.9859
+                              REGION K=2 lam=1.0 0.6921 0.7317 0.6830 0.9859
+                    REGION K=8 x OLA-cw k=30 p=3 0.6912 0.7196 0.6898 0.9859
+                    REGION K=2 x OLA-cw k=30 p=3 0.6907 0.7241 0.6853 0.9859
+                    REGION K=3 x OLA-cw k=30 p=3 0.6904 0.7173 0.6885 0.9861
+                              REGION K=2 lam=0.5 0.6898 0.7254 0.6847 0.9859
+                              REGION K=3 lam=0.5 0.6895 0.7167 0.6888 0.9861
+                    REGION K=5 x OLA-cw k=30 p=3 0.6895 0.7162 0.6888 0.9860
+                              REGION K=3 lam=1.0 0.6893 0.7183 0.6856 0.9862
+K=1 HYBRID W_e2e x OLA-cw k=30 p=3 (v7.1b FINAL) 0.6888 0.7152 0.6908 0.9860
+                              REGION K=5 lam=1.0 0.6884 0.7163 0.6874 0.9860
+                              REGION K=8 lam=0.5 0.6883 0.7175 0.6875 0.9859
+                 K=1 STATIC W_e2e (v7.1b static) 0.6881 0.7163 0.6885 0.9861
+                              REGION K=5 lam=0.5 0.6881 0.7161 0.6871 0.9861
+
+SELV-selected 'REGION K=2 x OLA-cw k=30 p=3': test mF1 0.6907 acc 0.9859 (rank 4 of 14 on test)
+
+paired delta (region W - v7.1b): +0.0018  95% CI [-0.0034, +0.0076]  p ~ 0.550
+region W marginal: 0.6907 [0.6741, 0.7058]
+v7.1b reference this run: 0.6888  [previous run: 0.6874]
+
+per-class F1 (v7.1b -> region W):
+  Benign           0.9946 -> 0.9948 (+0.0002)
+  Analysis         0.1548 -> 0.1585 (+0.0038)
+  Backdoor         0.6443 -> 0.6752 (+0.0309)
+  DoS              0.5996 -> 0.5925 (-0.0071)
+  Exploits         0.8228 -> 0.8104 (-0.0124)
+  Fuzzers          0.6393 -> 0.6211 (-0.0181)
+  Generic          0.8778 -> 0.8753 (-0.0024)
+  Reconnaissance   0.8262 -> 0.8256 (-0.0006)
+  Shellcode        0.7184 -> 0.7087 (-0.0098)
+  Worms            0.6105 -> 0.6444 (+0.0339)
+
+                precision    recall  f1-score   support
+
+        Benign      0.996     0.993     0.995    505063
+      Analysis      0.104     0.338     0.159        77
+      Backdoor      0.791     0.589     0.675        90
+           DoS      0.662     0.536     0.593       884
+      Exploits      0.856     0.770     0.810      6185
+       Fuzzers      0.521     0.770     0.621      5287
+       Generic      0.872     0.879     0.875       899
+Reconnaissance      0.872     0.784     0.826      2407
+     Shellcode      0.861     0.602     0.709       420
+         Worms      0.707     0.592     0.644        49
+
+      accuracy                          0.986    521361
+     macro avg      0.724     0.685     0.691    521361
+  weighted avg      0.988     0.986     0.987    521361
+
+
+total 6.1 min

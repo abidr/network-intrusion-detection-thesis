@@ -1,0 +1,373 @@
+{
+  "experiment": "disjoint feature-view pool vs class-weight pool; dynamic combination",
+  "views": {
+    "SVC": 25,
+    "TIME": 25,
+    "SIZE": 39,
+    "FLAG": 10,
+    "ALL": 99
+  },
+  "diagnostic": {
+    "ALPHA": {
+      "members": 7,
+      "pct_shared": 93.4,
+      "median_within_row_spread": 0.0,
+      "mean_pairwise_weight_corr": 0.928,
+      "region_rho": -0.857,
+      "region_rho_p": 0.0065,
+      "mean_pairwise_disagreement": 0.1069
+    },
+    "VIEW": {
+      "members": 5,
+      "pct_shared": 51.2,
+      "median_within_row_spread": 0.2956,
+      "mean_pairwise_weight_corr": 0.465,
+      "region_rho": 0.071,
+      "region_rho_p": 0.8665,
+      "mean_pairwise_disagreement": 0.3657
+    },
+    "UNION": {
+      "members": 12,
+      "pct_shared": 54.9,
+      "median_within_row_spread": 0.3296,
+      "mean_pairwise_weight_corr": 0.664,
+      "region_rho": 0.429,
+      "region_rho_p": 0.2894,
+      "mean_pairwise_disagreement": 0.2518
+    }
+  },
+  "go_no_go": true,
+  "comb_e2e": {
+    "ALPHA": 0.6903,
+    "VIEW": 0.6887,
+    "UNION": 0.7034
+  },
+  "selv_winner": "UNION HYBRID W x OLA-cw p=1",
+  "selv_winner_newpool": "UNION HYBRID W x OLA-cw p=1",
+  "selv_table": [
+    {
+      "variant": "UNION HYBRID W x OLA-cw p=1",
+      "mF1": 0.6808,
+      "mP": 0.7103,
+      "mR": 0.6769,
+      "acc": 0.9863
+    },
+    {
+      "variant": "UNION HYBRID W x OLA-cw p=3",
+      "mF1": 0.6796,
+      "mP": 0.7076,
+      "mR": 0.6767,
+      "acc": 0.9862
+    },
+    {
+      "variant": "UNION STATIC W",
+      "mF1": 0.6788,
+      "mP": 0.7073,
+      "mR": 0.6755,
+      "acc": 0.9862
+    },
+    {
+      "variant": "ALPHA HYBRID W x OLA-cw p=3",
+      "mF1": 0.6732,
+      "mP": 0.7031,
+      "mR": 0.6713,
+      "acc": 0.9853
+    },
+    {
+      "variant": "ALPHA HYBRID W x OLA-cw p=1",
+      "mF1": 0.6724,
+      "mP": 0.7049,
+      "mR": 0.6693,
+      "acc": 0.9853
+    },
+    {
+      "variant": "ALPHA STATIC W",
+      "mF1": 0.6704,
+      "mP": 0.7043,
+      "mR": 0.6665,
+      "acc": 0.9853
+    },
+    {
+      "variant": "VIEW HYBRID W x OLA-cw p=1",
+      "mF1": 0.6697,
+      "mP": 0.6961,
+      "mR": 0.6609,
+      "acc": 0.9863
+    },
+    {
+      "variant": "VIEW STATIC W",
+      "mF1": 0.669,
+      "mP": 0.7066,
+      "mR": 0.6635,
+      "acc": 0.9853
+    },
+    {
+      "variant": "VIEW HYBRID W x OLA-cw p=3",
+      "mF1": 0.6689,
+      "mP": 0.6947,
+      "mR": 0.6577,
+      "acc": 0.9864
+    },
+    {
+      "variant": "UNION DYN OLA-cw p=8",
+      "mF1": 0.6645,
+      "mP": 0.7538,
+      "mR": 0.6245,
+      "acc": 0.9876
+    },
+    {
+      "variant": "UNION DYN OLA-cw p=3",
+      "mF1": 0.6637,
+      "mP": 0.7523,
+      "mR": 0.6202,
+      "acc": 0.9876
+    },
+    {
+      "variant": "UNION DYN OLA-cw p=1",
+      "mF1": 0.6607,
+      "mP": 0.7489,
+      "mR": 0.6151,
+      "acc": 0.9875
+    },
+    {
+      "variant": "ALPHA DYN OLA-cw p=8",
+      "mF1": 0.6594,
+      "mP": 0.7361,
+      "mR": 0.6235,
+      "acc": 0.9873
+    },
+    {
+      "variant": "ALPHA DYN OLA-cw p=3",
+      "mF1": 0.6578,
+      "mP": 0.7389,
+      "mR": 0.6202,
+      "acc": 0.9873
+    },
+    {
+      "variant": "ALPHA DYN OLA-cw p=1",
+      "mF1": 0.656,
+      "mP": 0.7305,
+      "mR": 0.6169,
+      "acc": 0.9872
+    },
+    {
+      "variant": "VIEW DYN OLA-cw p=8",
+      "mF1": 0.6523,
+      "mP": 0.7311,
+      "mR": 0.6094,
+      "acc": 0.9875
+    },
+    {
+      "variant": "ALPHA EQUAL-AVG",
+      "mF1": 0.6512,
+      "mP": 0.7275,
+      "mR": 0.6108,
+      "acc": 0.9871
+    },
+    {
+      "variant": "VIEW DYN OLA-cw p=3",
+      "mF1": 0.651,
+      "mP": 0.738,
+      "mR": 0.6045,
+      "acc": 0.9875
+    },
+    {
+      "variant": "UNION EQUAL-AVG",
+      "mF1": 0.6499,
+      "mP": 0.7413,
+      "mR": 0.6036,
+      "acc": 0.9873
+    },
+    {
+      "variant": "VIEW DYN OLA-cw p=1",
+      "mF1": 0.6484,
+      "mP": 0.749,
+      "mR": 0.5966,
+      "acc": 0.9875
+    },
+    {
+      "variant": "VIEW EQUAL-AVG",
+      "mF1": 0.6005,
+      "mP": 0.782,
+      "mR": 0.5307,
+      "acc": 0.9862
+    }
+  ],
+  "test_table": [
+    {
+      "variant": "UNION STATIC W",
+      "mF1": 0.6976,
+      "mP": 0.7219,
+      "mR": 0.7008,
+      "acc": 0.9868
+    },
+    {
+      "variant": "UNION HYBRID W x OLA-cw p=3",
+      "mF1": 0.6973,
+      "mP": 0.7227,
+      "mR": 0.6994,
+      "acc": 0.9868
+    },
+    {
+      "variant": "UNION HYBRID W x OLA-cw p=1",
+      "mF1": 0.6955,
+      "mP": 0.7199,
+      "mR": 0.6983,
+      "acc": 0.9868
+    },
+    {
+      "variant": "ALPHA HYBRID W x OLA-cw p=1",
+      "mF1": 0.6902,
+      "mP": 0.7183,
+      "mR": 0.6909,
+      "acc": 0.9861
+    },
+    {
+      "variant": "ALPHA HYBRID W x OLA-cw p=3",
+      "mF1": 0.6888,
+      "mP": 0.7152,
+      "mR": 0.6908,
+      "acc": 0.986
+    },
+    {
+      "variant": "ALPHA STATIC W",
+      "mF1": 0.6881,
+      "mP": 0.7163,
+      "mR": 0.6885,
+      "acc": 0.9861
+    },
+    {
+      "variant": "UNION DYN OLA-cw p=8",
+      "mF1": 0.6856,
+      "mP": 0.7912,
+      "mR": 0.6417,
+      "acc": 0.9881
+    },
+    {
+      "variant": "VIEW STATIC W",
+      "mF1": 0.6845,
+      "mP": 0.7189,
+      "mR": 0.6852,
+      "acc": 0.9858
+    },
+    {
+      "variant": "VIEW HYBRID W x OLA-cw p=1",
+      "mF1": 0.6841,
+      "mP": 0.7095,
+      "mR": 0.6768,
+      "acc": 0.9868
+    },
+    {
+      "variant": "UNION DYN OLA-cw p=3",
+      "mF1": 0.6827,
+      "mP": 0.7835,
+      "mR": 0.6369,
+      "acc": 0.988
+    },
+    {
+      "variant": "VIEW HYBRID W x OLA-cw p=3",
+      "mF1": 0.682,
+      "mP": 0.7016,
+      "mR": 0.6761,
+      "acc": 0.9869
+    },
+    {
+      "variant": "UNION DYN OLA-cw p=1",
+      "mF1": 0.678,
+      "mP": 0.7735,
+      "mR": 0.6304,
+      "acc": 0.9879
+    },
+    {
+      "variant": "ALPHA DYN OLA-cw p=8",
+      "mF1": 0.6776,
+      "mP": 0.7883,
+      "mR": 0.6403,
+      "acc": 0.9879
+    },
+    {
+      "variant": "ALPHA DYN OLA-cw p=3",
+      "mF1": 0.6762,
+      "mP": 0.7636,
+      "mR": 0.6375,
+      "acc": 0.9878
+    },
+    {
+      "variant": "UNION EQUAL-AVG",
+      "mF1": 0.6752,
+      "mP": 0.7795,
+      "mR": 0.625,
+      "acc": 0.9878
+    },
+    {
+      "variant": "ALPHA DYN OLA-cw p=1",
+      "mF1": 0.675,
+      "mP": 0.7529,
+      "mR": 0.6348,
+      "acc": 0.9877
+    },
+    {
+      "variant": "ALPHA EQUAL-AVG",
+      "mF1": 0.6733,
+      "mP": 0.7577,
+      "mR": 0.6325,
+      "acc": 0.9877
+    },
+    {
+      "variant": "VIEW DYN OLA-cw p=8",
+      "mF1": 0.6731,
+      "mP": 0.776,
+      "mR": 0.6315,
+      "acc": 0.9879
+    },
+    {
+      "variant": "VIEW DYN OLA-cw p=3",
+      "mF1": 0.6722,
+      "mP": 0.7662,
+      "mR": 0.6274,
+      "acc": 0.9879
+    },
+    {
+      "variant": "VIEW DYN OLA-cw p=1",
+      "mF1": 0.6696,
+      "mP": 0.7834,
+      "mR": 0.6163,
+      "acc": 0.9879
+    },
+    {
+      "variant": "VIEW EQUAL-AVG",
+      "mF1": 0.6345,
+      "mP": 0.8317,
+      "mR": 0.5567,
+      "acc": 0.9867
+    }
+  ],
+  "test_rank_of_selv_newpool": 3,
+  "test": {
+    "new": 0.6955,
+    "v71b_ref": 0.6888
+  },
+  "paired_delta": 0.0066,
+  "paired_ci": [
+    -0.0017,
+    0.0144
+  ],
+  "paired_p": 0.105,
+  "marginal_ci": [
+    0.6788,
+    0.7112
+  ],
+  "per_class_f1": {
+    "Benign": 0.9949,
+    "Analysis": 0.1765,
+    "Backdoor": 0.6797,
+    "DoS": 0.5986,
+    "Exploits": 0.8235,
+    "Fuzzers": 0.6475,
+    "Generic": 0.8753,
+    "Reconnaissance": 0.8294,
+    "Shellcode": 0.727,
+    "Worms": 0.6022
+  },
+  "minutes": 16.1
+}

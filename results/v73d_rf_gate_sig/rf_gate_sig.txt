@@ -1,0 +1,47 @@
+prep done 1m
+Stage-B pool refit 2.4m (identical for both arms)
+gates trained on 800000 rows
+  gate XGB threshold 0.3280 -> benign fpr 0.0168
+  gate RF  threshold 0.0700 -> benign fpr 0.0168
+  predicted XGB @ budget 0.000
+  predicted XGB @ budget 0.002
+  predicted XGB @ budget 0.010
+  predicted XGB @ budget 0.020
+  predicted XGB @ budget 0.050
+  predicted XGB @ budget 0.100
+  predicted XGB @ budget 0.200
+  predicted RF @ budget 0.000
+  predicted RF @ budget 0.002
+  predicted RF @ budget 0.010
+  predicted RF @ budget 0.020
+  predicted RF @ budget 0.050
+  predicted RF @ budget 0.100
+  predicted RF @ budget 0.200
+predictions cached -> rf_gate_sig_preds.npz
+
+========================================================================================
+PAIRED BOOTSTRAP -- RF gate minus XGB gate, 2000 stratified resamples
+========================================================================================
+    budget       XGB        RF      delta               95% CI        p verdict
+     0.000    0.6865    0.6827    -0.0038  [-0.0064, -0.0013]    0.005  worse, established
+     0.002    0.6089    0.6178    +0.0089  [+0.0048, +0.0131]    0.001  ESTABLISHED
+     0.010    0.5575    0.5698    +0.0123  [+0.0074, +0.0179]    0.000  ESTABLISHED
+     0.020    0.4797    0.5072    +0.0275  [+0.0202, +0.0366]    0.000  ESTABLISHED
+     0.050    0.3621    0.4121    +0.0500  [+0.0417, +0.0607]    0.000  ESTABLISHED
+     0.100    0.2978    0.3498    +0.0520  [+0.0465, +0.0587]    0.000  ESTABLISHED
+     0.200    0.2433    0.2996    +0.0563  [+0.0516, +0.0619]    0.000  ESTABLISHED
+
+========================================================================================
+READOUT
+========================================================================================
+CLEAN (budget 0): delta -0.0038, CI [-0.0064, -0.0013], p = 0.005 -> worse, established
+  XGB 0.6865 [0.6699, 0.7027] | RF 0.6827 [0.6657, 0.6987]
+
+UNDER NOISE: established at 6 of 6 budgets, from 0.002 IQR upward.
+  largest gain +0.0563 at budget 0.20, CI [+0.0516, +0.0619]
+
+CONFOUND (restated): the reject set, Stage-B pool, W_e2e and competence reference all
+derive from the cached XGB out-of-fold gate. The RF arm is handed a gate-positive
+population its reject class never saw, so this confound works AGAINST RF.
+
+total 5.9 min

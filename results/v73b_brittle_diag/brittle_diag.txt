@@ -1,0 +1,67 @@
+prep done 1m -- splits match v7/v7.1/v7.1b/v7.3
+
+=== INTEGER-VALUED COLUMNS (43 of 67) ===
+  Flow Duration, Total Fwd Packet, Total Bwd packets, Total Length of Fwd Packet, Total Length of Bwd Packet, Fwd Packet Length Max, Fwd Packet Length Min, Bwd Packet Length Max, Bwd Packet Length Min, Flow IAT Max, Flow IAT Min, Fwd IAT Total, Fwd IAT Max, Fwd IAT Min, Bwd IAT Total, Bwd IAT Max, Bwd IAT Min, Fwd PSH Flags, Fwd Header Length, Bwd Header Length, Packet Length Min, Packet Length Max, FIN Flag Count, SYN Flag Count, RST Flag Count, PSH Flag Count, ACK Flag Count, Down/Up Ratio, Bwd Bytes/Bulk Avg, Bwd Packet/Bulk Avg, Bwd Bulk Rate Avg, Subflow Fwd Packets, Subflow Fwd Bytes, Subflow Bwd Packets, Subflow Bwd Bytes, FWD Init Win Bytes, Bwd Init Win Bytes, Fwd Act Data Pkts, Fwd Seg Size Min, Active Max, Active Min, Idle Max, Idle Min
+  v7.3 perturbed these continuously. Sub-integer moves are not realisable flows;
+  here they are ROUNDED after perturbation, and the continuous curve is kept for contrast.
+
+gate refit 0.5m
+clean gate: attack recall 0.9893 | benign fpr 0.0168  [v7.1b: 0.9893 / ~0.0166]
+
+=== PART 1: does integer rounding change the brittleness curve? ===
+    budget     continuous    int-rounded difference
+     0.000         0.9893         0.9893     0.0000
+     0.002         0.9339         0.9424     0.0085
+     0.005         0.9172         0.9249     0.0077
+     0.010         0.9015         0.9119     0.0104
+     0.020         0.8391         0.8285    -0.0106
+     0.050         0.6639         0.6574    -0.0066
+     0.100         0.5469         0.5444    -0.0025
+     0.200         0.4502         0.4533     0.0031
+
+=== PART 2: model or representation? (identical data, identical noise) ===
+  7 families trained on 400000 rows (0.9m)
+
+  matching every family to the deployed gate's benign fpr = 0.0168
+    XGB d8/400 (the gate)  threshold 0.2471 (realised fpr 0.0168)
+    XGB d3/400             threshold 0.8293 (realised fpr 0.0168)
+    XGB d8/50              threshold 0.8462 (realised fpr 0.0168)
+    DT d6                  threshold 0.9241 (realised fpr 0.0092)
+    RF 100                 threshold 0.0900 (realised fpr 0.0164)
+    15-NN                  threshold 0.2000 (realised fpr 0.0151)
+    LogReg                 threshold 0.8563 (realised fpr 0.0168)
+
+  attack recall at MATCHED fpr:
+  family                    clean    0.002    0.005    0.010    0.020    0.050    0.100    0.200
+  XGB d8/400 (the gate)    0.9838   0.9440   0.9236   0.9054   0.8218   0.6560   0.5457   0.4534
+  XGB d3/400               0.9847   0.9745   0.9496   0.9040   0.7575   0.5401   0.4267   0.3484
+  XGB d8/50                0.9845   0.9629   0.9585   0.9551   0.8753   0.7117   0.6148   0.5359
+  DT d6                    0.8723   0.8673   0.8672   0.8685   0.8457   0.8230   0.7964   0.7567
+  RF 100                   0.9758   0.9953   0.9958   0.9950   0.9848   0.9590   0.9293   0.9056
+  15-NN                    0.9224   0.7613   0.7477   0.7767   0.7770   0.7219   0.6625   0.6320
+  LogReg                   0.0511   0.0293   0.0277   0.0266   0.0257   0.0270   0.0463   0.1077
+
+  RETAINED FRACTION of clean recall at matched fpr (1.000 = fully robust):
+  family                    clean    0.002    0.005    0.010    0.020    0.050    0.100    0.200
+  XGB d8/400 (the gate)    0.9838   0.9595   0.9388   0.9203   0.8353   0.6668   0.5547   0.4609
+  XGB d3/400               0.9847   0.9897   0.9644   0.9181   0.7693   0.5485   0.4334   0.3539
+  XGB d8/50                0.9845   0.9781   0.9736   0.9701   0.8891   0.7230   0.6245   0.5443
+  DT d6                    0.8723   0.9943   0.9942   0.9956   0.9696   0.9435   0.9131   0.8675
+  RF 100                   0.9758   1.0200   1.0206   1.0197   1.0092   0.9828   0.9523   0.9281
+  15-NN                    0.9224   0.8254   0.8106   0.8420   0.8423   0.7827   0.7182   0.6852
+  LogReg                   0.0511   0.5726   0.5414   0.5210   0.5030   0.5282   0.9052   2.1080
+
+  (read BOTH columns: a family with low clean recall can retain a high fraction of
+   a bad score. Robustness only counts where clean recall is competitive.)
+
+==============================================================================
+VERDICT
+==============================================================================
+PART 1  integer rounding at budget 0.002: recall 0.9339 -> 0.9424 (+0.0085)
+        the v7.3 small-budget claim SURVIVES rounding
+
+PART 2  retained recall at budget 0.02 spans 0.503 (LogReg) to 1.009 (RF 100)
+        spread across seven families = 0.506
+        some family is robust -> MODEL-bound, capacity/smoothing is worth fixing
+
+total 3.1 min

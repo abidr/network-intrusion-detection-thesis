@@ -1,0 +1,166 @@
+prep done 1m -- splits match v7/v7.1/v7.1b/v7.1d
+caches loaded; reject set 34101; stage-B rows 99292
+
+=== FEATURE VIEWS (disjoint partition of 99 columns) ===
+  SVC    25 cols | svc_ftp, svc_ssh, svc_telnet, svc_smtp, svc_dns, svc_http ...
+  TIME   25 cols | Flow Duration, Flow Bytes/s, Flow Packets/s, Flow IAT Mean, Flow IAT Std, Flow IAT Max ...
+  SIZE   39 cols | Total Fwd Packet, Total Bwd packets, Total Length of Fwd Packet, Fwd Packet Length Max, Fwd Packet Length Min, Fwd Packet Length Mean ...
+  FLAG   10 cols | Fwd PSH Flags, FIN Flag Count, SYN Flag Count, RST Flag Count, frac_FIN, frac_SYN ...
+  ALL    99 cols (full-feature control member)
+  cross-fit fold 1/5 done (1m)
+  cross-fit fold 2/5 done (3m)
+  cross-fit fold 3/5 done (4m)
+  cross-fit fold 4/5 done (6m)
+  cross-fit fold 5/5 done (7m)
+view cross-fit 7m -> cache_oof_v71e_views.npz
+
+COMB gate-positives 49128 | background rows 993593
+
+=== INDIVIDUAL MEMBER QUALITY (OOF, stage-B 10-class on COMB ref rows) ===
+  XGB a=0.0      acc 0.7311  mF1 0.6234
+  XGB a=0.25     acc 0.7299  mF1 0.6316
+  XGB a=0.5      acc 0.7251  mF1 0.6326
+  XGB a=1.0      acc 0.7086  mF1 0.6258
+  XGB smote2000  acc 0.7310  mF1 0.6287
+  RF a=0.25      acc 0.7197  mF1 0.6269
+  ET a=0.25      acc 0.7072  mF1 0.6153
+  V:SVC          acc 0.6290  mF1 0.4062
+  V:TIME         acc 0.5545  mF1 0.3296
+  V:SIZE         acc 0.6179  mF1 0.5221
+  V:FLAG         acc 0.4631  mF1 0.2279
+  V:ALL          acc 0.7319  mF1 0.6325
+
+=== PRE-REGISTERED DIAGNOSTIC (go/no-go, before any combiner grid) ===
+v5 reference on the ALPHA pool: shared variance 98.1%, median within-row spread 0.0000,
+v7.1d reference: region acc-vs-spread Spearman rho = -0.86
+
+ALPHA  M= 7 | shared var  93.4% | median within-row spread 0.0000 | weight corr 0.928
+       region acc-vs-spread rho -0.857 (p 0.007) | mean pairwise disagreement 0.107
+         region 5 n= 11993 best-acc 0.749 spread 0.030
+         region 1 n=  9589 best-acc 0.898 spread 0.009
+         region 0 n=  8180 best-acc 0.593 spread 0.069
+         region 4 n=  6407 best-acc 0.521 spread 0.070
+         region 3 n=  6374 best-acc 0.737 spread 0.024
+         region 2 n=  4149 best-acc 0.897 spread 0.008
+         region 6 n=  1670 best-acc 0.896 spread 0.025
+         region 7 n=   766 best-acc 0.762 spread 0.022
+VIEW   M= 5 | shared var  51.2% | median within-row spread 0.2956 | weight corr 0.465
+       region acc-vs-spread rho +0.071 (p 0.867) | mean pairwise disagreement 0.366
+         region 5 n= 14730 best-acc 0.693 spread 0.120
+         region 0 n=  7754 best-acc 0.702 spread 0.259
+         region 2 n=  6531 best-acc 0.550 spread 0.419
+         region 6 n=  5146 best-acc 0.822 spread 0.545
+         region 4 n=  5122 best-acc 0.703 spread 0.347
+         region 1 n=  4759 best-acc 0.923 spread 0.019
+         region 3 n=  3556 best-acc 0.949 spread 0.396
+         region 7 n=  1530 best-acc 0.909 spread 0.704
+UNION  M=12 | shared var  54.9% | median within-row spread 0.3296 | weight corr 0.664
+       region acc-vs-spread rho +0.429 (p 0.289) | mean pairwise disagreement 0.252
+         region 0 n= 14757 best-acc 0.689 spread 0.117
+         region 2 n=  9281 best-acc 0.905 spread 0.308
+         region 5 n=  7882 best-acc 0.696 spread 0.266
+         region 1 n=  6514 best-acc 0.529 spread 0.379
+         region 6 n=  4287 best-acc 0.719 spread 0.354
+         region 3 n=  4003 best-acc 0.913 spread 0.395
+         region 4 n=  1665 best-acc 0.897 spread 0.705
+         region 7 n=   739 best-acc 0.783 spread 0.721
+
+GO/NO-GO: VIEW pool CLEARS the pre-registered bar vs ALPHA (shared 51.2% vs 93.4%, rho +0.071 vs -0.857)
+(the combiner grid runs either way; the bar is recorded for honest reporting)
+W_e2e ALPHA  fitted  19s | COMB e2e mF1 0.6903
+W_e2e VIEW   fitted  10s | COMB e2e mF1 0.6887
+W_e2e UNION  fitted  50s | COMB e2e mF1 0.7034
+
+--- SELV (t=0.5) ---
+                    variant    mF1     mP     mR    acc
+UNION HYBRID W x OLA-cw p=1 0.6808 0.7103 0.6769 0.9863
+UNION HYBRID W x OLA-cw p=3 0.6796 0.7076 0.6767 0.9862
+             UNION STATIC W 0.6788 0.7073 0.6755 0.9862
+ALPHA HYBRID W x OLA-cw p=3 0.6732 0.7031 0.6713 0.9853
+ALPHA HYBRID W x OLA-cw p=1 0.6724 0.7049 0.6693 0.9853
+             ALPHA STATIC W 0.6704 0.7043 0.6665 0.9853
+ VIEW HYBRID W x OLA-cw p=1 0.6697 0.6961 0.6609 0.9863
+              VIEW STATIC W 0.6690 0.7066 0.6635 0.9853
+ VIEW HYBRID W x OLA-cw p=3 0.6689 0.6947 0.6577 0.9864
+       UNION DYN OLA-cw p=8 0.6645 0.7538 0.6245 0.9876
+       UNION DYN OLA-cw p=3 0.6637 0.7523 0.6202 0.9876
+       UNION DYN OLA-cw p=1 0.6607 0.7489 0.6151 0.9875
+       ALPHA DYN OLA-cw p=8 0.6594 0.7361 0.6235 0.9873
+       ALPHA DYN OLA-cw p=3 0.6578 0.7389 0.6202 0.9873
+       ALPHA DYN OLA-cw p=1 0.6560 0.7305 0.6169 0.9872
+        VIEW DYN OLA-cw p=8 0.6523 0.7311 0.6094 0.9875
+            ALPHA EQUAL-AVG 0.6512 0.7275 0.6108 0.9871
+        VIEW DYN OLA-cw p=3 0.6510 0.7380 0.6045 0.9875
+            UNION EQUAL-AVG 0.6499 0.7413 0.6036 0.9873
+        VIEW DYN OLA-cw p=1 0.6484 0.7490 0.5966 0.9875
+             VIEW EQUAL-AVG 0.6005 0.7820 0.5307 0.9862
+SELV winner overall: UNION HYBRID W x OLA-cw p=1
+SELV winner among VIEW/UNION variants: UNION HYBRID W x OLA-cw p=1
+gate + pools refit 6m
+
+--- TEST (selection made on SELV) ---
+                    variant    mF1     mP     mR    acc
+             UNION STATIC W 0.6976 0.7219 0.7008 0.9868
+UNION HYBRID W x OLA-cw p=3 0.6973 0.7227 0.6994 0.9868
+UNION HYBRID W x OLA-cw p=1 0.6955 0.7199 0.6983 0.9868
+ALPHA HYBRID W x OLA-cw p=1 0.6902 0.7183 0.6909 0.9861
+ALPHA HYBRID W x OLA-cw p=3 0.6888 0.7152 0.6908 0.9860
+             ALPHA STATIC W 0.6881 0.7163 0.6885 0.9861
+       UNION DYN OLA-cw p=8 0.6856 0.7912 0.6417 0.9881
+              VIEW STATIC W 0.6845 0.7189 0.6852 0.9858
+ VIEW HYBRID W x OLA-cw p=1 0.6841 0.7095 0.6768 0.9868
+       UNION DYN OLA-cw p=3 0.6827 0.7835 0.6369 0.9880
+ VIEW HYBRID W x OLA-cw p=3 0.6820 0.7016 0.6761 0.9869
+       UNION DYN OLA-cw p=1 0.6780 0.7735 0.6304 0.9879
+       ALPHA DYN OLA-cw p=8 0.6776 0.7883 0.6403 0.9879
+       ALPHA DYN OLA-cw p=3 0.6762 0.7636 0.6375 0.9878
+            UNION EQUAL-AVG 0.6752 0.7795 0.6250 0.9878
+       ALPHA DYN OLA-cw p=1 0.6750 0.7529 0.6348 0.9877
+            ALPHA EQUAL-AVG 0.6733 0.7577 0.6325 0.9877
+        VIEW DYN OLA-cw p=8 0.6731 0.7760 0.6315 0.9879
+        VIEW DYN OLA-cw p=3 0.6722 0.7662 0.6274 0.9879
+        VIEW DYN OLA-cw p=1 0.6696 0.7834 0.6163 0.9879
+             VIEW EQUAL-AVG 0.6345 0.8317 0.5567 0.9867
+
+SELV-selected new-pool variant 'UNION HYBRID W x OLA-cw p=1': test mF1 0.6955 acc 0.9868 (rank 3 of 21)
+
+paired delta (new pool - v7.1b arch): +0.0066  95% CI [-0.0017, +0.0144]  p ~ 0.105
+new-pool marginal: 0.6955 [0.6788, 0.7112]
+v7.1b reference this run: 0.6888  [v7.1b run: 0.6874]
+
+dynamic-vs-static within pool (test macro-F1):
+  ALPHA  static 0.6881 | hybrid 0.6888 (+0.0007) | pure-dyn 0.6762 (-0.0119)
+  VIEW   static 0.6845 | hybrid 0.6820 (-0.0025) | pure-dyn 0.6722 (-0.0123)
+  UNION  static 0.6976 | hybrid 0.6973 (-0.0003) | pure-dyn 0.6827 (-0.0149)
+
+per-class F1 (v7.1b -> new pool):
+  Benign           0.9946 -> 0.9949 (+0.0003)
+  Analysis         0.1548 -> 0.1765 (+0.0217)
+  Backdoor         0.6443 -> 0.6797 (+0.0354)
+  DoS              0.5996 -> 0.5986 (-0.0010)
+  Exploits         0.8228 -> 0.8235 (+0.0007)
+  Fuzzers          0.6393 -> 0.6475 (+0.0082)
+  Generic          0.8778 -> 0.8753 (-0.0025)
+  Reconnaissance   0.8262 -> 0.8294 (+0.0032)
+  Shellcode        0.7184 -> 0.7270 (+0.0086)
+  Worms            0.6105 -> 0.6022 (-0.0084)
+
+                precision    recall  f1-score   support
+
+        Benign      0.996     0.993     0.995    505063
+      Analysis      0.114     0.390     0.176        77
+      Backdoor      0.825     0.578     0.680        90
+           DoS      0.670     0.541     0.599       884
+      Exploits      0.782     0.869     0.823      6185
+       Fuzzers      0.591     0.716     0.647      5287
+       Generic      0.840     0.913     0.875       899
+Reconnaissance      0.886     0.780     0.829      2407
+     Shellcode      0.858     0.631     0.727       420
+         Worms      0.636     0.571     0.602        49
+
+      accuracy                          0.987    521361
+     macro avg      0.720     0.698     0.695    521361
+  weighted avg      0.988     0.987     0.987    521361
+
+
+total 16.1 min

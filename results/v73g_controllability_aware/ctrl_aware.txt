@@ -1,0 +1,150 @@
+==============================================================================
+PRE-REGISTERED PREDICTIONS -- written before the run, printed before any result
+==============================================================================
+DESIGN CLAIM: allocate feature access per stage by THREAT EXPOSURE, not accuracy.
+The easy stage (detection) can afford to be robust; the hard stage cannot.
+
+P1 SANITY, NOT A FINDING. With svc FROZEN, an svc-only gate's recall must be EXACTLY
+    constant across every budget -- none of its inputs can move. Asserted, not celebrated.
+    If it varies at all, there is a leak in the feature partition and the run is void.
+
+P2 THE REAL TEST -- ASYMMETRY. Hardening the GATE should defend EVASION and should NOT
+    defend MISATTRIBUTION, because misattribution attacks Stage B while deliberately
+    keeping the gate satisfied (v7.3f: gate recall 0.9969 while 63% of labels wrong).
+      P2a  arm B evasion success at 0.20 << arm A evasion success  (gap > 0.30)
+      P2b  arm B misattribution success at 0.20 ~ arm A's          (|gap| < 0.10)
+    A defence that helped BOTH would mean the stage-allocation logic is wrong (or that
+    something other than feature access is driving the result).
+
+P3 THE LOAD-BEARING PRACTICAL CLAIM -- COST. Because detection is the easy sub-problem
+    and svc already carries most of its signal, restricting the gate to uncontrollable
+    features should be nearly free end-to-end:
+      arm B clean macro-F1 within 0.02 of arm A clean macro-F1.
+    IF P3 FAILS the architecture is NOT a recommendation regardless of how robust it is;
+    report it as a trade-off curve and say so plainly.
+
+P4 NON-TAUTOLOGY. Under svc MOBILE (attacker retargets the service, whole svc block
+    recomputed) the hardened gate becomes attackable again. Reported as: how much of the
+    protection survives an attacker willing to abandon service targeting. No threshold --
+    this is a price, and it is the honest bound on the whole idea.
+
+DECISION RULE, committed in advance:
+  * P2 holds and P3 holds -> report as an architecture recommendation, scoped by P4.
+  * P2 holds and P3 fails -> report as a trade-off curve only. No recommendation.
+  * P2 fails              -> the stage-allocation logic is refuted; report as a null and
+                             do NOT rescue it by re-slicing the arms after the fact.
+
+STANDING HONESTY REQUIREMENT, to be repeated wherever this result appears: this defence
+rests entirely on svc, and novelty.md section 6.3 already records that IXIA PerfectStorm
+targets attacks at specific services, so svc may be partly a TESTBED ARTIFACT. A
+controllability-aware architecture built on svc INHERITS that caveat and amplifies it,
+because the whole defence now depends on the feature in question. State this in the same
+breath as the result, never in a trailing limitations paragraph.
+==============================================================================
+
+prep done 1m | 43 int cols | full 99 feats | svc-only 25 feats
+  FREE 57 | COSTLY 10 | IMPOSSIBLE 25 (svc/proto/port)
+Stage-B (full, 99 feats) trained 0.4m
+Stage-B (svc, 25 feats) trained 0.5m
+gate (full, 99 feats) trained
+gate (svc, 25 feats) trained
+  gate full threshold 0.3280 -> benign fpr 0.0168
+  gate svc  threshold 0.7856 -> benign fpr 0.0152
+
+==============================================================================
+CLEAN performance -- the cost side of the trade
+==============================================================================
+  arm                macro-F1   accuracy  gate-recall     correct
+  A full/full          0.6718     0.9876       0.9862      0.7206
+  B svcGate/full       0.3365     0.9746       0.4603      0.3249
+  C svcGate/svcB       0.2977     0.9744       0.4603      0.3107
+  D full/svcB          0.4362     0.9824       0.9862      0.6354
+
+=== A full/full | EVASION | svc=FROZEN ===
+    budget  undetected misattributed   correct gate-recall  macro-F1    retgt
+     0.000      0.1701        0.1093    0.7206      0.9862    0.6718   0.0000
+     0.002      0.2916        0.1149    0.5936      0.7508    0.5352   0.0000
+     0.010      0.4566        0.0913    0.4521      0.5714    0.4516   0.0000
+     0.020      0.5688        0.0731    0.3581      0.4695    0.3584   0.0000
+     0.050      0.8586        0.0163    0.1251      0.1439    0.2299   0.0000
+     0.100      0.9104        0.0160    0.0736      0.0911    0.1883   0.0000
+     0.200      0.9703        0.0037    0.0260      0.0309    0.1440   0.0000
+
+=== B svcGate/full | EVASION | svc=FROZEN ===
+    budget  undetected misattributed   correct gate-recall  macro-F1    retgt
+     0.000      0.6650        0.0101    0.3249      0.4603    0.3365   0.0000
+     0.002      0.6659        0.0101    0.3240      0.4603    0.3358   0.0000
+     0.010      0.6659        0.0101    0.3240      0.4603    0.3358   0.0000
+     0.020      0.6659        0.0101    0.3240      0.4603    0.3358   0.0000
+     0.050      0.6659        0.0101    0.3240      0.4603    0.3358   0.0000
+     0.100      0.6659        0.0101    0.3240      0.4603    0.3358   0.0000
+     0.200      0.6659        0.0101    0.3240      0.4603    0.3358   0.0000
+
+=== A full/full | MISATTRIB | svc=FROZEN ===
+    budget  undetected misattributed   correct gate-recall  macro-F1    retgt
+     0.000      0.1701        0.1093    0.7206      0.9862    0.6718   0.0000
+     0.002      0.3413        0.2228    0.4359      0.9955    0.3888   0.0000
+     0.010      0.3967        0.2902    0.3130      0.9967    0.2685   0.0000
+     0.020      0.4104        0.3467    0.2430      0.9974    0.2199   0.0000
+     0.050      0.3878        0.4869    0.1252      0.9966    0.1510   0.0000
+     0.100      0.3851        0.5542    0.0607      0.9969    0.1245   0.0000
+     0.200      0.3310        0.6414    0.0276      0.9969    0.1102   0.0000
+
+=== B svcGate/full | MISATTRIB | svc=FROZEN ===
+    budget  undetected misattributed   correct gate-recall  macro-F1    retgt
+     0.000      0.6650        0.0101    0.3249      0.4603    0.3365   0.0000
+     0.002      0.8075        0.0343    0.1582      0.4603    0.2206   0.0000
+     0.010      0.8628        0.0590    0.0782      0.4603    0.1475   0.0000
+     0.020      0.8760        0.0734    0.0506      0.4603    0.1269   0.0000
+     0.050      0.8155        0.1627    0.0218      0.4603    0.1078   0.0000
+     0.100      0.8188        0.1671    0.0142      0.4603    0.1047   0.0000
+     0.200      0.7644        0.2305    0.0051      0.4603    0.1005   0.0000
+
+=== C svcGate/svcB | MISATTRIB | svc=FROZEN ===
+    budget  undetected misattributed   correct gate-recall  macro-F1    retgt
+     0.000      0.6671        0.0222    0.3107      0.4603    0.2977   0.0000
+     0.002      0.6671        0.0222    0.3107      0.4603    0.2977   0.0000
+     0.010      0.6671        0.0222    0.3107      0.4603    0.2977   0.0000
+     0.020      0.6671        0.0222    0.3107      0.4603    0.2977   0.0000
+     0.050      0.6671        0.0222    0.3107      0.4603    0.2977   0.0000
+     0.100      0.6671        0.0222    0.3107      0.4603    0.2977   0.0000
+     0.200      0.6671        0.0222    0.3107      0.4603    0.2977   0.0000
+
+=== B svcGate/full | EVASION | svc=MOBILE ===
+    budget  undetected misattributed   correct gate-recall  macro-F1    retgt
+     0.000      0.6650        0.0101    0.3249      0.4603    0.3365   0.0000
+     0.002      1.0000        0.0000    0.0000      0.0000    0.0982   0.9998
+     0.010      1.0000        0.0000    0.0000      0.0000    0.0982   0.9998
+     0.020      1.0000        0.0000    0.0000      0.0000    0.0982   0.9998
+     0.050      1.0000        0.0000    0.0000      0.0000    0.0982   0.9998
+     0.100      1.0000        0.0000    0.0000      0.0000    0.0982   0.9998
+     0.200      1.0000        0.0000    0.0000      0.0000    0.0982   0.9998
+
+==============================================================================
+PRE-REGISTERED TESTS
+==============================================================================
+  P1 SANITY: svc-only gate recall constant under FROZEN svc?  PASS (spread 0.00e+00)
+  P2a EVASION defended by gate hardening: A 0.9703 vs B 0.6659, gap +0.3044 (>0.30)  PASS
+  P2b MISATTRIB NOT defended:             A 0.6414 vs B 0.2305, gap +0.4109 (|.|<0.10) FAIL
+      -> ASYMMETRY NOT confirmed
+  P3 COST of hardening the gate: -0.3354 macro-F1 (|.|<0.02)  FAIL -- trade-off curve only, NO recommendation
+  P4 NON-TAUTOLOGY -- svc MOBILE (attacker retargets the service):
+        budget    B FROZEN    B MOBILE  protection retargeted
+         0.002      0.6659      1.0000      0.3341    0.9998
+         0.010      0.6659      1.0000      0.3341    0.9998
+         0.020      0.6659      1.0000      0.3341    0.9998
+         0.050      0.6659      1.0000      0.3341    0.9998
+         0.100      0.6659      1.0000      0.3341    0.9998
+         0.200      0.6659      1.0000      0.3341    0.9998
+      (protection = extra evasion an attacker buys by abandoning service targeting)
+  C arm -- does hardening Stage B defend the LABEL, and at what clean cost?
+      misattributed at 0.20: A 0.6414 | B 0.2305 | C 0.0222
+      clean macro-F1:       A 0.6718 | B 0.3365 | C 0.2977
+
+  VERDICT: P2 FAILED -- stage-allocation logic refuted; report as a null, do not re-slice
+
+  STANDING CAVEAT: this defence rests entirely on svc, which novelty.md 6.3 records
+  may be partly a TESTBED ARTIFACT (IXIA targets attacks at specific services).
+  Quote that in the same breath as this result, never as a trailing limitation.
+
+total 21.7 min

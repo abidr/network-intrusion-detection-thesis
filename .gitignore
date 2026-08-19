@@ -15,6 +15,10 @@ Resource/UNSW-NB15/*.csv
 # to redistribute. See Resource/CIC-IDS2017/PUT_DATASET_HERE.md.
 Resource/CIC-IDS2017/*.csv
 
+# TON-IoT network flows — downloadable, not ours to redistribute. Run
+# results/toniot_audit/ before modelling. See Resource/TON-IoT/PUT_DATASET_HERE.md.
+Resource/TON-IoT/*.csv
+
 # Cross-fit / OOF caches — large, and regenerable by the notebook that owns each one.
 *.npz
 

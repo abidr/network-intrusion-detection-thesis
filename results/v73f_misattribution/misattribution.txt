@@ -1,0 +1,163 @@
+==============================================================================
+PRE-REGISTERED PREDICTION -- written before the run, printed before any result
+==============================================================================
+Claim under test: attribution is CHEAPER to corrupt than detection is to evade.
+
+Rationale from existing evidence (v7.3c/e): under UNDIRECTED noise, with nothing aimed
+anywhere, attribution already collapsed while detection held (RF retained 0.9931 of gate
+recall but only 0.4834 of macro-F1). If attribution is intrinsically the more fragile
+layer, a directed attack should corrupt it at a much smaller budget than evasion needs.
+
+DEFINITION. b50(objective) = the smallest budget at which that objective's success
+fraction reaches 0.50, linearly interpolated between grid points; reported as ">0.20"
+if never reached. Outcomes are mutually exclusive: undetected / misattributed / correct.
+  EVASION success        = final prediction is Benign
+  MISATTRIBUTION success = still detected AND predicted family is wrong
+  ABSTENTION success     = gate fired but Stage B routed the row to reject
+
+H1 (misattribution is materially cheaper):  b50(MISATTRIB) < b50(EVASION) / 2
+    i.e. the price ratio b50(EVASION)/b50(MISATTRIB) exceeds 2.
+
+H0: the ratio is <= 2 -- corrupting the label costs about what evading costs, so the
+    misattribution threat model adds no new operational exposure and should be reported
+    as a null.
+
+TRIVIALITY GUARD. "You break whatever you aim at" is not a finding. Two controls decide
+whether anything here is non-trivial:
+  (a) CROSS-EFFECT: the misattribution rate produced by the EVASION attack, and the
+      evasion rate produced by the MISATTRIBUTION attack. If each objective only ever
+      moves its own metric, the 2x2 is diagonal and the result is mechanical.
+  (b) RANDOM control at the same budget. If undirected noise misattributes as effectively
+      as the directed attack, then direction buys nothing and the correct claim is
+      "attribution is fragile", NOT "attribution is cheap to target".
+
+SCOPE, stated in advance: the attacker is white-box on ONE component (gate model, or
+Stage B's strongest single member) while the DEPLOYED system is the full 7-member dynamic
+combiner. v7.3e measured surrogate inflation at +0.6773, so attacks that must transfer
+from a component to the ensemble are UNDERSTATED here. That works against H1, so an H1
+pass is conservative; an H0 result must be reported with this caveat attached.
+==============================================================================
+
+prep done 1m | 43 integer columns
+  FREE 57 | COSTLY 10 | IMPOSSIBLE 25 (svc/proto/dst port, frozen)
+W_e2e fitted (16s)
+Stage-B pool refit 2.5m (identical to v7.3c/e)
+XGB gate trained
+test attack rows 16298 | benign 505063 | gate threshold 0.3280 -> benign fpr 0.0168
+
+=== EVASION ===
+    budget  undetected misattributed   correct  abstained gate-recall  macro-F1       L2
+     0.000      0.1017        0.1122    0.7861     0.0879      0.9862    0.6865    0.000
+     0.002      0.2667        0.1112    0.6221     0.0175      0.7508    0.5494    0.005
+     0.010      0.4533        0.0892    0.4575     0.0247      0.5714    0.4535    0.031
+     0.020      0.5576        0.0712    0.3712     0.0271      0.4695    0.3734    0.067
+     0.050      0.8564        0.0170    0.1266     0.0004      0.1439    0.2352    0.184
+     0.100      0.9091        0.0172    0.0738     0.0002      0.0911    0.1942    0.387
+     0.200      0.9697        0.0038    0.0265     0.0006      0.0309    0.1446    0.790
+
+=== MISATTRIB ===
+    budget  undetected misattributed   correct  abstained gate-recall  macro-F1       L2
+     0.000      0.1017        0.1122    0.7861     0.0879      0.9862    0.6865    0.000
+     0.002      0.2282        0.1887    0.5831     0.2238      0.9955    0.4712    0.005
+     0.010      0.2687        0.2571    0.4741     0.2654      0.9967    0.3471    0.034
+     0.020      0.2811        0.3188    0.4002     0.2784      0.9974    0.2917    0.071
+     0.050      0.2844        0.4940    0.2216     0.2810      0.9966    0.1874    0.187
+     0.100      0.2951        0.5613    0.1436     0.2920      0.9969    0.1563    0.386
+     0.200      0.2571        0.6311    0.1117     0.2541      0.9969    0.1348    0.776
+
+=== ABSTAIN ===
+    budget  undetected misattributed   correct  abstained gate-recall  macro-F1       L2
+     0.000      0.1017        0.1122    0.7861     0.0879      0.9862    0.6865    0.000
+     0.002      0.2908        0.1146    0.5946     0.2258      0.9350    0.5068    0.006
+     0.010      0.3572        0.1170    0.5258     0.2814      0.9242    0.4400    0.035
+     0.020      0.3924        0.1320    0.4756     0.3055      0.9131    0.3951    0.072
+     0.050      0.6040        0.1117    0.2843     0.2991      0.6951    0.2701    0.187
+     0.100      0.7246        0.0979    0.1775     0.2831      0.5585    0.2189    0.389
+     0.200      0.7758        0.0821    0.1421     0.2959      0.5201    0.1939    0.782
+
+=== RANDOM ===
+    budget  undetected misattributed   correct  abstained gate-recall  macro-F1       L2
+     0.000      0.1017        0.1122    0.7861     0.0879      0.9862    0.6865    0.000
+     0.002      0.1398        0.1196    0.7406     0.0823      0.9426    0.6035    0.009
+     0.010      0.1585        0.1304    0.7111     0.0790      0.9205    0.5660    0.044
+     0.020      0.1741        0.1389    0.6870     0.0822      0.9081    0.5394    0.089
+     0.050      0.3740        0.1435    0.4825     0.0804      0.7065    0.4123    0.222
+     0.100      0.4780        0.1505    0.3715     0.0706      0.5926    0.3288    0.445
+     0.200      0.5648        0.1497    0.2855     0.0519      0.4871    0.2703    0.889
+
+==============================================================================
+OUTCOME RATES by budget (rows sum to 1 across the first three)
+==============================================================================
+
+undetected:
+arm     ABSTAIN  EVASION  MISATTRIB  RANDOM
+budget                                     
+0.000    0.1017   0.1017     0.1017  0.1017
+0.002    0.2908   0.2667     0.2282  0.1398
+0.010    0.3572   0.4533     0.2687  0.1585
+0.020    0.3924   0.5576     0.2811  0.1741
+0.050    0.6040   0.8564     0.2844  0.3740
+0.100    0.7246   0.9091     0.2951  0.4780
+0.200    0.7758   0.9697     0.2571  0.5648
+
+misattributed:
+arm     ABSTAIN  EVASION  MISATTRIB  RANDOM
+budget                                     
+0.000    0.1122   0.1122     0.1122  0.1122
+0.002    0.1146   0.1112     0.1887  0.1196
+0.010    0.1170   0.0892     0.2571  0.1304
+0.020    0.1320   0.0712     0.3188  0.1389
+0.050    0.1117   0.0170     0.4940  0.1435
+0.100    0.0979   0.0172     0.5613  0.1505
+0.200    0.0821   0.0038     0.6311  0.1497
+
+correct:
+arm     ABSTAIN  EVASION  MISATTRIB  RANDOM
+budget                                     
+0.000    0.7861   0.7861     0.7861  0.7861
+0.002    0.5946   0.6221     0.5831  0.7406
+0.010    0.5258   0.4575     0.4741  0.7111
+0.020    0.4756   0.3712     0.4002  0.6870
+0.050    0.2843   0.1266     0.2216  0.4825
+0.100    0.1775   0.0738     0.1436  0.3715
+0.200    0.1421   0.0265     0.1117  0.2855
+
+==============================================================================
+PRE-REGISTERED TEST -- the PRICE of each objective
+==============================================================================
+  b50(EVASION   ) = 0.0145 IQR   (success metric: undetected)
+  b50(MISATTRIB ) = 0.0545 IQR   (success metric: misattributed)
+  b50(ABSTAIN   ) = >0.20   (success metric: abstained)
+  b50(RANDOM    ) = >0.20   (success metric: misattributed)
+
+  PRICE RATIO b50(EVASION)/b50(MISATTRIB) = 0.27  (H1 threshold > 2)
+  VERDICT: H0 -- misattribution costs about what evasion costs; report as a null
+
+==============================================================================
+TRIVIALITY GUARDS
+==============================================================================
+  (a) CROSS-EFFECT at budget 0.20 -- is the 2x2 diagonal?
+      EVASION   attack -> misattributed 0.0038 | undetected 0.9697
+      MISATTRIB attack -> misattributed 0.6311 | undetected 0.2571
+      (MISATTRIB keeping 'undetected' LOW is the constraint working as designed)
+  (b) RANDOM control -- does direction buy anything?
+      budget 0.002 : directed 0.1887 vs random 0.1196  (delta +0.0691)
+      budget 0.010 : directed 0.2571 vs random 0.1304  (delta +0.1267)
+      budget 0.020 : directed 0.3188 vs random 0.1389  (delta +0.1799)
+      budget 0.050 : directed 0.4940 vs random 0.1435  (delta +0.3505)
+      budget 0.100 : directed 0.5613 vs random 0.1505  (delta +0.4108)
+      budget 0.200 : directed 0.6311 vs random 0.1497  (delta +0.4814)
+      if delta ~ 0 the honest claim is 'attribution is fragile', NOT 'cheap to target'
+
+macro-F1 by budget:
+arm     ABSTAIN  EVASION  MISATTRIB  RANDOM
+budget                                     
+0.000    0.6865   0.6865     0.6865  0.6865
+0.002    0.5068   0.5494     0.4712  0.6035
+0.010    0.4400   0.4535     0.3471  0.5660
+0.020    0.3951   0.3734     0.2917  0.5394
+0.050    0.2701   0.2352     0.1874  0.4123
+0.100    0.2189   0.1942     0.1563  0.3288
+0.200    0.1939   0.1446     0.1348  0.2703
+
+total 15.8 min

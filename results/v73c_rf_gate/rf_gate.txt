@@ -1,0 +1,84 @@
+prep done 1m | 43 integer columns
+W_e2e fitted (14s)
+Stage-B pool refit 2.3m (held FIXED across all four arms)
+XGB gate trained on 800000 rows (0.3m)
+RF  gate trained on 800000 rows (0.2m)
+  gate XGB threshold 0.3280 -> benign fpr 0.0168
+  gate RF  threshold 0.0700 -> benign fpr 0.0168
+
+=== A baseline   XGB gate + 7-member ===
+    budget   macro-F1   accuracy   att-recall  gate-recall
+     0.000     0.6865     0.9860       0.8983       0.9862
+     0.002     0.6089     0.9845       0.8595       0.9425
+     0.010     0.5575     0.9835       0.8414       0.9226
+     0.020     0.4797     0.9801       0.7451       0.8363
+     0.050     0.3621     0.9748       0.5839       0.6687
+     0.100     0.2978     0.9719       0.4967       0.5611
+     0.200     0.2433     0.9696       0.4217       0.4686
+
+=== B RF gate    RF  gate + 7-member ===
+    budget   macro-F1   accuracy   att-recall  gate-recall
+     0.000     0.6827     0.9859       0.8983       0.9823
+     0.002     0.6178     0.9849       0.8807       0.9975
+     0.010     0.5698     0.9843       0.8766       0.9977
+     0.020     0.5072     0.9824       0.8468       0.9948
+     0.050     0.4121     0.9794       0.8094       0.9858
+     0.100     0.3498     0.9773       0.7953       0.9762
+     0.200     0.2996     0.9759       0.7900       0.9688
+
+=== C RF stageB  XGB gate + RF only ===
+    budget   macro-F1   accuracy   att-recall  gate-recall
+     0.000     0.6617     0.9871       0.8198       0.9862
+     0.002     0.6120     0.9861       0.7967       0.9425
+     0.010     0.5340     0.9853       0.7939       0.9226
+     0.020     0.4619     0.9828       0.7290       0.8363
+     0.050     0.3541     0.9784       0.5954       0.6687
+     0.100     0.2900     0.9757       0.5156       0.5611
+     0.200     0.2377     0.9736       0.4405       0.4686
+
+=== D both       RF  gate + RF only ===
+    budget   macro-F1   accuracy   att-recall  gate-recall
+     0.000     0.6563     0.9869       0.8199       0.9823
+     0.002     0.6208     0.9863       0.8083       0.9975
+     0.010     0.5427     0.9856       0.8136       0.9977
+     0.020     0.4855     0.9844       0.8089       0.9948
+     0.050     0.4051     0.9824       0.8094       0.9858
+     0.100     0.3515     0.9809       0.8169       0.9762
+     0.200     0.2953     0.9798       0.8204       0.9688
+
+==============================================================================
+SUMMARY -- end-to-end macro-F1 by noise budget
+==============================================================================
+arm     A baseline   XGB gate + 7-member  B RF gate    RF  gate + 7-member  C RF stageB  XGB gate + RF only  D both       RF  gate + RF only
+budget                                                                                                                                      
+0.000                             0.6865                            0.6827                           0.6617                           0.6563
+0.002                             0.6089                            0.6178                           0.6120                           0.6208
+0.010                             0.5575                            0.5698                           0.5340                           0.5427
+0.020                             0.4797                            0.5072                           0.4619                           0.4855
+0.050                             0.3621                            0.4121                           0.3541                           0.4051
+0.100                             0.2978                            0.3498                           0.2900                           0.3515
+0.200                             0.2433                            0.2996                           0.2377                           0.2953
+
+retained fraction of clean macro-F1:
+arm     A baseline   XGB gate + 7-member  B RF gate    RF  gate + 7-member  C RF stageB  XGB gate + RF only  D both       RF  gate + RF only
+budget                                                                                                                                      
+0.000                             1.0000                            1.0000                           1.0000                           1.0000
+0.002                             0.8870                            0.9049                           0.9249                           0.9459
+0.010                             0.8121                            0.8346                           0.8070                           0.8269
+0.020                             0.6988                            0.7429                           0.6981                           0.7398
+0.050                             0.5275                            0.6036                           0.5351                           0.6172
+0.100                             0.4338                            0.5124                           0.4383                           0.5356
+0.200                             0.3544                            0.4388                           0.3592                           0.4499
+
+At budget 0.20:
+  A baseline   XGB gate + 7-member   macro-F1 0.2433 | retained 0.3544
+  B RF gate    RF  gate + 7-member   macro-F1 0.2996 | retained 0.4388
+  C RF stageB  XGB gate + RF only    macro-F1 0.2377 | retained 0.3592
+  D both       RF  gate + RF only    macro-F1 0.2953 | retained 0.4499
+
+clean cost of each swap (macro-F1 at budget 0):
+  B RF gate    RF  gate + 7-member   -0.0038 vs baseline
+  C RF stageB  XGB gate + RF only    -0.0248 vs baseline
+  D both       RF  gate + RF only    -0.0302 vs baseline
+
+total 4.3 min

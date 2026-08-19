@@ -70,6 +70,49 @@ single result in the project. Quote as `0.746 [0.727, 0.763]`.
 | v7.1 (+ Stage-B reject class) | `final_model_v7_1_reject.ipynb` | 0.9875 | 0.7164 | 0.6744 | 0.6843 | 0.987 | 0.988 | 0.987 |
 | **v7.1b (+ end-to-end W objective)** | `final_model_v7_1_reject.ipynb` §7 / `results/v71_w_e2e/` | **0.9866** | **0.7111** | **0.6874** | **0.6874** | 0.988 | 0.987 | 0.987 |
 
+### Combiner ablations on top of v7.1b — neither established, do NOT quote as headline
+
+| Model | Notebook | Accuracy | Macro-P | Macro-R | Macro-F1 | Wtd-P | Wtd-R | Wtd-F1 |
+|---|---|---|---|---|---|---|---|---|
+| v7.1d per-region W (K=2 × OLA-cw) | `results/v71d_region_w/` | 0.9859 | 0.7241 | 0.6853 | 0.6907 | 0.988 | 0.986 | 0.987 |
+| v7.1e UNION pool (12 members) | `results/v71e_view_pool/` | 0.9868 | 0.7199 | 0.6983 | 0.6955 | 0.988 | 0.987 | 0.987 |
+
+Paired vs v7.1b: region W **+0.0018 [−0.0034, +0.0076], p ≈ 0.550**; UNION pool **+0.0066
+[−0.0017, +0.0144], p ≈ 0.105**. Both point-positive and inside the paired band — reported as
+ablations, not as results. The UNION gain comes from the **pool** (ALPHA static 0.6881 → UNION static
+0.6976) and not from dynamic weighting, which is flat or negative in every pool tested.
+
+### Robustness: RF vs XGB Stage-A gate — an operating choice, NOT a score improvement
+
+`results/v73d_rf_gate_sig/`. Same Stage B for both; gates matched to benign fpr 0.0168; noise budget in
+train-IQR units. **Not comparable to the rows above** — gates trained on an 800k subsample.
+
+| noise budget | XGB gate | RF gate | paired delta | 95% CI | p |
+|---|---|---|---|---|---|
+| 0 (clean) | 0.6865 | 0.6827 | **−0.0038** | [−0.0064, −0.0013] | 0.005 |
+| 0.02 IQR | 0.4797 | 0.5072 | +0.0275 | [+0.0202, +0.0366] | <0.001 |
+| 0.20 IQR | 0.2433 | 0.2996 | **+0.0563** | [+0.0516, +0.0619] | <0.001 |
+
+Established in **both** directions: a real 0.0038 clean loss bought against +0.009…+0.056 under input
+noise. Quote as a deployment choice, never as a better model.
+
+### ⚠️ Targeted white-box attack (`results/v73e_rf_whitebox/`) — scopes every row above
+
+Retained fraction of clean **gate recall** at budget 0.20 IQR, matched fpr 0.0168:
+
+| Arm | Retained | Note |
+|---|---|---|
+| `XGB<-XGB` white-box | 0.0313 | deployed gate destroyed |
+| `RF <-RF` white-box | **0.2143** | pre-registered H1 supported, +0.1830 vs XGB |
+| `RF <-XGB` transfer | 0.8916 | what noise / surrogate evidence shows |
+
+**Surrogate inflation +0.6773**: the RF-vs-XGB rows above were measured under noise or an XGB-aimed
+attack, so they **overstate RF's protection against a real adversary**. RF is *more* robust, not
+robust — it still loses 79% of its detection. **And the ladder inverts**: noise breaks attribution
+first, a targeted attack breaks detection first. Always name the threat model. **⚠️ The paired band for this comparison
+is ≈±0.0025, not the ±0.012 above** — the two arms differ only in the gate, so their predictions are
+highly correlated. Compute the paired interval per comparison; never reuse ±0.012 from memory.
+
 Ladder: 0.6601 → 0.6843 (paired +0.0242, p < 0.001) → 0.6874 (paired +0.0032, p < 0.001).
 Final quote: **`0.687 [0.671, 0.704]`**. v7.1b's accuracy is *lower* than v7.1's by design — it
 trades benign false alarms for Fuzzers recall, which macro-F1 rewards and accuracy penalises.

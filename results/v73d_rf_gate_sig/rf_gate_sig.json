@@ -1,0 +1,159 @@
+{
+  "experiment": "paired bootstrap, RF vs XGB Stage-A gate, clean and under input noise",
+  "n_boot": 2000,
+  "gate_train_rows": 800000,
+  "target_fpr": 0.0168,
+  "budgets": [
+    0.0,
+    0.002,
+    0.01,
+    0.02,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "results": [
+    {
+      "budget": 0.0,
+      "xgb": 0.6865,
+      "rf": 0.6827,
+      "delta": -0.0038,
+      "ci": [
+        -0.0064,
+        -0.0013
+      ],
+      "p": 0.005,
+      "verdict": "worse, established",
+      "xgb_marginal_ci": [
+        0.6699,
+        0.7027
+      ],
+      "rf_marginal_ci": [
+        0.6657,
+        0.6987
+      ]
+    },
+    {
+      "budget": 0.002,
+      "xgb": 0.6089,
+      "rf": 0.6178,
+      "delta": 0.0089,
+      "ci": [
+        0.0048,
+        0.0131
+      ],
+      "p": 0.001,
+      "verdict": "ESTABLISHED",
+      "xgb_marginal_ci": [
+        0.589,
+        0.627
+      ],
+      "rf_marginal_ci": [
+        0.598,
+        0.6357
+      ]
+    },
+    {
+      "budget": 0.01,
+      "xgb": 0.5575,
+      "rf": 0.5698,
+      "delta": 0.0123,
+      "ci": [
+        0.0074,
+        0.0179
+      ],
+      "p": 0.0,
+      "verdict": "ESTABLISHED",
+      "xgb_marginal_ci": [
+        0.5372,
+        0.5758
+      ],
+      "rf_marginal_ci": [
+        0.5498,
+        0.5877
+      ]
+    },
+    {
+      "budget": 0.02,
+      "xgb": 0.4797,
+      "rf": 0.5072,
+      "delta": 0.0275,
+      "ci": [
+        0.0202,
+        0.0366
+      ],
+      "p": 0.0,
+      "verdict": "ESTABLISHED",
+      "xgb_marginal_ci": [
+        0.4598,
+        0.4992
+      ],
+      "rf_marginal_ci": [
+        0.4884,
+        0.5263
+      ]
+    },
+    {
+      "budget": 0.05,
+      "xgb": 0.3621,
+      "rf": 0.4121,
+      "delta": 0.05,
+      "ci": [
+        0.0417,
+        0.0607
+      ],
+      "p": 0.0,
+      "verdict": "ESTABLISHED",
+      "xgb_marginal_ci": [
+        0.3471,
+        0.3773
+      ],
+      "rf_marginal_ci": [
+        0.3966,
+        0.4288
+      ]
+    },
+    {
+      "budget": 0.1,
+      "xgb": 0.2978,
+      "rf": 0.3498,
+      "delta": 0.052,
+      "ci": [
+        0.0465,
+        0.0587
+      ],
+      "p": 0.0,
+      "verdict": "ESTABLISHED",
+      "xgb_marginal_ci": [
+        0.2846,
+        0.3113
+      ],
+      "rf_marginal_ci": [
+        0.3367,
+        0.3639
+      ]
+    },
+    {
+      "budget": 0.2,
+      "xgb": 0.2433,
+      "rf": 0.2996,
+      "delta": 0.0563,
+      "ci": [
+        0.0516,
+        0.0619
+      ],
+      "p": 0.0,
+      "verdict": "ESTABLISHED",
+      "xgb_marginal_ci": [
+        0.2345,
+        0.2536
+      ],
+      "rf_marginal_ci": [
+        0.29,
+        0.3104
+      ]
+    }
+  ],
+  "confound": "reject set / pool / W_e2e / competence reference all from cached XGB OOF gate",
+  "minutes": 5.9
+}

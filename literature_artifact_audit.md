@@ -5,7 +5,8 @@ _Run 2026-08-09 over every PDF in `Papers/`._
 A companion to the literature review: for each reviewed paper, **is there a usable code artifact?**
 The review already names four gaps (weak rare-class recall, unaddressed imbalance, single-dataset
 evaluation, missing explainability). This audit supports a fifth: **claimed but unavailable
-artifacts.**
+artifacts** — and, in the companion scan added 2026-08-19, **restates the fourth**: explainability is
+not missing, it is unverifiable.
 
 ## Method
 
@@ -68,11 +69,23 @@ and the most common availability statement points at a *public benchmark dataset
 same thing at all: the dataset is what everyone already has; the pipeline is what determines whether
 32-40% duplicate rows get removed before the split.
 
-That connects the gap directly to this project's central methodological finding. On CIC-UNSW-NB15-2024
-and UNSW-NB15 alike, whether duplicates are deduplicated moves reported accuracy by **10-15 points**
-(see `Clones/CyberAdaptAI/RESULTS.md`). Without the code, a reader cannot tell which side of that
-line a published number falls on — and the near-ceiling figures common in this literature are exactly
-what duplicate leakage produces.
+That connects the gap directly to this project's central methodological finding — **but the effect must
+be scoped, and the scoping makes the argument stronger, not weaker.**
+
+> ⚠️ **CORRECTED 2026-08-19.** This paragraph previously claimed deduplication moves reported accuracy
+> by "10-15 points" on CIC-UNSW-NB15-2024 and UNSW-NB15 alike. **That is measured only in
+> CyberAdaptAI's binary + sequential-stream setting** (`Clones/CyberAdaptAI/RESULTS.md`:
+> dedup+sequential 0.8065 acc / 0.7323 F1 → no-dedup+sequential 0.9019 / 0.8825; **shuffled, the gap
+> shrinks to +0.034 acc / +0.066 F1**). Under a **multiclass batch pipeline with a stratified random
+> split it does not replicate at all: +0.0025 macro-F1 and −0.0071 accuracy** — despite **42.7% of
+> test rows having an exact train twin** (`results/unsw_dedupe_ablation/`). **Always state task, split
+> protocol and learner when quoting a dedupe effect.**
+
+The correction is the point. The size of the leakage penalty depends on **task, split protocol and
+learner** — three things papers routinely under-report — so a reader cannot even estimate the penalty
+from the paper alone, let alone check it. Without the code they cannot tell which side of the line a
+published number falls on, and the near-ceiling figures common in this literature are consistent with
+duplicate leakage under precisely the protocols where it bites hardest.
 
 **Suggested framing:** "artifact unavailability" is not a courtesy complaint; in this specific
 subfield it is what makes the headline numbers unfalsifiable, because the single decision that most
@@ -95,10 +108,63 @@ still truthfully claim a deduplication step.
 This is worth applying across the review set, since it is checkable from any methods section and the
 datasets in question carry 32–40% duplicate rows.
 
+## Companion audit: explainability is present but unverifiable
+
+_Run 2026-08-19, same method — scan all 10 PDFs for `shap`, `lime`, `explainab`, `interpretab`,
+`xai`, `feature importance`, `saliency`, then **read every hit in context**._
+
+This was run to test the review's fourth named gap, "missing explainability". **The gap does not
+survive the scan and is restated.**
+
+| XAI status | Papers |
+|---|---|
+| **Implements** SHAP | **1** — CyberAdaptAI (§3.5, Eq 9, Table 7; 18 `shap` / 38 `interpretab` hits) |
+| Names XAI as **future work only** | 2 — *"we intend to integrate … SHAP and LIME"*; *"future work could explore XAI"* |
+| Passing mention (1–3 hits) or none | 7 |
+
+**Reading in context mattered exactly as it did for the code links.** One paper's lone `shap` hit is
+the word "**shap**ing" ("shaping the success of future research"). Another's SHAP/LIME mentions sit
+entirely inside its *future work* paragraph, plus one related-work citation. A third claims
+interpretability via Boruta feature ranking while conceding in the same section that its stacked
+ensemble's decision process "can be a challenge" to interpret. A keyword count would score all three
+as XAI papers.
+
+### The finding: the one SHAP table fails SHAP's defining property
+
+CyberAdaptAI's **Table 7** is almost certainly not SHAP output:
+
+- its columns each sum to **exactly 1.00**, values come in **0.05 increments**, and only **five**
+  features are listed;
+- real SHAP values sum to `f(x) − E[f(x)]`, are frequently negative, and span the full feature set;
+- the caption itself hedges: *"SHAP-**Like** analysis."*
+
+**Table 8 compounds it** — captioned as the cross-dataset class-wise F1 scores, its contents are a
+**byte-for-byte duplicate of Table 7** (same five features, same values, same Instance 1/2/3 columns).
+The cross-dataset F1 numbers therefore **appear nowhere in the paper**, although the prose discusses
+them and cross-dataset generalisation is one of its three headline novelty claims.
+
+The reimplementation (`Clones/CyberAdaptAI/`) executes **the paper's own Eq 9** with exact TreeSHAP and
+reports an additivity residual of **3.8e-06** (CIC-IDS2017) / **4.8e-06** (UNSW-NB15) across 40+
+features — `f(x) = φ₀ + Σφⱼ` to float32 precision. So the contrast can be **demonstrated**, not merely
+alleged.
+
+**Why this belongs in the same chapter as the code audit.** An unreleased pipeline makes a *score*
+uncheckable; an unreleased XAI artifact makes the *explanation* uncheckable — and the explanation is
+what is offered to justify trusting the score. Both defects were found the same way: by attempting the
+reproduction. The restated gap is **unverifiable explainability**, and it is a special case of artifact
+unavailability rather than a separate deficiency.
+
+⚠️ **Consequence for this thesis: "we add SHAP" is not available as a contribution** and must not be
+claimed as one. SHAP on our own model is a diagnostic instrument for the analysis chapter. See
+`novelty.md` §3.2.
+
 ## Caveats
 
 - Text extraction can miss URLs rendered inside figures, headers/footers, or as untagged hyperlink
   annotations. The scan covers extracted body text only.
+- The XAI scan shares that limitation, and counts term *occurrences* in body text: a paper could in
+  principle implement XAI in a figure or appendix the extractor mangles. The 1-implements / 2-future-work
+  split was confirmed by reading, not by the counts.
 - Absence of a link in the PDF does not prove no repository exists anywhere; it proves the paper does
   not point to one, which is the claim being made here.
 - Only the ASENIDSB URL was resolvable and therefore checked live. The CyberAdaptAI repository claim

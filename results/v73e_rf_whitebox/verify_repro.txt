@@ -1,0 +1,22 @@
+
+prep done 1m | 43 integer columns
+  FREE 57 | COSTLY 10 | IMPOSSIBLE 25 (svc/proto/dst port, frozen)
+prep reused from rf_whitebox.py | 0.8m | 43 int cols | FREE 57 COSTLY 10
+gate trained 1.0m
+threshold 0.3280 -> benign fpr 0.0168
+
+  budget      UNIFORM    v73c armA   d(uniform)   ATTACKER
+   0.000       0.9862       0.9862      -0.0000     0.9862
+   0.002       0.9425       0.9425      +0.0000     0.9418
+   0.010       0.9226       0.9226      -0.0000     0.9205
+   0.020       0.8363       0.8363      -0.0000     0.9062
+   0.050       0.6687       0.6687      +0.0000     0.7032
+   0.100       0.5611       0.5611      -0.0000     0.5865
+   0.200       0.4686       0.4686      +0.0000     0.4914
+
+max |deviation| of UNIFORM vs v7.3c arm A: 0.0000
+=> CONFIRMED: prep and gate reproduce exactly. The v7.3e repro-check failure was
+   a MIS-SPECIFIED CHECK (different noise model), not a divergence. v7.3e's greedy
+   arms are unaffected -- they never used the v7.3c noise model.
+
+total 1.1m

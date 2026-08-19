@@ -1,0 +1,178 @@
+==============================================================================
+TON-IoT AUDIT -- Train_Test_Network.csv
+==============================================================================
+other CSVs present (not audited): 
+
+rows 211043 | columns 44
+
+label column: 'type'  (binary 'label' also present)
+
+--- class distribution ---
+  normal               50000  23.692%
+  backdoor             20000   9.477%
+  ddos                 20000   9.477%
+  dos                  20000   9.477%
+  injection            20000   9.477%
+  password             20000   9.477%
+  ransomware           20000   9.477%
+  scanning             20000   9.477%
+  xss                  20000   9.477%
+  mitm                  1043   0.494%
+  imbalance ratio 48:1 | attack share 76.31%
+
+--- column types ---
+  endpoint identity 3 : src_ip, src_port, dst_ip   (EXCLUDED from the matrix -- 'who sent it')
+  numeric          18 : dst_port, duration, src_bytes, dst_bytes, missed_bytes, src_pkts, src_ip_bytes, dst_pkts ...
+  categorical(<=50)19 : proto, service, conn_state, dns_AA, dns_RD, dns_RA, dns_rejected, ssl_version, ssl_cipher, ssl_resumed, ssl_established, ssl_subject, ssl_issuer, http_method, http_user_agent, http_orig_mime_types, http_resp_mime_types, weird_name, weird_notice
+  high-card/text    2 : dns_query, http_uri
+  NOTE: endpoint-identity and high-card/text columns are EXCLUDED from the feature
+        matrix; they are audited for leakage below, not modelled. The DESTINATION
+        port is kept -- it is service identity ('what is targeted'), which survived
+        ablation at +0.0982 on our data and is a native v7 feature. Its contribution
+        is isolated by a separate no-dst-port arm below.
+
+--- data quality ---
+  columns with missing values (after treating ['-', '(empty)'] as NA):
+    ssl_issuer                     211032   99.99%
+    ssl_subject                    211032   99.99%
+    http_orig_mime_types           211027   99.99%
+    weird_addl                     210886   99.93%
+    http_resp_mime_types           210839   99.90%
+    http_user_agent                210756   99.86%
+    http_uri                       210756   99.86%
+    http_method                    210756   99.86%
+    http_version                   210745   99.86%
+    http_trans_depth               210740   99.86%
+    weird_name                     210687   99.83%
+    weird_notice                   210687   99.83%
+    ssl_established                210642   99.81%
+    ssl_resumed                    210642   99.81%
+    ssl_cipher                     210642   99.81%
+    ... and 7 more
+  infinite values in numeric columns: 0
+  duplicates on features+label : 105668  (50.07%)
+  duplicates on features only  : 105857  (50.16%)
+  -> rows with a feature twin carrying a CONFLICTING label: 189
+     (CIC-UNSW 32% / UNSW-NB15 36.8% / CIC-IDS2017 10.86%)
+
+==============================================================================
+FINGERPRINT AUDIT -- pre-registered go/no-go
+A column is SUSPECT if, ALONE, it reaches >= 0.95 attack recall at <= 0.05 fpr.
+Reference: on our own data sttl in {62,254} did exactly this (recall ~1.00, fpr ~0.016)
+and was rejected as an endpoint label proxy -- see results/ttl_join/.
+==============================================================================
+
+  recall/fpr are OUT-OF-SAMPLE (map learned on half the rows, scored on the other
+  half, values needing >= 20 support). rec_in is the in-sample counterpart: a big
+  rec_in - recall gap means high cardinality, not a fingerprint. NMI inflates with
+  cardinality too -- read it only alongside n_values.
+
+  column                    values  usable   recall     fpr   rec_in    NMI
+  src_ip                        51       9   0.9998  0.0402   0.9999  0.936   <== SUSPECT
+  conn_state                    13      11   0.8653  0.2757   0.8658  0.373
+  proto                          3       2   0.9353  0.3652   0.9358  0.296
+  service                        9       7   0.9356  0.4145   0.9363  0.285
+  dns_rejected                   3       2   0.9742  0.5012   0.9749  0.273
+  dns_RA                         3       2   0.9605  0.5134   0.9602  0.224
+  dns_AA                         3       1   0.9365  0.5008   0.9369  0.197
+  dns_RD                         3       1   0.9365  0.5008   0.9369  0.214
+  dns_qclass                     3       1   0.9377  0.5023   0.9380  0.198
+  dns_qtype                     12       1   0.9377  0.5023   0.9380  0.233
+  src_port                   26628     366   0.2797  0.0085   0.9720  0.678
+  dst_ip                       753      25   0.9949  0.7733   0.9997  0.392
+  ssl_version                    4       1   1.0000  0.9922   1.0000  0.005
+  ssl_cipher                     6       1   1.0000  0.9922   1.0000  0.005
+  ssl_resumed                    3       1   1.0000  0.9922   1.0000  0.005
+  ssl_established                3       1   1.0000  0.9922   1.0000  0.005
+  weird_name                    11       1   1.0000  0.9932   1.0000  0.004
+  weird_notice                   2       1   1.0000  0.9932   1.0000  0.004
+  http_version                   2       1   0.9997  0.9951   0.9997  0.002
+  http_status_code               8       1   0.9997  0.9951   0.9998  0.002
+  http_trans_depth              11       1   0.9997  0.9951   0.9997  0.002
+  http_response_body_len        75       1   0.9997  0.9954   1.0000  0.003
+  http_method                    4       1   0.9997  0.9954   0.9997  0.002
+  http_user_agent               35       1   0.9997  0.9954   1.0000  0.003
+  http_resp_mime_types          10       2   1.0000  0.9968   1.0000  0.002
+  weird_addl                     3       1   1.0000  0.9971   1.0000  0.002
+  dns_rcode                      4       3   1.0000  0.9995   1.0000  0.004
+  http_orig_mime_types           3       1   1.0000  0.9997   1.0000  0.000
+  http_request_body_len          6       1   1.0000  0.9997   1.0000  0.000
+  ssl_subject                    6       1   1.0000  0.9999   1.0000  0.000
+  ssl_issuer                     5       1   1.0000  0.9999   1.0000  0.000
+
+VERDICT: 1 SUSPECT column(s): src_ip
+  -> EXCLUDE these before modelling, or every downstream number measures the
+     testbed rather than the traffic. If one is a service/port column, see the
+     TTL-vs-svc distinction in CLAUDE.md: services are what attacks TARGET and
+     survived ablation (+0.098); endpoint identity is WHO SENT it and did not.
+
+==============================================================================
+DIFFICULTY -- feature matrix, prune, e_1NN, purity
+==============================================================================
+
+dropping 15 column(s) that are >99% missing: http_trans_depth, http_version, weird_addl, ssl_version, ssl_cipher, ssl_resumed, ssl_established, ssl_subject, ssl_issuer, http_method, http_user_agent, http_orig_mime_types, http_resp_mime_types, weird_name, weird_notice
+
+prune: 52 -> 52 (zero-variance) -> 46 (|r| >= 0.95)
+  reference widths: CIC-UNSW 76->67->44 | CIC-IDS2017 78->70->47
+dedupe: 211043 -> 105375 rows (50.07% removed)
+
+ALL-CLASS (gate + families together):
+  all classes: e_1NN 0.0282 | Cover-Hart e* in [0.0142, 0.0282] -> accuracy ceiling [0.9718, 0.9858]
+     (ref 84300 rows, query 21075 rows, 10 classes, 46 features, metric=RobustScaler Euclidean)
+     k=10 purity by class:
+       backdoor         0.9884
+       password         0.9832
+       ransomware       0.9802
+       normal           0.9792
+       dos              0.9706
+       injection        0.9609
+       ddos             0.9570
+       scanning         0.9387
+       xss              0.9062
+       mitm             0.5774
+
+ATTACK-ONLY (Stage-B analogue -- this is the number comparable to ours):
+  attack families: e_1NN 0.0306 | Cover-Hart e* in [0.0155, 0.0306] -> accuracy ceiling [0.9694, 0.9845]
+     (ref 65015 rows, query 16254 rows, 9 classes, 46 features, metric=RobustScaler Euclidean)
+     k=10 purity by class:
+       backdoor         0.9930
+       ransomware       0.9879
+       password         0.9859
+       dos              0.9717
+       injection        0.9630
+       ddos             0.9613
+       scanning         0.9287
+       xss              0.9148
+       mitm             0.6212
+
+NO-DST-PORT control (drops dst_port) -- isolates what service identity contributes:
+  attack families, no port: e_1NN 0.0334 | Cover-Hart e* in [0.0169, 0.0334] -> accuracy ceiling [0.9666, 0.9831]
+     (ref 65015 rows, query 16254 rows, 9 classes, 45 features, metric=RobustScaler Euclidean)
+     k=10 purity by class:
+       ransomware       0.9935
+       backdoor         0.9915
+       password         0.9814
+       dos              0.9732
+       injection        0.9622
+       ddos             0.9589
+       scanning         0.9480
+       xss              0.9034
+       mitm             0.5986
+  -> service identity moves e_1NN by -0.0028 (ours: -0.153 on CIC-UNSW)
+
+==============================================================================
+SUMMARY
+==============================================================================
+  leakage gate    : FAIL -- src_ip
+  duplicate rate  : 50.07%
+  imbalance       : 48:1
+  difficulty      : e_1NN 0.0306 -- TOO EASY. Expect every combiner variant to tie
+                    (CIC-IDS2017 precedent: 0.0026 -> all 17 within 0.0007).
+                    Report it as a conditional-value result, not a benchmark win.
+
+  NEXT: if the gate PASSES, run the v7.1b protocol with SELV re-selecting from
+  scratch -- do NOT port 'HYBRID W x OLA-cw k=30 p=3'. SELV picked dynamic on
+  CIC-UNSW and static on UNSW-NB15; the configuration is a property of the data.
+  Levels are NOT comparable across datasets -- report the paired same-pipeline gap.
+
+total 0.2 min

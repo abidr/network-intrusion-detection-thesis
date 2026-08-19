@@ -1,0 +1,256 @@
+{
+  "experiment": "per-region W in decision space (K=1 global .. K=8) under e2e objective",
+  "k_grid": [
+    2,
+    3,
+    5,
+    8
+  ],
+  "lam_grid": [
+    1.0,
+    0.5
+  ],
+  "min_region": 500,
+  "comb_e2e_global": 0.6903,
+  "comb_e2e_region": {
+    "2": 0.695,
+    "3": 0.6956,
+    "5": 0.6979,
+    "8": 0.6978
+  },
+  "w_divergence": {
+    "2": 0.1645,
+    "3": 0.118,
+    "5": 0.1495,
+    "8": 0.1092
+  },
+  "selv_winner": "REGION K=2 x OLA-cw k=30 p=3",
+  "selv_table": [
+    {
+      "variant": "K=1 HYBRID W_e2e x OLA-cw k=30 p=3 (v7.1b FINAL)",
+      "mF1": 0.6732,
+      "mP": 0.7031,
+      "mR": 0.6713,
+      "acc": 0.9853
+    },
+    {
+      "variant": "REGION K=2 x OLA-cw k=30 p=3",
+      "mF1": 0.6719,
+      "mP": 0.7116,
+      "mR": 0.6626,
+      "acc": 0.9852
+    },
+    {
+      "variant": "REGION K=3 x OLA-cw k=30 p=3",
+      "mF1": 0.6719,
+      "mP": 0.7012,
+      "mR": 0.6674,
+      "acc": 0.9854
+    },
+    {
+      "variant": "REGION K=5 lam=0.5",
+      "mF1": 0.6713,
+      "mP": 0.7023,
+      "mR": 0.6676,
+      "acc": 0.9853
+    },
+    {
+      "variant": "REGION K=5 x OLA-cw k=30 p=3",
+      "mF1": 0.6707,
+      "mP": 0.6997,
+      "mR": 0.6666,
+      "acc": 0.9853
+    },
+    {
+      "variant": "K=1 STATIC W_e2e (v7.1b static)",
+      "mF1": 0.6704,
+      "mP": 0.7043,
+      "mR": 0.6665,
+      "acc": 0.9853
+    },
+    {
+      "variant": "REGION K=2 lam=0.5",
+      "mF1": 0.6701,
+      "mP": 0.7126,
+      "mR": 0.6607,
+      "acc": 0.9851
+    },
+    {
+      "variant": "REGION K=3 lam=0.5",
+      "mF1": 0.6699,
+      "mP": 0.7001,
+      "mR": 0.6663,
+      "acc": 0.9853
+    },
+    {
+      "variant": "REGION K=5 lam=1.0",
+      "mF1": 0.6693,
+      "mP": 0.6998,
+      "mR": 0.6644,
+      "acc": 0.9853
+    },
+    {
+      "variant": "REGION K=8 x OLA-cw k=30 p=3",
+      "mF1": 0.6687,
+      "mP": 0.702,
+      "mR": 0.6638,
+      "acc": 0.985
+    },
+    {
+      "variant": "REGION K=2 lam=1.0",
+      "mF1": 0.6685,
+      "mP": 0.7134,
+      "mR": 0.6571,
+      "acc": 0.9852
+    },
+    {
+      "variant": "REGION K=8 lam=0.5",
+      "mF1": 0.6674,
+      "mP": 0.7028,
+      "mR": 0.6623,
+      "acc": 0.985
+    },
+    {
+      "variant": "REGION K=3 lam=1.0",
+      "mF1": 0.6669,
+      "mP": 0.6963,
+      "mR": 0.6623,
+      "acc": 0.9854
+    },
+    {
+      "variant": "REGION K=8 lam=1.0",
+      "mF1": 0.6643,
+      "mP": 0.6983,
+      "mR": 0.6595,
+      "acc": 0.985
+    }
+  ],
+  "test_table": [
+    {
+      "variant": "REGION K=8 lam=1.0",
+      "mF1": 0.6924,
+      "mP": 0.7223,
+      "mR": 0.691,
+      "acc": 0.9859
+    },
+    {
+      "variant": "REGION K=2 lam=1.0",
+      "mF1": 0.6921,
+      "mP": 0.7317,
+      "mR": 0.683,
+      "acc": 0.9859
+    },
+    {
+      "variant": "REGION K=8 x OLA-cw k=30 p=3",
+      "mF1": 0.6912,
+      "mP": 0.7196,
+      "mR": 0.6898,
+      "acc": 0.9859
+    },
+    {
+      "variant": "REGION K=2 x OLA-cw k=30 p=3",
+      "mF1": 0.6907,
+      "mP": 0.7241,
+      "mR": 0.6853,
+      "acc": 0.9859
+    },
+    {
+      "variant": "REGION K=3 x OLA-cw k=30 p=3",
+      "mF1": 0.6904,
+      "mP": 0.7173,
+      "mR": 0.6885,
+      "acc": 0.9861
+    },
+    {
+      "variant": "REGION K=2 lam=0.5",
+      "mF1": 0.6898,
+      "mP": 0.7254,
+      "mR": 0.6847,
+      "acc": 0.9859
+    },
+    {
+      "variant": "REGION K=3 lam=0.5",
+      "mF1": 0.6895,
+      "mP": 0.7167,
+      "mR": 0.6888,
+      "acc": 0.9861
+    },
+    {
+      "variant": "REGION K=5 x OLA-cw k=30 p=3",
+      "mF1": 0.6895,
+      "mP": 0.7162,
+      "mR": 0.6888,
+      "acc": 0.986
+    },
+    {
+      "variant": "REGION K=3 lam=1.0",
+      "mF1": 0.6893,
+      "mP": 0.7183,
+      "mR": 0.6856,
+      "acc": 0.9862
+    },
+    {
+      "variant": "K=1 HYBRID W_e2e x OLA-cw k=30 p=3 (v7.1b FINAL)",
+      "mF1": 0.6888,
+      "mP": 0.7152,
+      "mR": 0.6908,
+      "acc": 0.986
+    },
+    {
+      "variant": "REGION K=5 lam=1.0",
+      "mF1": 0.6884,
+      "mP": 0.7163,
+      "mR": 0.6874,
+      "acc": 0.986
+    },
+    {
+      "variant": "REGION K=8 lam=0.5",
+      "mF1": 0.6883,
+      "mP": 0.7175,
+      "mR": 0.6875,
+      "acc": 0.9859
+    },
+    {
+      "variant": "K=1 STATIC W_e2e (v7.1b static)",
+      "mF1": 0.6881,
+      "mP": 0.7163,
+      "mR": 0.6885,
+      "acc": 0.9861
+    },
+    {
+      "variant": "REGION K=5 lam=0.5",
+      "mF1": 0.6881,
+      "mP": 0.7161,
+      "mR": 0.6871,
+      "acc": 0.9861
+    }
+  ],
+  "test_rank_of_selv_winner": 4,
+  "test": {
+    "region": 0.6907,
+    "v71b_ref": 0.6888
+  },
+  "paired_delta": 0.0018,
+  "paired_ci": [
+    -0.0034,
+    0.0076
+  ],
+  "paired_p": 0.55,
+  "marginal_ci": [
+    0.6741,
+    0.7058
+  ],
+  "per_class_f1": {
+    "Benign": 0.9948,
+    "Analysis": 0.1585,
+    "Backdoor": 0.6752,
+    "DoS": 0.5925,
+    "Exploits": 0.8104,
+    "Fuzzers": 0.6211,
+    "Generic": 0.8753,
+    "Reconnaissance": 0.8256,
+    "Shellcode": 0.7087,
+    "Worms": 0.6444
+  },
+  "minutes": 6.1
+}
