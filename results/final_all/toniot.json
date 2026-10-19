@@ -1,0 +1,112 @@
+{
+  "dataset": "toniot",
+  "rows": 105315,
+  "features": 53,
+  "classes": 10,
+  "names": [
+    "normal",
+    "backdoor",
+    "ddos",
+    "dos",
+    "injection",
+    "mitm",
+    "password",
+    "ransomware",
+    "scanning",
+    "xss"
+  ],
+  "test_rows": 21063,
+  "selv_winner": "DYN OLA-cw k=100 p=3",
+  "threshold": 0.6,
+  "metrics": {
+    "accuracy": 0.9809,
+    "macro_P": 0.9546,
+    "macro_R": 0.9673,
+    "macro_F1": 0.9604,
+    "wtd_P": 0.9815,
+    "wtd_R": 0.9809,
+    "wtd_F1": 0.9811,
+    "roc_auc": 0.9955
+  },
+  "per_class_f1": {
+    "normal": 0.9962,
+    "backdoor": 0.999,
+    "ddos": 0.9808,
+    "dos": 0.9833,
+    "injection": 0.9783,
+    "mitm": 0.7644,
+    "password": 0.9895,
+    "ransomware": 0.9919,
+    "scanning": 0.9613,
+    "xss": 0.9597
+  },
+  "xai": {
+    "groups": [
+      "SVC",
+      "TIME",
+      "SIZE",
+      "FLAG",
+      "APP"
+    ],
+    "group_sizes": [
+      11,
+      2,
+      13,
+      13,
+      14
+    ],
+    "additivity_max": 1.811981201171875e-05,
+    "additivity": {
+      "gate": 1.811981201171875e-05,
+      "XGB a=0.0": 1.239776611328125e-05,
+      "XGB a=0.25": 1.239776611328125e-05,
+      "XGB a=0.5": 1.52587890625e-05,
+      "XGB a=1.0": 9.5367431640625e-06,
+      "XGB smote2000": 1.049041748046875e-05
+    },
+    "shap_vs_xgboost_max": 0.0,
+    "linear_rewrite_max": 0.0,
+    "efficiency_max": 3.3589344639040064e-08,
+    "reproduction": 1.0,
+    "explain_rows": 1817,
+    "background_rows": 40,
+    "gate_shap_share": {
+      "SVC": 0.3751,
+      "TIME": 0.0744,
+      "SIZE": 0.4122,
+      "FLAG": 0.0731,
+      "APP": 0.0651
+    },
+    "stageB_shap_share": {
+      "SVC": 0.1617,
+      "TIME": 0.1374,
+      "SIZE": 0.5212,
+      "FLAG": 0.1471,
+      "APP": 0.0327
+    },
+    "gate_gain_share": {
+      "SVC": 0.4764,
+      "TIME": 0.0018,
+      "SIZE": 0.288,
+      "FLAG": 0.0633,
+      "APP": 0.1704
+    },
+    "stageB_gain_share": {
+      "SVC": 0.4734,
+      "TIME": 0.0048,
+      "SIZE": 0.1662,
+      "FLAG": 0.2412,
+      "APP": 0.1143
+    },
+    "gate_top": [
+      "SIZE",
+      0.4122
+    ],
+    "stageB_top": [
+      "SIZE",
+      0.5212
+    ]
+  },
+  "ref_cap": null,
+  "minutes": 7.1
+}

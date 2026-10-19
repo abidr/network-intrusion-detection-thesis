@@ -1,0 +1,73 @@
+==============================================================================
+v7.1b + XAI on toniot
+==============================================================================
+rows 105315 | features 53 | classes 10
+   0 normal                     24064   22.850%
+   1 backdoor                    2423    2.301%
+   2 ddos                       12532   11.900%
+   3 dos                        14473   13.743%
+   4 injection                  19850   18.848%
+   5 mitm                        1039    0.987%
+   6 password                   15353   14.578%
+   7 ransomware                  1234    1.172%
+   8 scanning                    5607    5.324%
+   9 xss                         8740    8.299%
+
+train+val 84252 | test 21063 | COMB 42126 | SELV 42126
+  gate fold 1/5 (1s)
+  gate fold 2/5 (2s)
+  gate fold 3/5 (4s)
+  gate fold 4/5 (5s)
+  gate fold 5/5 (6s)
+reject set 93 | Stage-B rows 65094
+  pool fold 1/5 (elapsed 0.7m)
+  pool fold 2/5 (elapsed 1.4m)
+  pool fold 3/5 (elapsed 2.2m)
+  pool fold 4/5 (elapsed 2.9m)
+  pool fold 5/5 (elapsed 3.7m)
+W fitted (39s): COMB e2e mF1 0.9628
+
+SELV top 5 rules @ t=0.5:
+  0.9599  DYN OLA-cw k=100 p=3
+  0.9595  DYN OLA-cw k=30 p=3
+  0.9595  DYN OLA-cw k=30 p=1
+  0.9595  DYN OLA-cw k=100 p=1
+  0.9593  STATIC: equal average
+threshold sweep: 0.3:0.9595, 0.4:0.9599, 0.5:0.9599, 0.6:0.9600, 0.7:0.9597 -> t=0.6
+refit 1.0m
+
+TEST  DYN OLA-cw k=100 p=3 @ t=0.6
+  accuracy  0.9809
+  macro_P   0.9546
+  macro_R   0.9673
+  macro_F1  0.9604
+  wtd_P     0.9815
+  wtd_R     0.9809
+  wtd_F1    0.9811
+  roc_auc   0.9955
+    F1 normal                 0.9962  (support 4813)
+    F1 backdoor               0.9990  (support 485)
+    F1 ddos                   0.9808  (support 2506)
+    F1 dos                    0.9833  (support 2894)
+    F1 injection              0.9783  (support 3970)
+    F1 mitm                   0.7644  (support 208)
+    F1 password               0.9895  (support 3071)
+    F1 ransomware             0.9919  (support 247)
+    F1 scanning               0.9613  (support 1121)
+    F1 xss                    0.9597  (support 1748)
+
+--- XAI ---
+groups: SVC 11, TIME 2, SIZE 13, FLAG 13, APP 14
+additivity max |sum phi - margin| over gate + 5 XGB members: 1.81e-05
+shap 0.51.0 vs xgboost pred_contribs, max |diff|: 0.00e+00
+linear rewrite of the rule vs rule_scores on 16243 rows: 0.0e+00
+group Shapley: 1817 rows x 32 coalitions x 40 background (82s)
+efficiency 3.4e-08 | deployed decision reproduced on 100.0000% of rows
+
+share                         SVC    TIME    SIZE    FLAG     APP
+gate SHAP                   0.375   0.074   0.412   0.073   0.065
+gate gain                   0.476   0.002   0.288   0.063   0.170
+Stage-B ensemble SHAP       0.162   0.137   0.521   0.147   0.033
+Stage-B XGB a=0.25 gain     0.473   0.005   0.166   0.241   0.114
+
+total 7.1 min

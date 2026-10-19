@@ -1,0 +1,30 @@
+{
+  "rows": [
+    {
+      "arm": "ORIGINAL",
+      "gate_recall": 0.9862,
+      "family_acc": 0.8746,
+      "family_macroF1": 0.7495
+    },
+    {
+      "arm": "REPAIR ONLY",
+      "gate_recall": 0.9861,
+      "family_acc": 0.8743,
+      "family_macroF1": 0.7311
+    },
+    {
+      "arm": "NOISE+REPAIR (v7.3)",
+      "gate_recall": 0.9418,
+      "family_acc": 0.8451,
+      "family_macroF1": 0.6516
+    },
+    {
+      "arm": "NOISE ONLY",
+      "gate_recall": 0.9384,
+      "family_acc": 0.8264,
+      "family_macroF1": 0.6258
+    }
+  ],
+  "threshold": 0.32803434133529663,
+  "budget": 0.002
+}

@@ -1,0 +1,80 @@
+==============================================================================
+v7.1b + XAI on cicids2017
+==============================================================================
+rows 2520798 | features 100 | classes 13
+   0 BENIGN                   2095057   83.111%
+   1 Bot                         1948    0.077%
+   2 DDoS                      128014    5.078%
+   3 DoS GoldenEye              10286    0.408%
+   4 DoS Hulk                  172846    6.857%
+   5 DoS Slowhttptest            5228    0.207%
+   6 DoS slowloris               5385    0.214%
+   7 FTP-Patator                 5931    0.235%
+   8 Heartbleed                    11    0.000%
+   9 Infiltration                  36    0.001%
+  10 PortScan                   90694    3.598%
+  11 SSH-Patator                 3219    0.128%
+  12 Web Attack                  2143    0.085%
+
+train+val 2016638 | test 504160 | COMB 1008319 | SELV 1008319
+  gate fold 1/5 (27s)
+  gate fold 2/5 (53s)
+  gate fold 3/5 (80s)
+  gate fold 4/5 (106s)
+  gate fold 5/5 (132s)
+reject set 1585 | Stage-B rows 342178
+  pool fold 1/5 (elapsed 5.5m)
+  pool fold 2/5 (elapsed 10.9m)
+  pool fold 3/5 (elapsed 16.2m)
+  pool fold 4/5 (elapsed 21.0m)
+  pool fold 5/5 (elapsed 26.0m)
+k-NN competence reference capped 171064 -> 40000 (stratified)
+W fitted (270s): COMB e2e mF1 0.9699
+
+SELV top 5 rules @ t=0.5:
+  0.9675  DYN OLA-cw k=100 p=1
+  0.9675  DYN OLA-cw k=100 p=3
+  0.9675  DYN LCA k=30
+  0.9674  DYN OLA-cw k=30 p=1
+  0.9674  HYBRID W x OLA-cw k=100 p=3
+threshold sweep: 0.3:0.9667, 0.4:0.9672, 0.5:0.9675, 0.6:0.9676, 0.7:0.9676 -> t=0.7
+refit 6.7m
+
+TEST  DYN OLA-cw k=100 p=1 @ t=0.7
+  accuracy  0.9991
+  macro_P   0.9849
+  macro_R   0.9823
+  macro_F1  0.9835
+  wtd_P     0.9990
+  wtd_R     0.9991
+  wtd_F1    0.9990
+  roc_auc   0.9929
+    F1 BENIGN                 0.9995  (support 419012)
+    F1 Bot                    0.8246  (support 389)
+    F1 DDoS                   1.0000  (support 25603)
+    F1 DoS GoldenEye          0.9966  (support 2057)
+    F1 DoS Hulk               0.9986  (support 34569)
+    F1 DoS Slowhttptest       0.9914  (support 1046)
+    F1 DoS slowloris          0.9930  (support 1077)
+    F1 FTP-Patator            0.9992  (support 1186)
+    F1 Heartbleed             1.0000  (support 2)
+    F1 Infiltration           1.0000  (support 7)
+    F1 PortScan               0.9940  (support 18139)
+    F1 SSH-Patator            1.0000  (support 644)
+    F1 Web Attack             0.9885  (support 429)
+
+--- XAI ---
+groups: SVC 23, TIME 29, SIZE 35, FLAG 13
+additivity max |sum phi - margin| over gate + 5 XGB members: 1.81e-05
+shap 0.51.0 vs xgboost pred_contribs, max |diff|: 0.00e+00
+linear rewrite of the rule vs rule_scores on 85419 rows: 0.0e+00
+group Shapley: 2209 rows x 16 coalitions x 39 background (47s)
+efficiency 2.6e-08 | deployed decision reproduced on 100.0000% of rows
+
+share                         SVC    TIME    SIZE    FLAG
+gate SHAP                   0.254   0.162   0.503   0.082
+gate gain                   0.462   0.050   0.254   0.234
+Stage-B ensemble SHAP       0.248   0.228   0.439   0.085
+Stage-B XGB a=0.25 gain     0.246   0.032   0.535   0.186
+
+total 41.6 min

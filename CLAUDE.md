@@ -466,6 +466,9 @@ protocol, SELV-selected, test once.
   Shellcode (ephemeral ports) from Fuzzers (BGP 179 / SMB 445) and Recon (RPC 111) from Exploits.
 - **svc = 25.7% of columns, 70.4% of importance**; `svc_rpc` #1 (0.372), `svc_bgp` #2. Every family
   improved; biggest: Shellcode +0.28, Recon +0.19, Fuzzers +0.18, DoS +0.10.
+  > ⚠️ **70.4% (and v7's 72.4%) is XGBoost GAIN importance.** By verified SHAP on the deployed v7.1b
+  > ensemble, svc is **42.6%** — still the largest group, but SIZE carries 35.5%
+  > (`results/xai_treeshap/`). Quote the SHAP share; label any gain figure as gain.
 - **e_1NN 0.3632 → 0.2098** (−0.153, 12× the round-1 feature gain; metric-relative as always).
   Gate precision 0.9267 → 0.9411 at unchanged recall — svc buys what gate re-weighting could not.
 - **⚠️ Control-arm caveat:** the DERIVED control reproduced 0.6478/0.9127, not the published
@@ -669,6 +672,12 @@ and printed before the combiner grid. **SELV-selected `UNION HYBRID W × OLA-cw 
 
 ### v7.3 series — ROBUSTNESS (`results/v73_adv_budget/`, `v73b_brittle_diag/`, `v73c_rf_gate/`, `v73d_rf_gate_sig/`)
 
+> 📄 **`robustness_chapter.md` is the consolidated, chapter-ready synthesis of all seven v7.3 runs**
+> — read it before quoting anything from this section. It carries the threat-model table (§4), which
+> is the single most important artifact of the series: **robustness is not a scalar property**, each
+> threat model breaks a different layer, and the mitigation for one is irrelevant or harmful to
+> another. It also lists the framings to avoid.
+
 Adversarial evasion measured under an **attacker-controllable budget**: the attacker sets PRIMITIVES
 only (FREE 49 raw cols = timing/padding/size shape; COSTLY 18 = packet/byte/flag counts at half
 budget; **IMPOSSIBLE 25 = svc/proto/dst port** — changing them abandons the attack), and every
@@ -681,6 +690,13 @@ model fixed. Clean arm reproduces v7.1b (0.6888 / 0.9860).
   Adversarial search only doubles that. Brittleness is far broader than evasion — it implies
   degradation under measurement noise, a different flow timeout, or another CICFlowMeter build.
   Consistent with Cover–Hart: rows sit near boundaries.
+  > ⚠️ **Partial confound, measured (`results/v73j_repair_confound/`):** every v7.3 script compares an
+  > *unrepaired* clean arm with *repaired* noise arms, and `repair()` recomputes 5 model-input columns
+  > (`Down/Up Ratio`, `Packet Length Mean`, rates) differently from CICFlowMeter even at zero noise.
+  > At 0.002 IQR, **repair alone explains 0% of the gate-recall drop but ~19% of the family
+  > macro-F1 drop** (0.018 of 0.098). Detection claims stand as stated; quote attribution damage
+  > with this caveat. Noise *without* repair hurts more, so brittleness itself is real. Future
+  > perturbation runs: use the zero-noise repaired rebuild as the clean reference.
 - **⚠️ HYPOTHESIS REFUTED — feature importance does not predict robustness.** The prediction was a flat
   curve because `svc` is 70.4% of importance and outside attacker control. Attack recall halves at
   **0.020 IQR**. A model can lean 70% on unforgeable evidence and still be evaded through the other 30%.
@@ -725,6 +741,28 @@ model fixed. Clean arm reproduces v7.1b (0.6888 / 0.9860).
     never state "robust detection, fragile attribution" without the threat model attached.
   - The pre-registered stall trap did **not** fire (`moved` 0.998), so the RF number is a genuine
     descent, not a greedy search stalling on piecewise-constant probabilities.
+- **v7.3h — controllability-aware ADVERSARIAL TRAINING (`results/v73h_adv_training/`): a real defence
+  for the WRONG threat model.** The v7.3g correction — same knowledge applied by *augmentation* (as
+  Tafreshian & Zhang, TrustCom 2024 do) rather than *restriction*.
+  - **P1 REFUTED by −0.4924, in the positive direction: plain random-noise augmentation is 26× the
+    baseline and 2.5× better than adversarial training** (retained gate recall @0.20 under white-box
+    evasion: baseline 0.0313 | noise-aug **0.8160** | adversarial 0.3236), at a clean cost
+    indistinguishable from zero (paired bootstrap −0.0051 [−0.0139, +0.0031], p=0.234). **The
+    adversarial machinery is unnecessary and worse than the cheap alternative** — the question the
+    source paper cannot ask, having no noise-control arm.
+  - **⚠️ THE CONFOUND CHECK FIRES AND SPLITS THE FINDING.** Augmentation added only perturbed *attack*
+    rows labelled `attack=1`, so the gate can satisfy it by learning **"perturbed ⇒ attack"**.
+    Thresholds matched on *clean* benign hid this. Perturbing **benign** rows at fixed threshold:
+    **fpr 0.0168 → 0.1293 for noise-aug (10.7×)** while the baseline stays flat at 0.0121.
+    **This is the matched-fpr rule (v7.3b) applied to drift, and it invalidates the naive reading.**
+    → **Against an adversary** (perturbs only their own flows) it is a real, cheap defence.
+    **Against drift** (perturbs everything) it is not — 13% fpr at a 97.5% benign base rate is
+    unusable. **The chapter is motivated by drift, so the one working defence fits the scenario that
+    motivated it least — state the irony.** Re-matching fpr *under drift* is untested and required.
+  - **P3 REFUTED backwards**: misattribution-adversarial Stage B made misattribution *worse* (0.8566
+    vs 0.6395) — boundary-perturbed rows blur classes. **The stage-asymmetry idea is now fully closed.**
+  - **Reusable method**: when augmentation uses one class only, verify the model has not learned
+    "perturbed ⇒ that class" by perturbing the *other* class and re-measuring the operating point.
 - **v7.3g — controllability-aware feature allocation (`results/v73g_controllability_aware/`): REFUTED.**
   The obvious defence to build from this series — restrict the *gate* to the 25 uncontrollable
   svc/proto/port features since "the gate is essentially solved", keep Stage B full. **P3 clean cost
@@ -809,16 +847,57 @@ share **76.31%**, imbalance 48:1, `mitm` 1,043 rows. **Duplicates 50.07%** — t
 - The join methodology itself is a reusable contribution: same-traffic/two-extractor field
   transfer at 100% coverage, with the fingerprint audit as a pre-registered go/no-go gate.
 
+### XAI — verifiable TreeSHAP of the deployed v7.1b pipeline (`results/xai_treeshap/`) — 6 of 7 pre-registered SUPPORTED
+
+Explains the **deployed system**, not a surrogate (refit reproduces **0.6874 / 0.9866** exactly).
+Level 1: column-level exact TreeSHAP (log-odds) on the gate + 5 XGB members. Level 2: exact
+interventional group Shapley (all 16 coalitions) of the **fused 7-member score in probability space**
+over the v7.1e groups {SVC 25, TIME 25, SIZE 39, FLAG 10}. Shapley linearity makes
+`φ(S_c) = Σ_m coef_mc·φ(P_m(c))` exact, RF/ET included; **scope: competence routing held fixed at x**.
+Figures: `figures/xai_fig1–5_*.png` (`figures/make_xai_figures.py`). Runtime 6.0 min.
+**Presentation notebook: `final_model_v7_1_xai.ipynb`** = `final_model_v7_1_reject_stages.ipynb` +
+XAI as §5.4–5.11 + per-alert `explain_flows()` in §7. Executed end-to-end: 0.6873 at the SELV
+threshold t=0.7 (±0.0014 refit jitter vs 0.6887), same 6/7 verdicts as the script; §5.10 uses the
+zero-noise repaired rebuild as reference (Spearman 0.857 / 0.883, still refuted).
+
+- **VERIFIED — this is the contrast with CyberAdaptAI, and the XAI contribution.** Additivity
+  ≤ **2.0e-05** on all 6 XGBoost models; **shap 0.51 and xgboost `pred_contribs` agree to 0.0**
+  (two independent implementations); group efficiency 5.5e-09; full coalition reproduces the deployed
+  decision on **100.0000%** of rows (the last two are algebraic — code checks, not evidence).
+- **⚠️ GAIN IMPORTANCE MISSTATES THE EVIDENCE at both stages.** Stage-B ensemble SHAP: SVC **0.426**,
+  SIZE 0.355, TIME 0.135, FLAG 0.084 (gain said SVC 0.640). Gate SHAP: **SIZE 0.708**, TIME 0.161,
+  SVC 0.116 (gain said SIZE 0.989). Column Spearman(SHAP, gain) only 0.58 / 0.42. P2 supported: SVC
+  leads Stage B, not the gate (consistent with v7.3g). Analysis is the only TIME-led family (0.416).
+- **⭐ OVERLAP PAIRS GET A MECHANISM** (contrast D = φ(S_wrong) − φ(S_true)): the
+  **Exploits/DoS/Recon triangle is SIZE-driven** (3 of 4 directions; Recon→Exploits is SVC).
+  **The Fuzzers sink runs through different evidence in each direction**: Benign→Fuzzers leaks are
+  **SVC**-driven (+0.056, 3× any group — benign flows on Fuzzers' services); Fuzzers→REJECT swallows
+  are **TIME**-driven (top driver on 71% of rows). This is *why* v7.1's sink inverted rather than
+  dissolved. **Shellcode↔Fuzzers has 0 confusions** in the deployed model — svc dissolved the pair.
+  P3 supported 4/6, but SVC drives the two highest-volume pairs — quote the table, not the count.
+- **Faithful:** top-5 SHAP deletion drops the margin **11.4× (gate) / 12.2× (α=0.25)** more than
+  random-5 deletion (threshold 2×).
+- **P5 REFUTED — explanations are brittle too.** At 0.002 IQR noise, on rows whose decision did NOT
+  flip, median row Spearman **0.84 / 0.87** (pre-reg ≥ 0.90); top-5 Jaccard 0.667 passes (4 of 5
+  survive). Partly an instrument effect (near-zero columns' ranks are noise). **Write "the top of the
+  explanation is mostly stable, the full ranking is not"**, never "SHAP is unstable".
+- Not done: column-level SHAP for RF/ET (too slow on 300 full-depth trees); SHAP under the v7.3f
+  misattribution attack.
+
 ## Environment & commands
 
 - Windows; Python 3.12.8 via miniconda (`C:\Users\night\miniconda3`). Primary shell is PowerShell; a Bash tool is also available. **The ML stack (`sklearn`, `xgboost`, `imblearn`) lives in the `ai4beg` conda env, not base** — for scripts run outside the notebook kernel use `C:\Users\night\miniconda3\envs\ai4beg\python.exe` (base `python` raises `ModuleNotFoundError: sklearn`).
+- **ai4beg runs numpy 2.2.6 + shap 0.51.0** since 2026-10-20 (shap 0.46 could not parse xgboost 3.x
+  models). Every result before `results/xai_treeshap/` was produced under numpy 1.26.4. This broke
+  `river` 0.21 (used only by `Clones/CyberAdaptAI/`, which is no longer supported — its
+  `base_learners.py` would silently fall back to SGD) and `tensorflow-intel` (unused).
 - Terminal stdout is **cp1252** — printing Unicode (e.g. `±`, `–`, accented author names) raises `UnicodeEncodeError`. When dumping text, write to a UTF-8 file (`io.open(path, "w", encoding="utf-8")`) and read it back rather than printing to the console.
 - Reading the Excel workbook requires `openpyxl` (installed). Use `data_only=True` to get computed values. Close the file in Excel first — a `~$...` lock file in `Papers/` means it is open and writes will fail/conflict.
 
 ## Conventions for this project
 
 - Frame results around the **literature gaps** the review identified: weak recall on rare attack classes, unaddressed imbalance, single-dataset evaluation, and ~~missing explainability (XAI)~~ — **see the correction below**. The thesis contribution leans on the under-explored 2024 dataset plus proper imbalance handling.
-- **⚠️ THE XAI GAP IS RESTATED — "we add SHAP" IS NOT A CONTRIBUTION** (`novelty.md` §3.2). CyberAdaptAI already applies SHAP to a dynamic NIDS ensemble (§3.5, Eq 9, Table 7). Corpus scan of all 10 papers: **1 implements XAI, 2 name it as future work only, 7 barely mention it** — and one apparent `shap` hit is the word "**shap**ing", so a keyword scan miscounts this exactly as it miscounts code links. **The real gap is *unverifiable* explainability:** CyberAdaptAI's Table 7 is almost certainly not SHAP output (columns sum to exactly 1.00, 0.05 increments, only 5 features; caption hedges "SHAP-**Like**"), and Table 8 is a byte-for-byte duplicate of it, so its promised cross-dataset F1 scores appear nowhere. `Clones/CyberAdaptAI/` executes the paper's own Eq 9 at additivity residual **3.8e-06 / 4.8e-06** — we can *demonstrate* the contrast, not merely allege it. **SHAP on our own model is a diagnostic instrument for the analysis chapter, never a novelty claim.**
+- **⚠️ THE XAI GAP IS RESTATED — "we add SHAP" IS NOT A CONTRIBUTION** (`novelty.md` §3.2). CyberAdaptAI already applies SHAP to a dynamic NIDS ensemble (§3.5, Eq 9, Table 7). Corpus scan of all 10 papers: **1 implements XAI, 2 name it as future work only, 7 barely mention it** — and one apparent `shap` hit is the word "**shap**ing", so a keyword scan miscounts this exactly as it miscounts code links. **The real gap is *unverifiable* explainability:** CyberAdaptAI's Table 7 is almost certainly not SHAP output (columns sum to exactly 1.00, 0.05 increments, only 5 features; caption hedges "SHAP-**Like**"), and Table 8 is a byte-for-byte duplicate of it, so its promised cross-dataset F1 scores appear nowhere. `Clones/CyberAdaptAI/` executes the paper's own Eq 9 at additivity residual **3.8e-06 / 4.8e-06** — we can *demonstrate* the contrast, not merely allege it. **SHAP on our own model is a diagnostic instrument for the analysis chapter, never a novelty claim.** Done in `results/xai_treeshap/` with published residuals (additivity ≤ 2e-05, two implementations agreeing to 0.0) — the *verifiability* is what to claim.
 - **A fifth gap is now evidenced: claimed-but-unavailable artifacts** (`literature_artifact_audit.md`). **0 of 10 reviewed papers release code.** The most common "availability" statement points at a public benchmark *dataset*, which is not the pipeline. Without the code a reader cannot tell which protocol a published number was produced under — and the protocol is worth more than the model. CyberAdaptAI is the worked example, not an outlier.
 - **⚠️ SCOPE THE DEDUPE CLAIM — it is protocol-specific, not universal.** Earlier wording here said deduplication moves reported accuracy by "10–15 points on both datasets". **That is measured only in CyberAdaptAI's binary + sequential-stream setting** (`Clones/CyberAdaptAI/RESULTS.md`: dedup+sequential 0.8065 acc / 0.7323 F1 → no-dedup+sequential 0.9019 / 0.8825; shuffled, the gap shrinks to +0.034 acc / +0.066 F1). Under the **v6 multiclass batch pipeline with a stratified random split it does not replicate: +0.0025 macro-F1 and −0.0071 accuracy** despite 42.7% of test rows having an exact train twin (`results/unsw_dedupe_ablation/`). **Always state task, split protocol and learner when quoting a dedupe effect.**
 - Be skeptical of near-100% results — for this data they almost always indicate duplicate leakage, not a good model. **Worked example: v6 scores 0.9835 macro-F1 / 0.9991 accuracy on CIC-IDS2017 with e_1NN = 0.0026, and every architectural component is worth 0.0007** (`results/cicids2017_v6/`). A near-perfect score is a prompt to interrogate the dataset, not to report the number.

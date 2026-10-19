@@ -1,0 +1,476 @@
+{
+  "experiment": "XAI -- verifiable TreeSHAP of the deployed v7.1b pipeline",
+  "reproduction": {
+    "test_macro_f1": 0.6874,
+    "test_acc": 0.9866,
+    "ok": true
+  },
+  "groups": {
+    "SVC": 25,
+    "TIME": 25,
+    "SIZE": 39,
+    "FLAG": 10
+  },
+  "explain_rows": 2643,
+  "stratified_rows": 1603,
+  "background_rows": 40,
+  "additivity": {
+    "gate": {
+      "max": 2.002716064453125e-05,
+      "mean": 2.936988494184334e-06
+    },
+    "XGB a=0.0": {
+      "max": 1.621246337890625e-05,
+      "mean": 1.9954420622525504e-06
+    },
+    "XGB a=0.25": {
+      "max": 1.71661376953125e-05,
+      "mean": 1.848785132096964e-06
+    },
+    "XGB a=0.5": {
+      "max": 1.71661376953125e-05,
+      "mean": 2.047581119768438e-06
+    },
+    "XGB a=1.0": {
+      "max": 1.811981201171875e-05,
+      "mean": 2.3154848349804524e-06
+    },
+    "XGB smote2000": {
+      "max": 1.9073486328125e-05,
+      "mean": 2.0039074115629774e-06
+    }
+  },
+  "cross_implementation": {
+    "gate": 0.0,
+    "XGB a=0.25": 0.0
+  },
+  "group_efficiency_max": 5.4702954943586235e-09,
+  "full_coalition_reproduction": 1.0,
+  "shares": {
+    "columns": [
+      0.2525,
+      0.2525,
+      0.3939,
+      0.101
+    ],
+    "gate_shap": [
+      0.1157,
+      0.1608,
+      0.7079,
+      0.0156
+    ],
+    "gate_shap_benign": [
+      0.0749,
+      0.1941,
+      0.7146,
+      0.0164
+    ],
+    "gate_shap_attack": [
+      0.2117,
+      0.0826,
+      0.6923,
+      0.0135
+    ],
+    "gate_gain": [
+      0.004,
+      0.0027,
+      0.9894,
+      0.0039
+    ],
+    "stageB_ensemble_shap": [
+      0.4265,
+      0.1348,
+      0.3551,
+      0.0837
+    ],
+    "xgb_a025_gain": [
+      0.6402,
+      0.0387,
+      0.2488,
+      0.0724
+    ],
+    "order": [
+      "SVC",
+      "TIME",
+      "SIZE",
+      "FLAG"
+    ]
+  },
+  "per_class_share": {
+    "Benign": [
+      0.6346,
+      0.2028,
+      0.1353,
+      0.0273
+    ],
+    "Analysis": [
+      0.1179,
+      0.4156,
+      0.2661,
+      0.2005
+    ],
+    "Backdoor": [
+      0.3314,
+      0.1227,
+      0.4813,
+      0.0646
+    ],
+    "DoS": [
+      0.3268,
+      0.146,
+      0.4027,
+      0.1245
+    ],
+    "Exploits": [
+      0.2712,
+      0.1392,
+      0.4489,
+      0.1406
+    ],
+    "Fuzzers": [
+      0.6676,
+      0.0838,
+      0.1694,
+      0.0792
+    ],
+    "Generic": [
+      0.2477,
+      0.098,
+      0.5931,
+      0.0612
+    ],
+    "Reconnaissance": [
+      0.5806,
+      0.0872,
+      0.3018,
+      0.0304
+    ],
+    "Shellcode": [
+      0.529,
+      0.0629,
+      0.3699,
+      0.0383
+    ],
+    "Worms": [
+      0.2667,
+      0.2234,
+      0.4451,
+      0.0648
+    ]
+  },
+  "agreement": {
+    "gate": {
+      "spearman": 0.5822,
+      "top10_overlap": 5,
+      "top5_shap": [
+        "hdr_per_pkt_fwd",
+        "Fwd Seg Size Min",
+        "dst_port_num",
+        "Bwd Packets/s",
+        "Bwd Packet Length Min"
+      ],
+      "top5_gain": [
+        "Fwd Seg Size Min",
+        "Bwd Packet Length Min",
+        "hdr_per_pkt_fwd",
+        "bpp_bwd",
+        "Bwd Packet Length Mean"
+      ]
+    },
+    "XGB a=0.25": {
+      "spearman": 0.4213,
+      "top10_overlap": 5,
+      "top5_shap": [
+        "dst_port_num",
+        "svc_rpc",
+        "Total Length of Fwd Packet",
+        "svc_bgp",
+        "Bwd Packet Length Max"
+      ],
+      "top5_gain": [
+        "svc_rpc",
+        "svc_bgp",
+        "svc_smb",
+        "svc_http",
+        "frac_PSH"
+      ]
+    }
+  },
+  "pairs": [
+    {
+      "pair": "Reconnaissance -> Exploits",
+      "n": 216,
+      "n_control": 150,
+      "driver": "SVC",
+      "mean_D": {
+        "SVC": 0.0172,
+        "TIME": 0.0139,
+        "SIZE": 0.0114,
+        "FLAG": -0.0026
+      },
+      "ci95": {
+        "SVC": 0.0011,
+        "TIME": 0.0014,
+        "SIZE": 0.0015,
+        "FLAG": 0.0003
+      },
+      "top_driver_frac": {
+        "SVC": 0.5185,
+        "TIME": 0.213,
+        "SIZE": 0.2685,
+        "FLAG": 0.0
+      },
+      "control_mean_D": {
+        "SVC": -0.051,
+        "TIME": -0.0073,
+        "SIZE": -0.0348,
+        "FLAG": -0.003
+      }
+    },
+    {
+      "pair": "Exploits -> Reconnaissance",
+      "n": 146,
+      "n_control": 172,
+      "driver": "SIZE",
+      "mean_D": {
+        "SVC": 0.0069,
+        "TIME": 0.0078,
+        "SIZE": 0.0179,
+        "FLAG": 0.0061
+      },
+      "ci95": {
+        "SVC": 0.0011,
+        "TIME": 0.0018,
+        "SIZE": 0.0026,
+        "FLAG": 0.0003
+      },
+      "top_driver_frac": {
+        "SVC": 0.0,
+        "TIME": 0.3904,
+        "SIZE": 0.5753,
+        "FLAG": 0.0342
+      },
+      "control_mean_D": {
+        "SVC": -0.0278,
+        "TIME": -0.014,
+        "SIZE": -0.0489,
+        "FLAG": -0.014
+      }
+    },
+    {
+      "pair": "DoS -> Exploits",
+      "n": 216,
+      "n_control": 112,
+      "driver": "SIZE",
+      "mean_D": {
+        "SVC": 0.0144,
+        "TIME": 0.0114,
+        "SIZE": 0.0294,
+        "FLAG": 0.0131
+      },
+      "ci95": {
+        "SVC": 0.0021,
+        "TIME": 0.0019,
+        "SIZE": 0.0043,
+        "FLAG": 0.0028
+      },
+      "top_driver_frac": {
+        "SVC": 0.2269,
+        "TIME": 0.1157,
+        "SIZE": 0.4815,
+        "FLAG": 0.1759
+      },
+      "control_mean_D": {
+        "SVC": -0.0416,
+        "TIME": -0.0132,
+        "SIZE": -0.0594,
+        "FLAG": -0.0176
+      }
+    },
+    {
+      "pair": "Exploits -> DoS",
+      "n": 177,
+      "n_control": 172,
+      "driver": "SIZE",
+      "mean_D": {
+        "SVC": 0.0177,
+        "TIME": 0.0103,
+        "SIZE": 0.0266,
+        "FLAG": -0.0043
+      },
+      "ci95": {
+        "SVC": 0.0039,
+        "TIME": 0.0037,
+        "SIZE": 0.0044,
+        "FLAG": 0.0028
+      },
+      "top_driver_frac": {
+        "SVC": 0.2486,
+        "TIME": 0.3164,
+        "SIZE": 0.3898,
+        "FLAG": 0.0452
+      },
+      "control_mean_D": {
+        "SVC": -0.0228,
+        "TIME": -0.0132,
+        "SIZE": -0.0573,
+        "FLAG": -0.014
+      }
+    },
+    {
+      "pair": "Benign -> Fuzzers",
+      "n": 262,
+      "n_control": 125,
+      "driver": "SVC",
+      "mean_D": {
+        "SVC": 0.0557,
+        "TIME": 0.0011,
+        "SIZE": 0.0184,
+        "FLAG": 0.0127
+      },
+      "ci95": {
+        "SVC": 0.0068,
+        "TIME": 0.0031,
+        "SIZE": 0.0028,
+        "FLAG": 0.0008
+      },
+      "top_driver_frac": {
+        "SVC": 0.6221,
+        "TIME": 0.0496,
+        "SIZE": 0.2214,
+        "FLAG": 0.1069
+      },
+      "control_mean_D": {
+        "SVC": -0.0245,
+        "TIME": -0.032,
+        "SIZE": -0.0111,
+        "FLAG": 0.0046
+      }
+    },
+    {
+      "pair": "Fuzzers -> REJECT",
+      "n": 234,
+      "n_control": 157,
+      "driver": "TIME",
+      "mean_D": {
+        "SVC": 0.0157,
+        "TIME": 0.0319,
+        "SIZE": 0.0061,
+        "FLAG": -0.0079
+      },
+      "ci95": {
+        "SVC": 0.0028,
+        "TIME": 0.0017,
+        "SIZE": 0.0029,
+        "FLAG": 0.0005
+      },
+      "top_driver_frac": {
+        "SVC": 0.1923,
+        "TIME": 0.7051,
+        "SIZE": 0.1026,
+        "FLAG": 0.0
+      },
+      "control_mean_D": {
+        "SVC": -0.0996,
+        "TIME": 0.0033,
+        "SIZE": -0.0242,
+        "FLAG": -0.0137
+      }
+    }
+  ],
+  "faithfulness": {
+    "gate": {
+      "1": {
+        "top": 7.0696,
+        "random": 0.304,
+        "ratio": 23.25
+      },
+      "3": {
+        "top": 16.0667,
+        "random": 0.8936,
+        "ratio": 17.98
+      },
+      "5": {
+        "top": 16.6738,
+        "random": 1.4579,
+        "ratio": 11.44
+      },
+      "10": {
+        "top": 18.2986,
+        "random": 2.9086,
+        "ratio": 6.29
+      }
+    },
+    "XGB a=0.25": {
+      "1": {
+        "top": 2.8091,
+        "random": 0.0877,
+        "ratio": 32.02
+      },
+      "3": {
+        "top": 4.5854,
+        "random": 0.2367,
+        "ratio": 19.37
+      },
+      "5": {
+        "top": 4.9316,
+        "random": 0.4039,
+        "ratio": 12.21
+      },
+      "10": {
+        "top": 5.386,
+        "random": 0.7967,
+        "ratio": 6.76
+      }
+    }
+  },
+  "stability": {
+    "gate": {
+      "0.002": {
+        "flip_rate": 0.0511,
+        "stable_rows_median_spearman": 0.8418,
+        "stable_rows_median_jaccard5": 0.6667,
+        "flipped_rows_median_spearman": 0.5853,
+        "flipped_rows_median_jaccard5": 0.4286
+      },
+      "0.02": {
+        "flip_rate": 0.0976,
+        "stable_rows_median_spearman": 0.7361,
+        "stable_rows_median_jaccard5": 0.6667,
+        "flipped_rows_median_spearman": 0.5244,
+        "flipped_rows_median_jaccard5": 0.4286
+      }
+    },
+    "XGB a=0.25": {
+      "0.002": {
+        "flip_rate": 0.1884,
+        "stable_rows_median_spearman": 0.8701,
+        "stable_rows_median_jaccard5": 0.6667,
+        "flipped_rows_median_spearman": 0.7013,
+        "flipped_rows_median_jaccard5": 0.4286
+      },
+      "0.02": {
+        "flip_rate": 0.2857,
+        "stable_rows_median_spearman": 0.7688,
+        "stable_rows_median_jaccard5": 0.6667,
+        "flipped_rows_median_spearman": 0.6334,
+        "flipped_rows_median_jaccard5": 0.4286
+      }
+    }
+  },
+  "verdicts": {
+    "P1a additivity < 1e-3": true,
+    "P1b shap == pred_contribs < 1e-4": true,
+    "P1c group efficiency + 100% reproduction": true,
+    "P2 SVC top for Stage B, not for gate": true,
+    "P3 non-SVC driver in majority of pairs": true,
+    "P4 top-5 deletion >= 2x random": true,
+    "P5 explanations stable where predictions hold (0.002)": false
+  },
+  "versions": {
+    "shap": "0.51.0",
+    "xgboost": "3.3.0",
+    "numpy": "2.2.6"
+  },
+  "minutes": 6.0
+}

@@ -65,6 +65,21 @@ Two runs added after the above (`results/v71d_region_w/`, `results/v71e_view_poo
 
 ---
 
+## Addendum 2026-08-19 (late) — robustness series consolidated
+
+**`robustness_chapter.md` now exists** — the chapter-ready synthesis of all seven v7.3 runs
+(`v73` → `v73g`), including three added this session: **v7.3e** targeted white-box (H1 supported,
+surrogate inflation +0.6773), **v7.3f** the misattribution threat model (H1 refuted; stealth finding;
+**the reject class is an attack surface**), and **v7.3g** controllability-aware allocation (**refuted**;
+feature restriction *concentrates* risk). **`novelty.md` also now exists** and is the master statement
+of what is and is not new, with the literature positioning verified 2026-08-19.
+
+**Three of the seven robustness runs refuted their own pre-registered prediction** — quote that, it is
+what makes the two that passed believable. The headline model and score are unchanged:
+`0.687 [0.671, 0.704]` / acc 0.9866.
+
+**Still true and now more urgent: the axis is seven runs deep. Stop experimenting on it and write.**
+
 ## Addendum 2026-08-19 — robustness opened as a new axis; TON-IoT audited
 
 Full write-ups in `results_summary.md`; condensed in `CLAUDE.md`. **The headline model and score are

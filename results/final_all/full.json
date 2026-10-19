@@ -1,0 +1,106 @@
+{
+  "dataset": "full",
+  "rows": 2606803,
+  "features": 99,
+  "classes": 10,
+  "names": [
+    "Benign",
+    "Analysis",
+    "Backdoor",
+    "DoS",
+    "Exploits",
+    "Fuzzers",
+    "Generic",
+    "Reconnaissance",
+    "Shellcode",
+    "Worms"
+  ],
+  "test_rows": 521361,
+  "selv_winner": "HYBRID W x OLA-cw k=30 p=3",
+  "threshold": 0.7,
+  "metrics": {
+    "accuracy": 0.9867,
+    "macro_P": 0.7126,
+    "macro_R": 0.6819,
+    "macro_F1": 0.6873,
+    "wtd_P": 0.988,
+    "wtd_R": 0.9867,
+    "wtd_F1": 0.9872,
+    "roc_auc": 0.9644
+  },
+  "per_class_f1": {
+    "Benign": 0.9949,
+    "Analysis": 0.1338,
+    "Backdoor": 0.6667,
+    "DoS": 0.6028,
+    "Exploits": 0.825,
+    "Fuzzers": 0.641,
+    "Generic": 0.8785,
+    "Reconnaissance": 0.8262,
+    "Shellcode": 0.7245,
+    "Worms": 0.58
+  },
+  "xai": {
+    "groups": [
+      "SVC",
+      "TIME",
+      "SIZE",
+      "FLAG"
+    ],
+    "group_sizes": [
+      25,
+      25,
+      39,
+      10
+    ],
+    "additivity_max": 2.09808349609375e-05,
+    "additivity": {
+      "gate": 2.09808349609375e-05,
+      "XGB a=0.0": 1.621246337890625e-05,
+      "XGB a=0.25": 1.621246337890625e-05,
+      "XGB a=0.5": 1.71661376953125e-05,
+      "XGB a=1.0": 1.71661376953125e-05,
+      "XGB smote2000": 1.811981201171875e-05
+    },
+    "shap_vs_xgboost_max": 0.0,
+    "linear_rewrite_max": 0.0,
+    "efficiency_max": 1.0997216581820624e-08,
+    "reproduction": 1.0,
+    "explain_rows": 1585,
+    "background_rows": 40,
+    "gate_shap_share": {
+      "SVC": 0.1178,
+      "TIME": 0.1618,
+      "SIZE": 0.7046,
+      "FLAG": 0.0158
+    },
+    "stageB_shap_share": {
+      "SVC": 0.407,
+      "TIME": 0.1348,
+      "SIZE": 0.3668,
+      "FLAG": 0.0914
+    },
+    "gate_gain_share": {
+      "SVC": 0.004,
+      "TIME": 0.0027,
+      "SIZE": 0.9894,
+      "FLAG": 0.0039
+    },
+    "stageB_gain_share": {
+      "SVC": 0.6402,
+      "TIME": 0.0387,
+      "SIZE": 0.2488,
+      "FLAG": 0.0724
+    },
+    "gate_top": [
+      "SIZE",
+      0.7046
+    ],
+    "stageB_top": [
+      "SVC",
+      0.407
+    ]
+  },
+  "ref_cap": null,
+  "minutes": 4.8
+}

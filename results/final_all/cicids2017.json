@@ -1,0 +1,112 @@
+{
+  "dataset": "cicids2017",
+  "rows": 2520798,
+  "features": 100,
+  "classes": 13,
+  "names": [
+    "BENIGN",
+    "Bot",
+    "DDoS",
+    "DoS GoldenEye",
+    "DoS Hulk",
+    "DoS Slowhttptest",
+    "DoS slowloris",
+    "FTP-Patator",
+    "Heartbleed",
+    "Infiltration",
+    "PortScan",
+    "SSH-Patator",
+    "Web Attack"
+  ],
+  "test_rows": 504160,
+  "selv_winner": "DYN OLA-cw k=100 p=1",
+  "threshold": 0.7,
+  "metrics": {
+    "accuracy": 0.9991,
+    "macro_P": 0.9849,
+    "macro_R": 0.9823,
+    "macro_F1": 0.9835,
+    "wtd_P": 0.999,
+    "wtd_R": 0.9991,
+    "wtd_F1": 0.999,
+    "roc_auc": 0.9929
+  },
+  "per_class_f1": {
+    "BENIGN": 0.9995,
+    "Bot": 0.8246,
+    "DDoS": 1.0,
+    "DoS GoldenEye": 0.9966,
+    "DoS Hulk": 0.9986,
+    "DoS Slowhttptest": 0.9914,
+    "DoS slowloris": 0.993,
+    "FTP-Patator": 0.9992,
+    "Heartbleed": 1.0,
+    "Infiltration": 1.0,
+    "PortScan": 0.994,
+    "SSH-Patator": 1.0,
+    "Web Attack": 0.9885
+  },
+  "xai": {
+    "groups": [
+      "SVC",
+      "TIME",
+      "SIZE",
+      "FLAG"
+    ],
+    "group_sizes": [
+      23,
+      29,
+      35,
+      13
+    ],
+    "additivity_max": 1.811981201171875e-05,
+    "additivity": {
+      "gate": 1.811981201171875e-05,
+      "XGB a=0.0": 1.621246337890625e-05,
+      "XGB a=0.25": 1.430511474609375e-05,
+      "XGB a=0.5": 1.621246337890625e-05,
+      "XGB a=1.0": 1.1444091796875e-05,
+      "XGB smote2000": 1.430511474609375e-05
+    },
+    "shap_vs_xgboost_max": 0.0,
+    "linear_rewrite_max": 0.0,
+    "efficiency_max": 2.5582267082491228e-08,
+    "reproduction": 1.0,
+    "explain_rows": 2209,
+    "background_rows": 39,
+    "gate_shap_share": {
+      "SVC": 0.2537,
+      "TIME": 0.1619,
+      "SIZE": 0.5026,
+      "FLAG": 0.0818
+    },
+    "stageB_shap_share": {
+      "SVC": 0.2478,
+      "TIME": 0.2285,
+      "SIZE": 0.439,
+      "FLAG": 0.0847
+    },
+    "gate_gain_share": {
+      "SVC": 0.462,
+      "TIME": 0.0499,
+      "SIZE": 0.254,
+      "FLAG": 0.2341
+    },
+    "stageB_gain_share": {
+      "SVC": 0.2463,
+      "TIME": 0.0321,
+      "SIZE": 0.5351,
+      "FLAG": 0.1864
+    },
+    "gate_top": [
+      "SIZE",
+      0.5026
+    ],
+    "stageB_top": [
+      "SIZE",
+      0.439
+    ]
+  },
+  "ref_cap": 40000,
+  "minutes": 41.6
+}

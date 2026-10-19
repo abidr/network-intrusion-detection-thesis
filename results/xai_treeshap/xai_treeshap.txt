@@ -1,0 +1,151 @@
+==============================================================================
+PRE-REGISTERED PREDICTIONS -- written before the run, printed before any result
+==============================================================================
+P1 VERIFIABILITY. (a) every XGBoost model (gate + 5 XGB members): max |sum phi + bias - margin|
+   < 1e-3 (float32 over 400 trees); (b) shap 0.51 TreeExplainer agrees with xgboost
+   pred_contribs to < 1e-4 (two independent TreeSHAP implementations); (c) group-Shapley
+   efficiency residual < 1e-6 AND the full coalition reproduces the deployed Stage-B decision
+   on 100% of explained rows. (c) is algebraically guaranteed -- it is a correctness check of
+   the code, not evidence. (a)+(b) are the substantive contrast with CyberAdaptAI.
+P2 WHERE THE EVIDENCE LIVES. Stage-B ensemble: SVC has the largest share of mean|phi| (gain
+   importance put 70.4% on svc). Gate: SVC is NOT the largest share (v7.3g: an svc-only gate
+   reaches recall 0.46 -- service identity does not say "malicious").
+P3 OVERLAP PAIRS. In the majority of evaluable pairs (>= 15 confused rows), the group with the
+   largest mean push toward the WRONG family is NOT SVC: service identity already separated
+   these pairs (+0.098), so the residual confusions should live in behaviour groups.
+P4 FAITHFULNESS. Deleting the top-5 SHAP columns (to the train median) lowers the explained
+   margin by >= 2x the drop from deleting 5 random columns, for both the gate and XGB a=0.25.
+P5 STABILITY. Under random noise at 0.002 IQR (v7.3 machinery, svc frozen), among rows whose
+   decision does NOT flip: median per-row Spearman(phi_clean, phi_noisy) >= 0.90 and median
+   top-5 Jaccard >= 0.60, for both models. (v7.3: predictions are brittle at this budget; the
+   question is whether explanations are brittle where predictions hold.)
+==============================================================================
+
+prep done 1m | 99 features | groups SVC 25, TIME 25, SIZE 39, FLAG 10
+W_e2e refit: COMB e2e 0.6906 (v7.1b log: 0.6906, warm init)
+gate + pool refit 2.6m
+REPRODUCTION: deployed test macro-F1 0.6874 acc 0.9866 (v7.1b 0.6874 / 0.9866; same-run refits seen 0.6874-0.6888)
+  reproduction OK
+
+explain set: 2643 gate-positive test rows (1603 stratified, rest confusion-enriched)
+
+==============================================================================
+LEVEL 1 -- column-level exact TreeSHAP (log-odds), additivity + 2nd implementation
+==============================================================================
+  additivity gate            max |resid| 2.00e-05  mean 2.94e-06
+  additivity XGB a=0.0       max |resid| 1.62e-05  mean 2.00e-06
+  additivity XGB a=0.25      max |resid| 1.72e-05  mean 1.85e-06
+  additivity XGB a=0.5       max |resid| 1.72e-05  mean 2.05e-06
+  additivity XGB a=1.0       max |resid| 1.81e-05  mean 2.32e-06
+  additivity XGB smote2000   max |resid| 1.91e-05  mean 2.00e-06
+  shap 0.51.0 vs xgboost pred_contribs (max |diff|): {'gate': 0.0, 'XGB a=0.25': 0.0}
+
+==============================================================================
+LEVEL 2 -- exact interventional group Shapley of the DEPLOYED fused score
+==============================================================================
+  16 coalitions x 7 members x 2643 rows x 40 background: 1.0m
+  efficiency max |sum phi + base - S(x)| = 5.47e-09 | full coalition reproduces deployed decision on 100.0000% of rows
+
+==============================================================================
+GLOBAL -- where the evidence lives (share of mean |phi| by group)
+==============================================================================
+                                        SVC    TIME    SIZE    FLAG
+  column share                        0.253   0.253   0.394   0.101
+  gate SHAP (all)                     0.116   0.161   0.708   0.016
+  gate SHAP (benign rows)             0.075   0.194   0.715   0.016
+  gate SHAP (attack rows)             0.212   0.083   0.692   0.013
+  gate gain importance                0.004   0.003   0.989   0.004
+  Stage-B ENSEMBLE SHAP (S_pred)      0.426   0.135   0.355   0.084
+  XGB a=0.25 gain importance          0.640   0.039   0.249   0.072
+
+  Stage-B ensemble, per TRUE class, share of mean |phi(S_true)|:
+    Benign          n= 200   0.635   0.203   0.135   0.027
+    Analysis        n=  68   0.118   0.416   0.266   0.200
+    Backdoor        n=  86   0.331   0.123   0.481   0.065
+    DoS             n= 200   0.327   0.146   0.403   0.124
+    Exploits        n= 200   0.271   0.139   0.449   0.141
+    Fuzzers         n= 200   0.668   0.084   0.169   0.079
+    Generic         n= 200   0.248   0.098   0.593   0.061
+    Reconnaissance  n= 200   0.581   0.087   0.302   0.030
+    Shellcode       n= 200   0.529   0.063   0.370   0.038
+    Worms           n=  49   0.267   0.223   0.445   0.065
+
+  gate: Spearman(mean|SHAP|, gain) 0.582 | top-10 overlap 5/10
+    top-5 SHAP: hdr_per_pkt_fwd, Fwd Seg Size Min, dst_port_num, Bwd Packets/s, Bwd Packet Length Min
+    top-5 gain: Fwd Seg Size Min, Bwd Packet Length Min, hdr_per_pkt_fwd, bpp_bwd, Bwd Packet Length Mean
+
+  XGB a=0.25: Spearman(mean|SHAP|, gain) 0.421 | top-10 overlap 5/10
+    top-5 SHAP: dst_port_num, svc_rpc, Total Length of Fwd Packet, svc_bgp, Bwd Packet Length Max
+    top-5 gain: svc_rpc, svc_bgp, svc_smb, svc_http, frac_PSH
+
+==============================================================================
+OVERLAP PAIRS -- D_g = phi_g(S_wrong) - phi_g(S_true); positive = pushes toward the WRONG class
+==============================================================================
+  Reconnaissance -> Exploits n=216 | driver SVC 
+      SVC  mean D +0.0172 (+/- 0.0011) | top driver on  51.9% of rows | correct-Reconnaissance rows -0.0510
+      TIME mean D +0.0139 (+/- 0.0014) | top driver on  21.3% of rows | correct-Reconnaissance rows -0.0073
+      SIZE mean D +0.0114 (+/- 0.0015) | top driver on  26.9% of rows | correct-Reconnaissance rows -0.0348
+      FLAG mean D -0.0026 (+/- 0.0003) | top driver on   0.0% of rows | correct-Reconnaissance rows -0.0030
+  Exploits -> Reconnaissance n=146 | driver SIZE
+      SVC  mean D +0.0069 (+/- 0.0011) | top driver on   0.0% of rows | correct-Exploits rows -0.0278
+      TIME mean D +0.0078 (+/- 0.0018) | top driver on  39.0% of rows | correct-Exploits rows -0.0140
+      SIZE mean D +0.0179 (+/- 0.0026) | top driver on  57.5% of rows | correct-Exploits rows -0.0489
+      FLAG mean D +0.0061 (+/- 0.0003) | top driver on   3.4% of rows | correct-Exploits rows -0.0140
+  DoS -> Exploits            n=216 | driver SIZE
+      SVC  mean D +0.0144 (+/- 0.0021) | top driver on  22.7% of rows | correct-DoS rows -0.0416
+      TIME mean D +0.0114 (+/- 0.0019) | top driver on  11.6% of rows | correct-DoS rows -0.0132
+      SIZE mean D +0.0294 (+/- 0.0043) | top driver on  48.1% of rows | correct-DoS rows -0.0594
+      FLAG mean D +0.0131 (+/- 0.0028) | top driver on  17.6% of rows | correct-DoS rows -0.0176
+  Exploits -> DoS            n=177 | driver SIZE
+      SVC  mean D +0.0177 (+/- 0.0039) | top driver on  24.9% of rows | correct-Exploits rows -0.0228
+      TIME mean D +0.0103 (+/- 0.0037) | top driver on  31.6% of rows | correct-Exploits rows -0.0132
+      SIZE mean D +0.0266 (+/- 0.0044) | top driver on  39.0% of rows | correct-Exploits rows -0.0573
+      FLAG mean D -0.0043 (+/- 0.0028) | top driver on   4.5% of rows | correct-Exploits rows -0.0140
+  Shellcode -> Fuzzers       n=0  (below 15, not evaluated)
+  Fuzzers -> Shellcode       n=0  (below 15, not evaluated)
+  Analysis -> Exploits       n=2  (below 15, not evaluated)
+  Benign -> Fuzzers          n=262 | driver SVC 
+      SVC  mean D +0.0557 (+/- 0.0068) | top driver on  62.2% of rows | correct-Benign rows -0.0245
+      TIME mean D +0.0011 (+/- 0.0031) | top driver on   5.0% of rows | correct-Benign rows -0.0320
+      SIZE mean D +0.0184 (+/- 0.0028) | top driver on  22.1% of rows | correct-Benign rows -0.0111
+      FLAG mean D +0.0127 (+/- 0.0008) | top driver on  10.7% of rows | correct-Benign rows +0.0046
+  Fuzzers -> REJECT          n=234 | driver TIME
+      SVC  mean D +0.0157 (+/- 0.0028) | top driver on  19.2% of rows | correct-Fuzzers rows -0.0996
+      TIME mean D +0.0319 (+/- 0.0017) | top driver on  70.5% of rows | correct-Fuzzers rows +0.0033
+      SIZE mean D +0.0061 (+/- 0.0029) | top driver on  10.3% of rows | correct-Fuzzers rows -0.0242
+      FLAG mean D -0.0079 (+/- 0.0005) | top driver on   0.0% of rows | correct-Fuzzers rows -0.0137
+
+  pairs evaluated 6 | driver is NOT SVC in 4
+
+==============================================================================
+FAITHFULNESS -- top-k SHAP deletion vs random-k deletion (to train median)
+==============================================================================
+  gate        k= 1  top-k drop 7.0696 | random-k drop 0.3040 | ratio 23.25
+  gate        k= 3  top-k drop 16.0667 | random-k drop 0.8936 | ratio 17.98
+  gate        k= 5  top-k drop 16.6738 | random-k drop 1.4579 | ratio 11.44
+  gate        k=10  top-k drop 18.2986 | random-k drop 2.9086 | ratio 6.29
+  XGB a=0.25  k= 1  top-k drop 2.8091 | random-k drop 0.0877 | ratio 32.02
+  XGB a=0.25  k= 3  top-k drop 4.5854 | random-k drop 0.2367 | ratio 19.37
+  XGB a=0.25  k= 5  top-k drop 4.9316 | random-k drop 0.4039 | ratio 12.21
+  XGB a=0.25  k=10  top-k drop 5.3860 | random-k drop 0.7967 | ratio 6.76
+
+==============================================================================
+STABILITY -- column SHAP under v7.3 random noise (svc frozen, identities repaired)
+==============================================================================
+  gate        budget 0.002 | flip 0.0511 | unchanged rows: Spearman 0.8418 Jaccard5 0.6667 | flipped rows: Spearman 0.5853 Jaccard5 0.4286
+  XGB a=0.25  budget 0.002 | flip 0.1884 | unchanged rows: Spearman 0.8701 Jaccard5 0.6667 | flipped rows: Spearman 0.7013 Jaccard5 0.4286
+  gate        budget 0.020 | flip 0.0976 | unchanged rows: Spearman 0.7361 Jaccard5 0.6667 | flipped rows: Spearman 0.5244 Jaccard5 0.4286
+  XGB a=0.25  budget 0.020 | flip 0.2857 | unchanged rows: Spearman 0.7688 Jaccard5 0.6667 | flipped rows: Spearman 0.6334 Jaccard5 0.4286
+
+==============================================================================
+PRE-REGISTERED VERDICTS
+==============================================================================
+  P1a additivity < 1e-3                                   SUPPORTED
+  P1b shap == pred_contribs < 1e-4                        SUPPORTED
+  P1c group efficiency + 100% reproduction                SUPPORTED
+  P2 SVC top for Stage B, not for gate                    SUPPORTED
+  P3 non-SVC driver in majority of pairs                  SUPPORTED
+  P4 top-5 deletion >= 2x random                          SUPPORTED
+  P5 explanations stable where predictions hold (0.002)   REFUTED
+
+total 6.0 min

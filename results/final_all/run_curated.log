@@ -1,0 +1,84 @@
+==============================================================================
+v7.1b + XAI on curated
+==============================================================================
+rows 306173 | features 101 | classes 10
+   0 Benign                    225003   73.489%
+   1 Analysis                     385    0.126%
+   2 Backdoor                     452    0.148%
+   3 DoS                         4412    1.441%
+   4 Exploits                   30910   10.096%
+   5 Fuzzers                    26395    8.621%
+   6 Generic                     4496    1.468%
+   7 Reconnaissance             12031    3.929%
+   8 Shellcode                   1848    0.604%
+   9 Worms                        241    0.079%
+
+train+val 244938 | test 61235 | COMB 122469 | SELV 122469
+  gate fold 1/5 (4s)
+  gate fold 2/5 (9s)
+  gate fold 3/5 (13s)
+  gate fold 4/5 (18s)
+  gate fold 5/5 (22s)
+reject set 4022 | Stage-B rows 68958
+  File "C:\Users\night\miniconda3\envs\ai4beg\Lib\site-packages\joblib\externals\loky\backend\context.py", line 257, in _count_physical_cores
+    cpu_info = subprocess.run(
+               ^^^^^^^^^^^^^^^
+  File "C:\Users\night\miniconda3\envs\ai4beg\Lib\subprocess.py", line 548, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\night\miniconda3\envs\ai4beg\Lib\subprocess.py", line 1026, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "C:\Users\night\miniconda3\envs\ai4beg\Lib\subprocess.py", line 1538, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  pool fold 1/5 (elapsed 1.7m)
+  pool fold 2/5 (elapsed 3.3m)
+  pool fold 3/5 (elapsed 5.0m)
+  pool fold 4/5 (elapsed 6.7m)
+  pool fold 5/5 (elapsed 8.3m)
+W fitted (38s): COMB e2e mF1 0.7363
+
+SELV top 5 rules @ t=0.5:
+  0.7338  DYN OLA-cw k=30 p=8
+  0.7318  DYN OLA-cw k=100 p=8
+  0.7295  DYN OLA-cw k=30 p=3
+  0.7293  HYBRID W x OLA-cw k=100 p=3
+  0.7289  HYBRID W x OLA-cw k=30 p=1
+threshold sweep: 0.3:0.7331, 0.4:0.7336, 0.5:0.7338, 0.6:0.7342, 0.7:0.7343 -> t=0.7
+refit 1.9m
+
+TEST  DYN OLA-cw k=30 p=8 @ t=0.7
+  accuracy  0.9489
+  macro_P   0.7823
+  macro_R   0.7229
+  macro_F1  0.7421
+  wtd_P     0.9498
+  wtd_R     0.9489
+  wtd_F1    0.9486
+  roc_auc   0.9765
+    F1 Benign                 0.9871  (support 45001)
+    F1 Analysis               0.4000  (support 77)
+    F1 Backdoor               0.7172  (support 90)
+    F1 DoS                    0.5428  (support 883)
+    F1 Exploits               0.8535  (support 6182)
+    F1 Fuzzers                0.8955  (support 5279)
+    F1 Generic                0.8879  (support 899)
+    F1 Reconnaissance         0.8342  (support 2406)
+    F1 Shellcode              0.6777  (support 370)
+    F1 Worms                  0.6250  (support 48)
+
+--- XAI ---
+groups: SVC 26, TIME 25, SIZE 38, FLAG 12
+additivity max |sum phi - margin| over gate + 5 XGB members: 1.62e-05
+shap 0.51.0 vs xgboost pred_contribs, max |diff|: 0.00e+00
+linear rewrite of the rule vs rule_scores on 16967 rows: 0.0e+00
+group Shapley: 1605 rows x 16 coalitions x 40 background (39s)
+efficiency 2.7e-08 | deployed decision reproduced on 100.0000% of rows
+
+share                         SVC    TIME    SIZE    FLAG
+gate SHAP                   0.095   0.182   0.702   0.021
+gate gain                   0.007   0.005   0.983   0.004
+Stage-B ensemble SHAP       0.420   0.124   0.356   0.100
+Stage-B XGB a=0.25 gain     0.611   0.038   0.183   0.168
+
+total 12.4 min

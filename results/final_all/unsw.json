@@ -1,0 +1,112 @@
+{
+  "dataset": "unsw",
+  "rows": 162743,
+  "features": 78,
+  "classes": 10,
+  "names": [
+    "Benign",
+    "Analysis",
+    "Backdoor",
+    "DoS",
+    "Exploits",
+    "Fuzzers",
+    "Generic",
+    "Reconnaissance",
+    "Shellcode",
+    "Worms"
+  ],
+  "test_rows": 32549,
+  "selv_winner": "HYBRID W x OLA-cw k=100 p=3",
+  "threshold": 0.5,
+  "metrics": {
+    "accuracy": 0.8259,
+    "macro_P": 0.7008,
+    "macro_R": 0.659,
+    "macro_F1": 0.6211,
+    "wtd_P": 0.855,
+    "wtd_R": 0.8259,
+    "wtd_F1": 0.8329,
+    "roc_auc": 0.9318
+  },
+  "per_class_f1": {
+    "Benign": 0.9298,
+    "Analysis": 0.2722,
+    "Backdoor": 0.1787,
+    "DoS": 0.3524,
+    "Exploits": 0.8346,
+    "Fuzzers": 0.67,
+    "Generic": 0.9197,
+    "Reconnaissance": 0.8035,
+    "Shellcode": 0.6527,
+    "Worms": 0.5974
+  },
+  "xai": {
+    "groups": [
+      "SVC",
+      "TIME",
+      "SIZE",
+      "FLAG",
+      "CTX"
+    ],
+    "group_sizes": [
+      14,
+      20,
+      21,
+      10,
+      13
+    ],
+    "additivity_max": 1.71661376953125e-05,
+    "additivity": {
+      "gate": 1.71661376953125e-05,
+      "XGB a=0.0": 1.33514404296875e-05,
+      "XGB a=0.25": 1.239776611328125e-05,
+      "XGB a=0.5": 1.239776611328125e-05,
+      "XGB a=1.0": 1.430511474609375e-05,
+      "XGB smote2000": 1.430511474609375e-05
+    },
+    "shap_vs_xgboost_max": 0.0,
+    "linear_rewrite_max": 0.0,
+    "efficiency_max": 4.549558307864743e-08,
+    "reproduction": 1.0,
+    "explain_rows": 1834,
+    "background_rows": 40,
+    "gate_shap_share": {
+      "SVC": 0.0658,
+      "TIME": 0.5312,
+      "SIZE": 0.2215,
+      "FLAG": 0.0454,
+      "CTX": 0.136
+    },
+    "stageB_shap_share": {
+      "SVC": 0.1324,
+      "TIME": 0.2027,
+      "SIZE": 0.4445,
+      "FLAG": 0.0058,
+      "CTX": 0.2147
+    },
+    "gate_gain_share": {
+      "SVC": 0.0808,
+      "TIME": 0.1071,
+      "SIZE": 0.1576,
+      "FLAG": 0.6074,
+      "CTX": 0.047
+    },
+    "stageB_gain_share": {
+      "SVC": 0.6201,
+      "TIME": 0.0715,
+      "SIZE": 0.21,
+      "FLAG": 0.0113,
+      "CTX": 0.0871
+    },
+    "gate_top": [
+      "TIME",
+      0.5312
+    ],
+    "stageB_top": [
+      "SIZE",
+      0.4445
+    ]
+  },
+  "ref_cap": null,
+  "minutes": 11.7
+}

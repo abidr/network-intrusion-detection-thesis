@@ -1,0 +1,102 @@
+==============================================================================
+PRE-REGISTERED PREDICTION -- written before the run, printed before any result
+==============================================================================
+MECHANISM UNDER TEST: the v7.3 brittleness is caused by CLASS OVERLAP (rows sitting near
+decision boundaries), not by the architecture. 1-NN error e_1NN measures that overlap
+WITHOUT reference to any attack, so it is a clean independent variable.
+
+  CIC-UNSW full release   e_1NN 0.2084   retained gate recall under white-box EVASION
+                                         at budget 0.20 = 0.0313  (v7.3h arm A)
+  CIC-IDS2017             e_1NN 0.0026   80x lower overlap
+
+H1 (overlap causes brittleness): CIC-IDS2017 is dramatically more robust.
+     H1a  retained gate recall under EVASION at budget 0.20 > 0.50   (vs 0.0313)
+     H1b  retained macro-F1 under RANDOM noise at budget 0.20 > 0.80 (vs 0.4053)
+     Both must hold. These are deliberately coarse thresholds: an 80x difference in the
+     predictor should not need a delicate test to show up.
+
+H0 (architectural): CIC-IDS2017 is comparably brittle -- retained values land near
+     CIC-UNSW's. Then the Cover-Hart explanation of brittleness is REFUTED and must be
+     withdrawn from the robustness chapter, which currently leans on it.
+
+DECISION RULE, committed in advance:
+  * H1 holds -> brittleness is a property of the REPRESENTATION's class overlap. The
+                robustness chapter and the plateau diagnosis become ONE finding, and the
+                practical implication is that robustness is bought by better features, not
+                by better models -- consistent with every other result in this project.
+  * H0 holds -> withdraw the Cover-Hart mechanism from the chapter and report brittleness
+                as unexplained. Do NOT re-slice the arms to rescue it.
+  * SPLIT (H1a xor H1b) -> report as partial: name which layer tracks overlap and which
+                does not. Do not average them into a single verdict.
+
+CONFOUND ACKNOWLEDGED IN ADVANCE, and it cuts against a clean reading either way:
+CIC-IDS2017 is not merely lower-overlap, it is also a different testbed with a different
+class mix and no protocol column (D1). A large effect in the predicted direction is
+therefore SUGGESTIVE of the mechanism, not proof of it -- one confounded comparison cannot
+isolate overlap from every other difference between two capture campaigns. Say that plainly
+in the write-up; do not upgrade it to a controlled experiment.
+
+TRIVIALITY GUARD: if the CIC-IDS2017 gate is already so strong that clean gate recall is
+~1.0 AND the attack cannot move it at all even at the largest budget, check that the attack
+is actually running (the `moved` fraction) before declaring robustness. A stalled search is
+not a robust model -- the same trap v7.3e pre-registered and cleared.
+==============================================================================
+
+loaded 2520798 rows after inf/NaN drop and dedupe (10.86% dupes)
+13 classes | attack share 0.1689
+perturbable space: 69 raw cols -> BASE 46 (zero-var 8, |r|>=0.95 23)
+tiers: FREE 55 | COSTLY 14 | IMPOSSIBLE 23 (dst port + svc one-hots)
+train 2016638 | test 504160 | 45 integer cols | 100 features
+
+D5: e_1NN measured IN THIS RUN = 0.0026 (ref 60000, query 60000)  [v6 run reported 0.0026]
+    CIC-UNSW reference e_1NN = 0.2084 -> predictor ratio 81x
+Stage B (12 families) trained 1.1m
+gate trained on 800000 rows
+test attack 85148 | benign 419012 | gate thr 0.0002 -> benign fpr 0.0168
+
+CLEAN: macro-F1 0.7762 | accuracy 0.9860 | gate recall 1.0000
+
+=== RANDOM ===
+    budget   macro-F1  gate-recall misattributed     undet    moved
+     0.000     0.7762       1.0000        0.0004    0.0000    0.000
+     0.002     0.7731       0.9996        0.0010    0.0004        -
+     0.010     0.7415       0.9985        0.0023    0.0015        -
+     0.020     0.7357       0.9976        0.0041    0.0024        -
+     0.050     0.7154       0.9874        0.0322    0.0126        -
+     0.100     0.6911       0.9631        0.0617    0.0369        -
+     0.200     0.6505       0.9169        0.0922    0.0831        -
+
+=== EVASION ===
+    budget   macro-F1  gate-recall misattributed     undet    moved
+     0.000     0.7762       1.0000        0.0004    0.0000    0.000
+     0.002     0.7148       0.9827        0.0014    0.0173    0.962
+     0.020     0.6375       0.7784        0.0022    0.2216    1.000
+     0.200     0.4061       0.5917        0.1038    0.4083    1.000
+
+==============================================================================
+SIDE BY SIDE -- retained fraction of each dataset's own clean value
+==============================================================================
+                      | CIC-IDS2017 (e_1NN 0.0026) | CIC-UNSW (e_1NN 0.2084)
+  mode         budget |    ret mF1    ret gate |    ret mF1    ret gate
+  RANDOM        0.002 |     0.9960      0.9996 |     0.8631      0.9558
+  RANDOM        0.020 |     0.9479      0.9976 |     0.7531      0.9208
+  RANDOM        0.200 |     0.8381      0.9169 |     0.4053      0.4939
+  EVASION       0.002 |     0.9210      0.9827 |     0.7967      0.7613
+  EVASION       0.020 |     0.8214      0.7784 |     0.5335      0.4761
+  EVASION       0.200 |     0.5232      0.5917 |     0.2143      0.0313
+
+==============================================================================
+PRE-REGISTERED TEST
+==============================================================================
+  H1a retained gate recall, EVASION @0.20 : 0.5917  (>0.50, CIC-UNSW 0.0313)   PASS
+  H1b retained macro-F1,    RANDOM  @0.20 : 0.8381  (>0.80, CIC-UNSW 0.4053)   PASS
+  TRIVIALITY GUARD -- attack `moved` fraction @0.20 = 1.0000 (search ran; robustness is real)
+
+  VERDICT: H1 SUPPORTED -- brittleness tracks class overlap. Robustness chapter and plateau diagnosis are ONE finding: robustness comes from better features, not better models.
+
+  CONFOUND, as pre-registered: CIC-IDS2017 differs from CIC-UNSW in more than overlap
+  (different testbed, class mix, no protocol column). A large effect in the predicted
+  direction is SUGGESTIVE of the mechanism, not proof. Do not upgrade it to a
+  controlled experiment in the write-up.
+
+total 6.5 min

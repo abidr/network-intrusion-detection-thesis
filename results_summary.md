@@ -1453,3 +1453,91 @@ moving part. Pre-registered. 21.7 min. **Refuted, and the failure is more inform
 - **What survives**: nothing recommendable -- 13th pre-registered null. Keep the generalisable claim
   (*robustness through feature restriction concentrates risk*), the measurement lesson, and the
   conflation error as a methodological note.
+
+### v7.3h — controllability-aware ADVERSARIAL TRAINING (`results/v73h_adv_training/`) — real defence, wrong threat model
+
+The correction to v7.3g: same controllability knowledge applied by **augmentation** (as Tafreshian &
+Zhang, TrustCom 2024 do) rather than **restriction** (which v7.3g refuted). Four arms: A baseline,
+B noise-augmented, C evasion-adversarial gate, D + misattribution-adversarial Stage B. Stage B a
+single XGB a=0.25 throughout so augmentation is the only moving part. 24.8 min.
+
+> **The script's printed verdict ("NOISE AUGMENTATION SUFFICIENT") is SUPERSEDED by the confound
+> check in the same run.** Quote the split conclusion below, not the log line.
+
+- **P1 FAILED by -0.4924, in the opposite direction.** Retained gate recall at budget 0.20 under
+  white-box evasion: **A baseline 0.0313 | B noise-aug 0.8160 | C adversarial 0.3236**. **Plain
+  random-noise augmentation is 26x the baseline and 2.5x better than adversarial training**, at a
+  clean cost indistinguishable from zero (paired bootstrap **-0.0051 [-0.0139, +0.0031], p=0.234**;
+  C is +0.0013 [+0.0000, +0.0028], a trivial *improvement*). This is the pre-registered
+  positive-practical branch: **the adversarial machinery is unnecessary and worse than the cheap
+  alternative** -- the question the source paper cannot ask, having no noise-control arm.
+- **P3 FAILED by +0.2171, also backwards.** Misattribution-adversarial training of Stage B made
+  misattribution **worse** (0.8566 vs C's 0.6395 at budget 0.20) -- training on boundary-perturbed
+  rows blurs class boundaries rather than sharpening them. Both arms sit at gate recall 1.0000, so
+  v7.3g's "misattributed is capped by gate recall" caveat does not rescue D. **The last surviving
+  fragment of v7.3g's stage-asymmetry idea is now closed too.**
+- **THE CONFOUND CHECK FIRES AND SPLITS THE FINDING.** Augmentation added only perturbed ATTACK rows
+  labelled attack=1, so a gate can satisfy it by learning "perturbed => attack". Thresholds were
+  matched on CLEAN benign, hiding that. Perturbing BENIGN rows at fixed threshold: **fpr 0.0168 ->
+  0.1293 for arm B (10.7x) while the baseline stays flat at 0.0121**; arm C inflates 7.9x. **This is
+  the project's own matched-fpr rule (v7.3b) applied to drift rather than across model families, and
+  it invalidates the naive reading of P1** -- the augmented gates have moved their operating point,
+  not simply become robust.
+- **CORRECTED CONCLUSION -- the split is the finding.** Against an **adversary** (perturbs only their
+  own flows) noise augmentation is a real, cheap, effective defence, because benign traffic is
+  unperturbed and the clean-matched threshold stays correct. Against **measurement drift** (perturbs
+  everything) it is **not** a defence: 13% fpr at the real 97.5% benign base rate is an unusable
+  alert volume. **The robustness chapter is motivated primarily by drift, so this defence works for
+  the scenario that motivated it least -- state that irony rather than hiding it.**
+- **Reusable method**: whenever augmentation uses one class only, verify the model has not learned
+  "perturbed => that class" by perturbing the OTHER class and re-measuring the operating point.
+- **Untested, required before any drift claim**: re-match fpr *under the drift condition* and
+  re-measure. Only that separates a genuine robustness gain from an operating-point shift.
+- **Scope**: attacks are white-box on one component and Stage B is a single model; v7.3e's +0.6773
+  surrogate inflation makes attack strengths understated -- conservative for an attack claim but
+  **GENEROUS for a defence claim**, which is what arm B is. One round of adversarial training only.
+  Arm A clean macro-F1 0.6718, not level-comparable to the 0.687 headline.
+
+### v7.3i — does brittleness track CLASS OVERLAP? (`results/v73i_cicids_mechanism/`) — H1 SUPPORTED
+
+Cover-Hart says brittleness comes from rows sitting near decision boundaries. `e_1NN` measures that
+overlap **without reference to any attack**, making the claim falsifiable across datasets:
+CIC-UNSW e_1NN 0.2084 (brittle, measured) vs CIC-IDS2017 e_1NN **0.0026** -- 81x lower, reproduced
+in-run. Same budget machinery, same matched benign fpr 0.0168. 6.5 min.
+
+Retained fraction of each dataset's own clean value:
+
+| mode | budget | CIC-IDS2017 ret mF1 | ret gate | CIC-UNSW ret mF1 | ret gate |
+|---|---|---|---|---|---|
+| RANDOM | 0.002 | **0.9960** | 0.9996 | 0.8631 | 0.9558 |
+| RANDOM | 0.200 | **0.8381** | 0.9169 | 0.4053 | 0.4939 |
+| EVASION | 0.020 | **0.8214** | 0.7784 | 0.5335 | 0.4761 |
+| EVASION | 0.200 | **0.5232** | **0.5917** | 0.2143 | **0.0313** |
+
+- **H1a PASS** (retained gate recall under evasion @0.20: **0.5917 vs 0.0313**, 19x, threshold 0.50);
+  **H1b PASS** (retained macro-F1 under noise @0.20: **0.8381 vs 0.4053**, threshold 0.80).
+  **Monotone in all six cells.** Triviality guard cleared -- `moved` = 1.0000, so the search
+  genuinely ran and this is not a stalled attack misread as robustness.
+- **INTERPRETATION: brittleness is a property of the REPRESENTATION's class overlap, not the
+  architecture.** Robustness comes from better features, not better models -- the same conclusion
+  every other axis of this project reached independently.
+- **⭐ THIS MERGES TWO CHAPTERS INTO ONE ARGUMENT.** The plateau diagnosis said overlap caps accuracy
+  (rho 0.827, Cover-Hart bracket [0.213, 0.376]); the robustness chapter said the model is brittle.
+  **They are the same fact**: overlap sets both the accuracy ceiling and the robustness floor,
+  through decision margin. It also removes the single-dataset objection from the robustness claim.
+- **⚠️ "MORE robust", never "robust"**: at budget 0.20 CIC-IDS2017 still loses 41% of gate recall and
+  48% of macro-F1. Low overlap buys margin, not immunity.
+- **⚠️ THE PROXIMATE CAUSE IS DECISION MARGIN, and a critic will notice.** Matched fpr put this gate
+  at threshold **0.0002** vs CIC-UNSW's **0.3280**, so a row must be pushed far further to evade.
+  The objection "you just used a lower threshold" is answered by noting the threshold is *derived*
+  by matching fpr, and that 1.68% fpr being achievable at 0.0002 is itself a measurement of
+  separability. The chain is **low overlap -> confident predictions -> large margin -> robustness**;
+  margin is the mechanism by which overlap acts, not a competing explanation. State the chain.
+- **⚠️ CONFOUND STANDS, as pre-registered**: CIC-IDS2017 differs in more than overlap (testbed, class
+  mix, no protocol column, no reject class). **Suggestive of the mechanism, NOT proof.** The
+  controlled version would vary overlap *within* one dataset and test whether robustness tracks it.
+- **⚠️ Clean levels NOT comparable to `results/cicids2017_v6/`**: this run's clean macro-F1 is 0.7762
+  vs v6's 0.9835, because forcing 1.68% fpr on a near-separable dataset admits ~7,000 benign FPs that
+  are routed into families, destroying precision on classes with a handful of test rows (Heartbleed
+  2, Infiltration 7). The handicap applies to clean and perturbed arms alike, so the retained
+  fractions -- the only quantity claimed -- are unaffected. Never quote 0.7762 as a performance number.

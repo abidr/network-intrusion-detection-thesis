@@ -1,0 +1,215 @@
+==============================================================================
+PRE-REGISTERED PREDICTIONS -- written before the run, printed before any result
+==============================================================================
+CONTEXT. v7.3g refuted controllability-awareness applied as feature RESTRICTION. This run
+tests the opposite application -- AUGMENTATION -- which is what the closest paper in the
+literature (Tafreshian & Zhang, TrustCom 2024) actually does.
+
+P1 THE DECISIVE TEST -- IS "ADVERSARIAL" EVEN NECESSARY?
+    Random noise does about half the damage of a directed attack (v7.3), so noise
+    augmentation may capture most of the benefit at a fraction of the cost.
+      P1 holds if adversarial augmentation beats noise augmentation:
+         retained gate recall at budget 0.20 under EVASION, arm C - arm B > +0.05.
+      If P1 FAILS the finding is POSITIVE AND PRACTICAL, not a null: "noise augmentation is
+      sufficient; the adversarial machinery is unnecessary." Report it that way. This is the
+      question the source paper cannot ask, because it has no noise control arm.
+
+P2 CLEAN COST. Adversarial training classically costs clean accuracy.
+      P2 holds if |arm C clean macro-F1 - arm A clean macro-F1| < 0.02, judged by a PAIRED
+      bootstrap (2000 resamples) rather than a point estimate, because v7.3d showed the
+      paired interval for arms sharing machinery can be ~5x tighter than the marginal one.
+      If P2 fails, augmentation is a trade-off, not a free defence -- say so.
+
+P3 STAGE-ASYMMETRY, the surviving half of v7.3g's idea.
+      Misattribution-adversarial training of Stage B should defend the LABEL specifically:
+      arm D beats arm C on misattributed-rate at budget 0.20 by > 0.05, while neither
+      differs much on evasion. If augmenting Stage B helps evasion equally, the
+      stage-specific story is wrong and should be dropped.
+
+EXPECTATION SET IN ADVANCE, so it cannot be claimed as a prediction afterwards: this project
+has produced twelve nulls and three refuted pre-registrations. A null on P1 is the single
+most likely outcome and is the one this design is built to detect cleanly.
+
+MEASUREMENT RULES CARRIED FORWARD, all learned the hard way:
+  * every gate is thresholded to the SAME benign fpr before any comparison (v7.3b -- at the
+    default 0.5 cut the answer inverted completely)
+  * `misattributed` is upper-bounded by gate recall (v7.3g), so gate recall is reported
+    beside it in every table and cross-arm attribution claims are read with that in mind
+  * attacks are white-box on ONE component while the deployed Stage B is a single model
+    here; v7.3e measured surrogate inflation at +0.6773, so absolute attack strengths are
+    understated -- which is conservative for a DEFENCE claim and must be stated with it
+==============================================================================
+
+prep done 1m | 43 int cols
+  FREE 57 | COSTLY 10 | IMPOSSIBLE 25
+Stage-B baseline trained 0.5m
+gate baseline trained
+augmentation pool: 30000 train attack rows (of 65191), split across 6 budgets
+  augmented at budget 0.002 : 5000 rows (0.6m elapsed)
+  augmented at budget 0.010 : 5000 rows (1.1m elapsed)
+  augmented at budget 0.020 : 5000 rows (1.6m elapsed)
+  augmented at budget 0.050 : 5000 rows (2.2m elapsed)
+  augmented at budget 0.100 : 5000 rows (2.8m elapsed)
+  augmented at budget 0.200 : 5000 rows (3.4m elapsed)
+augmentation generated in 3.4m | 30000 rows each
+augmented models trained 1.4m
+  A baseline   gate threshold 0.3280 -> benign fpr 0.0168
+  B noise-aug  gate threshold 0.2940 -> benign fpr 0.0168
+  C adv-gate   gate threshold 0.2860 -> benign fpr 0.0168
+  D adv-both   gate threshold 0.2860 -> benign fpr 0.0168
+
+==============================================================================
+CONFOUND CHECK -- benign fpr when NOISE HITS BENIGN TRAFFIC TOO (drift, not an attacker)
+==============================================================================
+  a defence that only holds when noise is confined to attack rows is an ADVERSARY
+  defence, not a DRIFT defence. Thresholds fixed at their clean-matched values.
+    budget   A baseline  B noise-aug   C adv-gate   D adv-both
+     0.000       0.0168       0.0168       0.0168       0.0168
+     0.002       0.0143       0.0609       0.0490       0.0490
+     0.010       0.0139       0.0758       0.0641       0.0641
+     0.020       0.0148       0.0889       0.0699       0.0699
+     0.050       0.0142       0.1120       0.0793       0.0793
+     0.100       0.0138       0.1241       0.0872       0.0872
+     0.200       0.0121       0.1293       0.0951       0.0951
+  -> at budget 0.20: baseline fpr 0.0121 vs noise-aug fpr 0.1293 (ratio 10.7x)
+  If the noise-aug fpr explodes here, its apparent robustness is a 'noisy => attack'
+  shortcut and must NOT be reported as a drift defence.
+
+==============================================================================
+CLEAN performance
+==============================================================================
+  arm            macro-F1   accuracy  gate-recall
+  A baseline       0.6718     0.9876       0.9862
+  B noise-aug      0.6665     0.9877       0.9874
+  C adv-gate       0.6731     0.9876       0.9870
+  D adv-both       0.6696     0.9876       0.9870
+
+==============================================================================
+RANDOM NOISE (undirected, full grid)
+==============================================================================
+
+=== A baseline | RANDOM ===
+    budget   macro-F1  gate-recall misattributed
+     0.000     0.6718       0.9862        0.1093
+     0.002     0.5798       0.9426        0.1220
+     0.010     0.5255       0.9205        0.1355
+     0.020     0.5059       0.9081        0.1390
+     0.050     0.3899       0.7065        0.1341
+     0.100     0.3234       0.5926        0.1342
+     0.200     0.2723       0.4871        0.1309
+
+=== B noise-aug | RANDOM ===
+    budget   macro-F1  gate-recall misattributed
+     0.000     0.6665       0.9874        0.1076
+     0.002     0.7053       1.0000        0.1309
+     0.010     0.6935       0.9999        0.1335
+     0.020     0.6824       0.9999        0.1369
+     0.050     0.6398       0.9999        0.1460
+     0.100     0.5890       0.9999        0.1561
+     0.200     0.5456       1.0000        0.1665
+
+=== C adv-gate | RANDOM ===
+    budget   macro-F1  gate-recall misattributed
+     0.000     0.6731       0.9870        0.1093
+     0.002     0.5941       0.9929        0.1241
+     0.010     0.5370       0.9940        0.1392
+     0.020     0.5156       0.9950        0.1441
+     0.050     0.4390       0.9934        0.1862
+     0.100     0.3811       0.9906        0.2241
+     0.200     0.3381       0.9831        0.2589
+
+=== D adv-both | RANDOM ===
+    budget   macro-F1  gate-recall misattributed
+     0.000     0.6696       0.9870        0.1090
+     0.002     0.5946       0.9929        0.2449
+     0.010     0.5654       0.9940        0.2825
+     0.020     0.5509       0.9950        0.2956
+     0.050     0.5048       0.9934        0.3212
+     0.100     0.4671       0.9906        0.3388
+     0.200     0.4383       0.9831        0.3573
+
+=== A baseline | EVASION ===
+    budget   macro-F1  gate-recall misattributed      undet
+     0.000     0.6718       0.9862        0.1093     0.1701
+     0.002     0.5352       0.7508        0.1149     0.2916
+     0.020     0.3584       0.4695        0.0731     0.5688
+     0.200     0.1440       0.0309        0.0037     0.9703
+
+=== B noise-aug | EVASION ===
+    budget   macro-F1  gate-recall misattributed      undet
+     0.000     0.6665       0.9874        0.1076     0.1805
+     0.002     0.6782       0.9861        0.1161     0.0728
+     0.020     0.6595       0.9702        0.1212     0.0761
+     0.200     0.4347       0.8057        0.1379     0.2262
+
+=== C adv-gate | EVASION ===
+    budget   macro-F1  gate-recall misattributed      undet
+     0.000     0.6731       0.9870        0.1093     0.1699
+     0.002     0.6050       0.9050        0.1162     0.2203
+     0.020     0.4356       0.8253        0.1255     0.3669
+     0.200     0.2322       0.3194        0.0710     0.7133
+
+=== D adv-both | EVASION ===
+    budget   macro-F1  gate-recall misattributed      undet
+     0.000     0.6696       0.9870        0.1090     0.1800
+     0.002     0.4391       0.9050        0.2887     0.1200
+     0.020     0.3485       0.8253        0.2881     0.1781
+     0.200     0.1898       0.3194        0.1006     0.6806
+
+=== A baseline | MISATTRIB ===
+    budget   macro-F1  gate-recall misattributed      undet
+     0.000     0.6718       0.9862        0.1093     0.1701
+     0.002     0.3888       0.9955        0.2228     0.3413
+     0.020     0.2199       0.9974        0.3467     0.4104
+     0.200     0.1102       0.9969        0.6414     0.3310
+
+=== B noise-aug | MISATTRIB ===
+    budget   macro-F1  gate-recall misattributed      undet
+     0.000     0.6665       0.9874        0.1076     0.1805
+     0.002     0.5559       1.0000        0.2063     0.0776
+     0.020     0.4372       0.9999        0.2805     0.0920
+     0.200     0.1731       1.0000        0.5239     0.3201
+
+=== C adv-gate | MISATTRIB ===
+    budget   macro-F1  gate-recall misattributed      undet
+     0.000     0.6731       0.9870        0.1093     0.1699
+     0.002     0.3839       1.0000        0.2221     0.3455
+     0.020     0.2180       1.0000        0.3456     0.4133
+     0.200     0.1090       1.0000        0.6395     0.3363
+
+=== D adv-both | MISATTRIB ===
+    budget   macro-F1  gate-recall misattributed      undet
+     0.000     0.6696       0.9870        0.1090     0.1800
+     0.002     0.2359       1.0000        0.6517     0.1459
+     0.020     0.1280       1.0000        0.8118     0.1381
+     0.200     0.1092       1.0000        0.8566     0.1336
+
+fast macro-F1 verified against sklearn (diff 0.0e+00)
+
+==============================================================================
+CLEAN COST vs baseline -- paired bootstrap (2000 resamples)
+==============================================================================
+  B noise-aug  -0.0051  [-0.0139, +0.0031]  p=0.234
+  C adv-gate   +0.0013  [+0.0000, +0.0028]  p=0.043
+  D adv-both   -0.0020  [-0.0105, +0.0065]  p=0.662
+
+==============================================================================
+PRE-REGISTERED TESTS
+==============================================================================
+  P1 IS 'ADVERSARIAL' NECESSARY? retained gate recall @0.20 under EVASION
+      A baseline 0.0313 | B noise-aug 0.8160 | C adv-gate 0.3236
+      C - B = -0.4924 (threshold > +0.05)   FAIL
+      -> POSITIVE PRACTICAL FINDING: noise augmentation is sufficient;
+         the adversarial machinery is unnecessary. Report as such, NOT as a null.
+  P2 CLEAN COST of arm C: +0.0013 [+0.0000, +0.0028] (|.|<0.02)  PASS
+  P3 STAGE-ASYMMETRY: misattributed @0.20  C 0.6395 vs D 0.8566, D better by -0.2171 (>0.05) FAIL -- drop the stage-specific story
+      (gate recall beside it -- C 1.0000 | D 1.0000 -- misattributed is CAPPED by this)
+
+  VERDICT: NOISE AUGMENTATION SUFFICIENT -- adversarial machinery unnecessary
+
+  CAVEAT to carry: attacks are white-box on ONE component and Stage B here is a single
+  model; v7.3e measured surrogate inflation at +0.6773, so attack strengths are
+  UNDERSTATED -- conservative for an attack claim, GENEROUS for a defence claim.
+  A defence that only works against understated attacks is not established.
+
+total 24.8 min
