@@ -1,0 +1,146 @@
+==============================================================================
+v7.1b protocol on TON-IoT -- Train_Test_Network.csv
+==============================================================================
+rows 211043 | columns 44
+classes (10): ['normal', 'backdoor', 'ddos', 'dos', 'injection', 'mitm', 'password', 'ransomware', 'scanning', 'xss']
+excluded: ['src_ip', 'src_port', 'dst_ip'] (endpoint) + ['dns_query', 'http_uri'] (text) + 15 >99%-missing
+dedupe on features+label: 211043 -> 105333 (50.09% removed)
+  normal         24064  22.846%
+  backdoor        2423   2.300%
+  ddos           12549  11.914%
+  dos            14474  13.741%
+  injection      19850  18.845%
+  mitm            1039   0.986%
+  password       15353  14.576%
+  ransomware      1234   1.172%
+  scanning        5607   5.323%
+  xss             8740   8.297%
+prune: 52 -> 52 (zero-var) -> 46 (|r|>=0.95)
+BASE 46 + DERIVED-analogue 16 + SVC 24 = 86 features
+
+train+val 84266 (65015 attacks) | test 21067 (16254 attacks) | COMB 42133 | SELV 42133
+
+OOF gate @0.5: attack recall 0.9984 | precision 0.9986 (8s)
+reject set: 91 benign OOF-gate false positives (0.473% of benign train+val)
+
+cross-fitting the 10-class reject pool ...
+  reject fold 1/5 (70s elapsed)
+  reject fold 2/5 (134s elapsed)
+  reject fold 3/5 (196s elapsed)
+  reject fold 4/5 (258s elapsed)
+  reject fold 5/5 (323s elapsed)
+cross-fitting the 9-class baseline pool ...
+  baseline fold 1/5 (56s elapsed)
+  baseline fold 2/5 (117s elapsed)
+  baseline fold 3/5 (176s elapsed)
+  baseline fold 4/5 (234s elapsed)
+  baseline fold 5/5 (293s elapsed)
+
+W fitted (52s): COMB Stage-B mF1 0.8965 | COMB e2e uniform 0.9608 / W_sb 0.9621 / W_e2e 0.9638
+
+--- SELV: 21 rules, reject arm, gate t=0.5 ---
+                       rule    mF1     mP     mR    acc
+ HYBRID W x OLA-cw k=30 p=1 0.9582 0.9549 0.9618 0.9801
+HYBRID W x OLA-cw k=100 p=1 0.9581 0.9550 0.9615 0.9800
+    HYBRID W x LCA k=30 p=1 0.9579 0.9540 0.9621 0.9800
+HYBRID W x OLA-cw k=100 p=3 0.9579 0.9541 0.9621 0.9800
+        STATIC: per-class W 0.9579 0.9551 0.9610 0.9799
+ HYBRID W x OLA-cw k=30 p=3 0.9576 0.9532 0.9624 0.9802
+        DYN OLA-cw k=30 p=1 0.9575 0.9524 0.9633 0.9802
+       DYN OLA-cw k=100 p=1 0.9574 0.9524 0.9631 0.9800
+          single: XGB a=0.5 0.9574 0.9511 0.9647 0.9797
+        DYN OLA-cw k=30 p=3 0.9574 0.9513 0.9646 0.9803
+        DYN OLA-cw k=30 p=8 0.9572 0.9505 0.9651 0.9803
+       DYN OLA-cw k=100 p=3 0.9572 0.9517 0.9636 0.9802
+      STATIC: equal average 0.9570 0.9524 0.9621 0.9798
+       DYN OLA-cw k=100 p=8 0.9570 0.9506 0.9646 0.9803
+          single: XGB a=0.0 0.9568 0.9556 0.9580 0.9797
+               DYN LCA k=30 0.9567 0.9515 0.9626 0.9798
+         single: XGB a=0.25 0.9559 0.9525 0.9596 0.9798
+          single: XGB a=1.0 0.9553 0.9482 0.9640 0.9795
+          single: RF a=0.25 0.9551 0.9535 0.9569 0.9766
+      single: XGB smote2000 0.9545 0.9499 0.9598 0.9792
+          single: ET a=0.25 0.9531 0.9522 0.9540 0.9757
+SELV winner: HYBRID W x OLA-cw k=30 p=1 (0.9582) | SELV spread 0.0051
+gate threshold sweep: t=0.6 0.9583, t=0.5 0.9582, t=0.4 0.9580, t=0.7 0.9580, t=0.3 0.9578
+SELV-selected threshold 0.6
+baseline-arm SELV winner: DYN OLA-cw k=30 p=3 (0.9580)
+
+refit done (2.2 min)
+
+==============================================================================
+TEST -- HYBRID W x OLA-cw k=30 p=1 @ gate t=0.6
+==============================================================================
+Accuracy 0.9803 | macro-F1 0.9601 | macro-P 0.9556 | macro-R 0.9652 | ROC-AUC 0.9955
+weighted F1 0.9805
+
+              precision    recall  f1-score   support
+
+      normal     0.9956    0.9971    0.9964      4813
+    backdoor     1.0000    0.9979    0.9990       484
+        ddos     0.9883    0.9729    0.9805      2510
+         dos     0.9909    0.9758    0.9833      2895
+   injection     0.9824    0.9710    0.9767      3970
+        mitm     0.7357    0.8029    0.7678       208
+    password     0.9944    0.9866    0.9905      3071
+  ransomware     0.9959    0.9879    0.9919       247
+    scanning     0.9372    0.9848    0.9604      1121
+         xss     0.9357    0.9748    0.9549      1748
+
+    accuracy                         0.9803     21067
+   macro avg     0.9556    0.9652    0.9601     21067
+weighted avg     0.9809    0.9803    0.9805     21067
+
+            normal  backdoor  ddos   dos  injection  mitm  password  ransomware  scanning   xss
+normal        4799         0     3     2          2     4         0           0         2     1
+backdoor         1       483     0     0          0     0         0           0         0     0
+ddos             1         0  2442     0         20     3         1           0         0    43
+dos              3         0     0  2825          4    22         2           0        38     1
+injection        2         0    20     0       3855     2         3           0        17    71
+mitm             7         0     0    14          2   167         6           1        11     0
+password         3         0     2     6          2    21      3030           0         6     1
+ransomware       2         0     1     0          0     0         0         244         0     0
+scanning         0         0     0     3          1     8         5           0      1104     0
+xss              2         0     3     1         38     0         0           0         0  1704
+
+gate @0.6: attack recall 0.9988 | precision 0.9989
+benign -> attack 14 | sent back to normal 6 (correct 4, attacks 2)
+
+--- ladder (test) ---
+                  rule    mF1     mP     mR    acc
+v7    9-class baseline 0.9594 0.9528 0.9674 0.9802
+  v7.1  + reject class 0.9590 0.9520 0.9673 0.9801
+ v7.1b + e2e objective 0.9603 0.9555 0.9657 0.9804
+ FINAL (SELV-selected) 0.9601 0.9556 0.9652 0.9803
+reject vs 9-class baseline     -0.0005 [-0.0034, +0.0024] p~0.737 not established
+e2e vs Stage-B objective       +0.0013 [-0.0014, +0.0040] p~0.364 not established
+FINAL vs 9-class baseline      +0.0007 [-0.0021, +0.0033] p~0.581 not established
+
+HEADLINE macro-F1 0.9601, 95% CI [0.9555, 0.9650] -> quote 0.960 [0.956, 0.965] / acc 0.9803
+
+--- architecture-value check: all 21 rules on TEST (reporting only) ---
+                       rule    mF1     mP     mR    acc
+        STATIC: per-class W 0.9618 0.9583 0.9656 0.9805
+       DYN OLA-cw k=100 p=1 0.9614 0.9567 0.9667 0.9804
+       DYN OLA-cw k=100 p=3 0.9612 0.9558 0.9673 0.9804
+HYBRID W x OLA-cw k=100 p=1 0.9611 0.9571 0.9656 0.9805
+        DYN OLA-cw k=30 p=1 0.9605 0.9555 0.9662 0.9803
+          single: RF a=0.25 0.9603 0.9587 0.9619 0.9781
+      STATIC: equal average 0.9603 0.9562 0.9650 0.9801
+               DYN LCA k=30 0.9601 0.9555 0.9654 0.9799
+ HYBRID W x OLA-cw k=30 p=1 0.9601 0.9556 0.9652 0.9803
+      single: XGB smote2000 0.9601 0.9558 0.9649 0.9804
+       DYN OLA-cw k=100 p=8 0.9600 0.9534 0.9680 0.9806
+HYBRID W x OLA-cw k=100 p=3 0.9600 0.9551 0.9656 0.9803
+    HYBRID W x LCA k=30 p=1 0.9597 0.9551 0.9649 0.9803
+          single: XGB a=1.0 0.9597 0.9526 0.9682 0.9803
+        DYN OLA-cw k=30 p=3 0.9593 0.9531 0.9668 0.9803
+          single: XGB a=0.0 0.9592 0.9579 0.9607 0.9801
+        DYN OLA-cw k=30 p=8 0.9589 0.9520 0.9674 0.9803
+ HYBRID W x OLA-cw k=30 p=3 0.9588 0.9533 0.9651 0.9802
+          single: XGB a=0.5 0.9584 0.9527 0.9650 0.9796
+         single: XGB a=0.25 0.9576 0.9532 0.9626 0.9796
+          single: ET a=0.25 0.9559 0.9570 0.9549 0.9774
+test spread across 21 rules: 0.0059 | best single member on test: 0.9603
+
+runtime 14.3 min

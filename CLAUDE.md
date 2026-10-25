@@ -820,6 +820,10 @@ share **76.31%**, imbalance 48:1, `mitm` 1,043 rows. **Duplicates 50.07%** — t
   every combiner variant to tie. **Use it as a pre-registered prediction test**, not a benchmark.
 - **PREDICTION CONFIRMED**: service identity is worth only **−0.0028** e_1NN here vs **−0.153** on
   CIC-UNSW — Zeek already ships `service`/`dst_port`, so there is no omission to recover.
+- **v7.1b protocol run (`results/toniot_v71/`): macro-F1 0.9601 [0.9555, 0.9650] / acc 0.9803**,
+  src_ip/src_port/dst_ip excluded, 16 Zeek analogues in place of DERIVED. Gate ~perfect (0.9988 /
+  0.9989), reject set 91 rows. **FINAL vs 9-class baseline +0.0007, p≈0.58; all 21 rules within
+  0.0059** — the audit's "every combiner will tie" prediction held. Do not compare levels.
 
 ### TTL join (`results/ttl_join/`) — join SUCCEEDED; TTL is a measured LABEL PROXY — do NOT add it
 

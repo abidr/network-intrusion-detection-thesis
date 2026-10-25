@@ -1,0 +1,424 @@
+{
+  "excluded_endpoint": [
+    "src_ip",
+    "src_port",
+    "dst_ip"
+  ],
+  "excluded_text": [
+    "dns_query",
+    "http_uri"
+  ],
+  "dropped_missing": [
+    "ssl_version",
+    "ssl_cipher",
+    "ssl_resumed",
+    "ssl_established",
+    "ssl_subject",
+    "ssl_issuer",
+    "http_trans_depth",
+    "http_method",
+    "http_version",
+    "http_user_agent",
+    "http_orig_mime_types",
+    "http_resp_mime_types",
+    "weird_name",
+    "weird_addl",
+    "weird_notice"
+  ],
+  "rows_raw": 211043,
+  "rows_dedup": 105333,
+  "class_counts": {
+    "normal": 24064,
+    "backdoor": 2423,
+    "ddos": 12549,
+    "dos": 14474,
+    "injection": 19850,
+    "mitm": 1039,
+    "password": 15353,
+    "ransomware": 1234,
+    "scanning": 5607,
+    "xss": 8740
+  },
+  "features": {
+    "base": 46,
+    "derived": 16,
+    "svc": 24,
+    "total": 86
+  },
+  "split": {
+    "trainval": 84266,
+    "test": 21067,
+    "test_support": {
+      "normal": 4813,
+      "backdoor": 484,
+      "ddos": 2510,
+      "dos": 2895,
+      "injection": 3970,
+      "mitm": 208,
+      "password": 3071,
+      "ransomware": 247,
+      "scanning": 1121,
+      "xss": 1748
+    }
+  },
+  "oof_gate": {
+    "recall": 0.9984,
+    "precision": 0.9986
+  },
+  "reject_set": 91,
+  "selv": {
+    "winner": "HYBRID W x OLA-cw k=30 p=1",
+    "winner_mF1": 0.9582,
+    "threshold": 0.6,
+    "spread": 0.0051000000000001044,
+    "baseline_winner": "DYN OLA-cw k=30 p=3"
+  },
+  "test": {
+    "rule": "HYBRID W x OLA-cw k=30 p=1",
+    "threshold": 0.6,
+    "macro_f1": 0.9601,
+    "macro_f1_ci": [
+      0.9555,
+      0.965
+    ],
+    "accuracy": 0.9803,
+    "roc_auc": 0.9955,
+    "per_class_f1": {
+      "normal": 0.9964,
+      "backdoor": 0.999,
+      "ddos": 0.9805,
+      "dos": 0.9833,
+      "injection": 0.9767,
+      "mitm": 0.7678,
+      "password": 0.9905,
+      "ransomware": 0.9919,
+      "scanning": 0.9604,
+      "xss": 0.9549
+    },
+    "confusion": [
+      [
+        4799,
+        0,
+        3,
+        2,
+        2,
+        4,
+        0,
+        0,
+        2,
+        1
+      ],
+      [
+        1,
+        483,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        2442,
+        0,
+        20,
+        3,
+        1,
+        0,
+        0,
+        43
+      ],
+      [
+        3,
+        0,
+        0,
+        2825,
+        4,
+        22,
+        2,
+        0,
+        38,
+        1
+      ],
+      [
+        2,
+        0,
+        20,
+        0,
+        3855,
+        2,
+        3,
+        0,
+        17,
+        71
+      ],
+      [
+        7,
+        0,
+        0,
+        14,
+        2,
+        167,
+        6,
+        1,
+        11,
+        0
+      ],
+      [
+        3,
+        0,
+        2,
+        6,
+        2,
+        21,
+        3030,
+        0,
+        6,
+        1
+      ],
+      [
+        2,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        244,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        3,
+        1,
+        8,
+        5,
+        0,
+        1104,
+        0
+      ],
+      [
+        2,
+        0,
+        3,
+        1,
+        38,
+        0,
+        0,
+        0,
+        0,
+        1704
+      ]
+    ],
+    "benign_to_attack": 14,
+    "rejected_ok": 4,
+    "rejected_attacks": 2
+  },
+  "ladder": [
+    {
+      "rule": "v7    9-class baseline",
+      "mF1": 0.9594,
+      "mP": 0.9528,
+      "mR": 0.9674,
+      "acc": 0.9802
+    },
+    {
+      "rule": "v7.1  + reject class",
+      "mF1": 0.959,
+      "mP": 0.952,
+      "mR": 0.9673,
+      "acc": 0.9801
+    },
+    {
+      "rule": "v7.1b + e2e objective",
+      "mF1": 0.9603,
+      "mP": 0.9555,
+      "mR": 0.9657,
+      "acc": 0.9804
+    },
+    {
+      "rule": "FINAL (SELV-selected)",
+      "mF1": 0.9601,
+      "mP": 0.9556,
+      "mR": 0.9652,
+      "acc": 0.9803
+    }
+  ],
+  "paired": {
+    "reject vs 9-class baseline": {
+      "delta": -0.0005,
+      "lo": -0.0034,
+      "hi": 0.0024,
+      "p": 0.737
+    },
+    "e2e vs Stage-B objective": {
+      "delta": 0.0013,
+      "lo": -0.0014,
+      "hi": 0.004,
+      "p": 0.364
+    },
+    "FINAL vs 9-class baseline": {
+      "delta": 0.0007,
+      "lo": -0.0021,
+      "hi": 0.0033,
+      "p": 0.581
+    }
+  },
+  "test_all_rules": [
+    {
+      "rule": "STATIC: per-class W",
+      "mF1": 0.9618,
+      "mP": 0.9583,
+      "mR": 0.9656,
+      "acc": 0.9805
+    },
+    {
+      "rule": "DYN OLA-cw k=100 p=1",
+      "mF1": 0.9614,
+      "mP": 0.9567,
+      "mR": 0.9667,
+      "acc": 0.9804
+    },
+    {
+      "rule": "DYN OLA-cw k=100 p=3",
+      "mF1": 0.9612,
+      "mP": 0.9558,
+      "mR": 0.9673,
+      "acc": 0.9804
+    },
+    {
+      "rule": "HYBRID W x OLA-cw k=100 p=1",
+      "mF1": 0.9611,
+      "mP": 0.9571,
+      "mR": 0.9656,
+      "acc": 0.9805
+    },
+    {
+      "rule": "DYN OLA-cw k=30 p=1",
+      "mF1": 0.9605,
+      "mP": 0.9555,
+      "mR": 0.9662,
+      "acc": 0.9803
+    },
+    {
+      "rule": "single: RF a=0.25",
+      "mF1": 0.9603,
+      "mP": 0.9587,
+      "mR": 0.9619,
+      "acc": 0.9781
+    },
+    {
+      "rule": "STATIC: equal average",
+      "mF1": 0.9603,
+      "mP": 0.9562,
+      "mR": 0.965,
+      "acc": 0.9801
+    },
+    {
+      "rule": "DYN LCA k=30",
+      "mF1": 0.9601,
+      "mP": 0.9555,
+      "mR": 0.9654,
+      "acc": 0.9799
+    },
+    {
+      "rule": "HYBRID W x OLA-cw k=30 p=1",
+      "mF1": 0.9601,
+      "mP": 0.9556,
+      "mR": 0.9652,
+      "acc": 0.9803
+    },
+    {
+      "rule": "single: XGB smote2000",
+      "mF1": 0.9601,
+      "mP": 0.9558,
+      "mR": 0.9649,
+      "acc": 0.9804
+    },
+    {
+      "rule": "DYN OLA-cw k=100 p=8",
+      "mF1": 0.96,
+      "mP": 0.9534,
+      "mR": 0.968,
+      "acc": 0.9806
+    },
+    {
+      "rule": "HYBRID W x OLA-cw k=100 p=3",
+      "mF1": 0.96,
+      "mP": 0.9551,
+      "mR": 0.9656,
+      "acc": 0.9803
+    },
+    {
+      "rule": "HYBRID W x LCA k=30 p=1",
+      "mF1": 0.9597,
+      "mP": 0.9551,
+      "mR": 0.9649,
+      "acc": 0.9803
+    },
+    {
+      "rule": "single: XGB a=1.0",
+      "mF1": 0.9597,
+      "mP": 0.9526,
+      "mR": 0.9682,
+      "acc": 0.9803
+    },
+    {
+      "rule": "DYN OLA-cw k=30 p=3",
+      "mF1": 0.9593,
+      "mP": 0.9531,
+      "mR": 0.9668,
+      "acc": 0.9803
+    },
+    {
+      "rule": "single: XGB a=0.0",
+      "mF1": 0.9592,
+      "mP": 0.9579,
+      "mR": 0.9607,
+      "acc": 0.9801
+    },
+    {
+      "rule": "DYN OLA-cw k=30 p=8",
+      "mF1": 0.9589,
+      "mP": 0.952,
+      "mR": 0.9674,
+      "acc": 0.9803
+    },
+    {
+      "rule": "HYBRID W x OLA-cw k=30 p=3",
+      "mF1": 0.9588,
+      "mP": 0.9533,
+      "mR": 0.9651,
+      "acc": 0.9802
+    },
+    {
+      "rule": "single: XGB a=0.5",
+      "mF1": 0.9584,
+      "mP": 0.9527,
+      "mR": 0.965,
+      "acc": 0.9796
+    },
+    {
+      "rule": "single: XGB a=0.25",
+      "mF1": 0.9576,
+      "mP": 0.9532,
+      "mR": 0.9626,
+      "acc": 0.9796
+    },
+    {
+      "rule": "single: ET a=0.25",
+      "mF1": 0.9559,
+      "mP": 0.957,
+      "mR": 0.9549,
+      "acc": 0.9774
+    }
+  ],
+  "runtime_min": 14.3
+}
